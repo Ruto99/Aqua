@@ -1,17 +1,18 @@
 # Aqua
 
-RutoEngine のゲームの UI（メニュー・HUD・設定画面など）を見たまま作るツール。
-RutoEngine とは別のアプリで、作った UI は `.aqua`（UI のバイナリ）として書き出され、RutoEngine の `UIDocument` が表示する。
+ゲームの UI（メニュー・HUD・設定画面など）のレイアウトを見たまま作るツール。
+RutoEngine とは別のアプリで、**RutoEngine のプロジェクトが無くてもレイアウト単体で表示・編集できる**（レイアウトライブラリ）。
+作ったレイアウトは `.aqua`（UI のバイナリ）として書き出され、RutoEngine に送ると `UIDocument` が表示する。
 
 ![Aqua](docs/aqua.png)
 
 ## 起動
 
-**`Aqua.bat` をダブルクリック**すると Aqua が単独で開く（ようこそ画面から最近のプロジェクト・RutoLauncher のプロジェクトを選ぶか、フォルダを開く）。
+**`Aqua.bat` をダブルクリック**すると Aqua が単独で開く（ようこそ画面から最近開いたもの・RutoLauncher のプロジェクトを選ぶか、フォルダ・レイアウトを開く。新しいライブラリも作れる）。
 
 - まだビルドしていないとき、または Aqua のソース・RutoEngine の SDK が `bin\Aqua.exe` より新しいときは、先に自動でビルドしてから開く。
 - ビルドに失敗しても前の `bin\Aqua.exe` があれば、それを開く。
-- 引数はそのまま Aqua に渡る（例: `Aqua.bat --project D:\Games\MyGame`、`Aqua.bat D:\Games\MyGame\Assets\UI\Title.aqua`）。
+- 引数はそのまま Aqua に渡る（例: `Aqua.bat --project D:\Games\MyGame`、`Aqua.bat D:\UI\MyLibrary\Body\Title.aqs`）。
 
 ショートカットを作るなら `Aqua.bat` か、ビルド後の `bin\Aqua.exe` を指せばよい。
 
@@ -19,7 +20,7 @@ RutoEngine とは別のアプリで、作った UI は `.aqua`（UI のバイナ
 
 RutoEngine の SDK（ビルド済みのエンジン）をリンクして作る。先に RutoEngine の `Setup.bat` で SDK を作っておく。
 
-**エンジンのパッチ**: キャプチャー・テキストアニメーション・UI のシェーダーは RutoEngine 側の実装が要る。**`ApplyEnginePatches.bat` をダブルクリック**すると、`EnginePatches` のパッチを番号の順に RutoEngine へ `git am` で当て、`Setup.bat` で SDK を作り直す。
+**エンジンのパッチ**: キャプチャー・テキストアニメーション・UI のシェーダー・Null ペインは RutoEngine 側の実装が要る。**`ApplyEnginePatches.bat` をダブルクリック**すると、`EnginePatches` のパッチを番号の順に RutoEngine へ `git am` で当て、`Setup.bat` で SDK を作り直す。
 
 - 当て済みのパッチは飛ばすので、何度実行してもよい（パッチが増えたときもこれを実行する）。
 - RutoEngine にコミットしていない変更があると、パッチを当てる前に止まる（先にコミットするか stash する）。
@@ -30,7 +31,7 @@ RutoEngine の SDK（ビルド済みのエンジン）をリンクして作る�
 
 ```bat
 cd ..\RutoEngine
-git am -3 ..\Aqua\EnginePatches\0001-UICapture.patch ..\Aqua\EnginePatches\0002-TextAnimation-UIShader.patch ..\Aqua\EnginePatches\0003-Fix-duplicate-glGetIntegerv.patch
+git am -3 ..\Aqua\EnginePatches\0001-UICapture.patch ..\Aqua\EnginePatches\0002-TextAnimation-UIShader.patch ..\Aqua\EnginePatches\0003-Fix-duplicate-glGetIntegerv.patch ..\Aqua\EnginePatches\0004-NullPane.patch
 Setup.bat
 ```
 
@@ -72,6 +73,40 @@ build.bat release run                          :: ゲームとして動かす
 
 UI とシェーダーは `python Samples\generate_aqua_samples.py` で作り直せる（Aqua のコマンドライン import / export を使う）。
 
+## レイアウトライブラリと Body / パーツ
+
+Aqua は 2 種類のフォルダ（ワークスペース）を開ける。
+
+| | ライブラリ | ゲームのプロジェクト |
+|---|---|---|
+| フォルダ | 好きなフォルダ（`aqua-library.json` が目印）。RutoEngine は要らない | RutoEngine のプロジェクト（`Assets` がある） |
+| 編集用ファイル | `Body/*.aqs`・`Parts/*.aqs`（隣に `.aqua` を書き出す） | `AquaUI/*.aqs`（`Assets/UI/*.aqua` に書き出す） |
+| 画像・フォント・シェーダー | ライブラリの中（`Images/`・`Fonts/`・`Shaders/` など）。パスはライブラリからの相対 | `Assets` の中 |
+| RutoEngine への反映 | 「RutoEngine に送る」（下） | 編集するとすぐ反映（RutoEditor から開くとこちら） |
+
+- **ファイルを 1 つだけ開いても使える**: `.aqs` / `.aqua` を開くと、それを含むライブラリ（`aqua-library.json` のあるフォルダ。無ければそのファイルのフォルダ。`Body` / `Parts` の中ならその親）を開く。
+- 新しいライブラリは、ようこそ画面・「ファイル > 新しいライブラリ」で選んだフォルダに `Body`・`Parts`・`Images`・`Fonts`・`Shaders` を作る。
+
+レイアウトには 2 つの種類がある（`.aqs` の `kind`）。
+
+| 種類 | 使い方 |
+|---|---|
+| **Body** | 画面のいちばん親のレイアウト（タイトル・HUD・ポーズ画面など）。ゲームでは `UIDocument` に指定する。部品としては入れられない |
+| **パーツ** | ほかのレイアウト（Body・パーツ）に部品（`UIUserWidget`）として入れて使い回すレイアウト（カード・ゲージ・ボタンの組など）。パーツを直すと、入れている所がすべて変わる |
+
+- 「レイアウト」パネルは Body とパーツに分けて並ぶ。右クリックで「パーツにする / Body にする」。キャンバスの ⚙（レイアウトの設定）でも変えられる。
+- パーツはパレットの「パーツ」の欄・レイアウトパネルからキャンバス / 階層へドラッグ（クリック）すると入る。Body・自分自身・入れ子が輪になるパーツは入れられない。
+- パーツの「基準解像度」は、部品として入れたときの最初の大きさ（入れた先で変えられる）。
+
+### RutoEngine に送る（ライブラリ）
+
+右上の札（または「ライブラリ > RutoEngine に送る」）で、送り先のゲームのプロジェクトと、送り先のフォルダ（`Assets` の中。既定は `UI/ライブラリ名`）を選んで「送る」。
+
+- Body・パーツを `Assets/<フォルダ>/` に書き出し、使っているパーツ・画像・フォント・音・シェーダーも一緒にコピーする。レイアウトの中のパスは送り先に合わせて書き換える（`Parts/Card.aqua` → `UI/MyLibrary/Parts/Card.aqua`）。
+- スクリプト用のヘッダーも送り先の `Source/AquaGenerated/<フォルダ>/` に書く。
+- 送り先はライブラリごとにユーザーの設定フォルダ（`%APPDATA%\Ruto\RutoEngine\Aqua\send-targets.json`）に覚え、ライブラリのファイルには書かない（ほかの人と共有しても、それぞれの送り先が使える）。
+- 「編集するたびに送る」が入っていれば、以後は編集するたびに送り先へ書き出す（RutoEditor・実行中のゲームにすぐ反映）。
+
 ## RutoEngine との連携
 
 - RutoEditor の .aqua のダブルクリック・UIDocument の「Aqua で開く」・「作成 > UI（Aqua で作る）」、RutoLauncher の「Aqua で UI を作る」で起動する。
@@ -85,8 +120,8 @@ UI とシェーダーは `python Samples\generate_aqua_samples.py` で作り直�
 
 | 画面 | できること |
 |---|---|
-| プロジェクト | UI（`AquaUI/*.aqs`）の一覧・新規作成・複製・削除。以前の RutoEditor の UI デザイナーの `.rui` の取り込み |
-| パレット・階層 | ドラッグで配置・並べ替え・親子付け、ラップ / 中身を取り出す、表示 / 非表示の切り替え、名前の変更（F2） |
+| レイアウト | Body とパーツの一覧・新規作成・複製・削除・種類の変更・RutoEngine に送る。以前の RutoEditor の UI デザイナーの `.rui` の取り込み |
+| パレット・階層 | ドラッグで配置・並べ替え・親子付け、ラップ / 中身を取り出す、表示 / 非表示の切り替え、名前の変更（F2）。パレットの「パーツ」からパーツを部品として入れる |
 | キャンバス | 見たままの編集。8 方向のリサイズ、**親・兄弟の端と中央への吸い付き**（Alt で無効、Ctrl で 10 刻み）、アンカー表示、解像度の切り替え、ホイールで拡大、プレビュー（P。実際に操作して確かめる） |
 | 詳細・スタイル | スロット（アンカーのプリセット・余白・揃え・Auto / Fill）・プロパティ・スタイルの作成 / 反映 / 名前の変更 / 削除 |
 | 変数 | テキストの `{変数}` や「変数と連動」に入る値を入れて見た目を確かめる（スライダーで 0〜1 も試せる） |
@@ -94,6 +129,13 @@ UI とシェーダーは `python Samples\generate_aqua_samples.py` で作り直�
 | アセット | 画像・フォント・音・UI・シェーダーのサムネイル。キャンバスへドラッグ: 画像 → Image（画像・ボタン・枠に落とすと差し替え）、フォント → テキスト、音 → ボタンのクリック音、UI → 部品（ユーザーウィジェット）、シェーダー → そのウィジェットに掛ける |
 | シェーダー | **UI のシェーダー（`.uishader`）を書く**。見本（グレースケール・セピア・白く光らせる・光が流れる・ディゾルブ・グラデーション・虹色・色相・点滅・走査線・ホログラム・ふちを暗く・波）から作る、書くと少し待ってコンパイル、エラーを行ごとに表示（クリックでその行へ）、コンパイルできたらすぐ保存してキャンバスに反映（書きながら反映）、`@param` を足す・消す・並べ替えてもウィジェットの値を名前で引き継ぐ |
 | 整列 | **選んだウィジェットを自動で揃える・並べる**。左 / 中央 / 右・上 / 中央 / 下に揃える（選んだものの範囲・親・最初に選んだものに対して）、等間隔に並べる、決めた間隔で詰める、幅・高さを揃える、横一列 / 縦一列 / 格子（列の数・間隔・並べる順・置く場所・ます目の大きさ）。キャンバスで Shift + クリック・階層で Ctrl + クリックで一緒に選ぶ（まとめてドラッグもできる）。入れ物（Canvas Panel）だけを選ぶと、その子すべてが対象 |
+
+### Null ペイン（パレットの「パネル」）
+
+何も描かず、クリックも受け止めない入れ物（`UINullPane`）。子をまとめて動かす・拡大縮小する・アニメーションさせるための基準点にする。
+子の置き方はキャンバスパネルと同じ（アンカーとピボット）。ゲームでは何も表示されず、キャンバスではデザイン中だけ四隅のかぎと基準点（ピボット）の十字で場所を示す。
+
+- 例: ウィンドウの中身を Null ペインに入れ、Null ペインの `translation`・`renderScale`・`opacity` にキーを打つと、中身がまとめて登場する。
 
 ### キャプチャー（パレットの「共通」）
 
@@ -207,9 +249,11 @@ ui->PlayAnimation(AquaUI::Title::Animations::FadeIn);
 CI・ビルドの前処理向け（ウィンドウは出ない）。
 
 ```bat
-Aqua.exe export D:\Games\MyGame                   :: AquaUI のすべての UI を書き出す
+Aqua.exe new-library D:\UI\MyLibrary              :: 新しいライブラリ（Body・Parts・Images・Fonts・Shaders）
+Aqua.exe export D:\Games\MyGame                   :: すべてのレイアウトを書き出す（ライブラリのフォルダでもよい）
 Aqua.exe export AquaUI\Title.aqs                  :: 1 つだけ書き出す
-Aqua.exe import Assets\UI\Menu.rui --project .   :: 以前の .rui を取り込む
+Aqua.exe import Assets\UI\Menu.rui --project .   :: 以前の .rui を取り込む（--part でパーツとして）
+Aqua.exe send D:\UI\MyLibrary --to D:\Games\MyGame [--folder UI/MyLibrary]   :: ライブラリをすべて RutoEngine に送る（送り先を覚える）
 Aqua.exe info Assets\UI\Title.aqua               :: バイナリの中身（情報・依存・文書）を JSON で見る
 Aqua.exe to-json Assets\UI\Title.aqua out.json
 Aqua.exe from-json Menu.json Assets\UI\Menu.aqua

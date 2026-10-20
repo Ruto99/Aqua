@@ -80,13 +80,9 @@ void App::OnStart() {
             for (const fs::path& f : m_Options.open) OpenDocument(f);
         }
     } else if (!m_Options.open.empty()) {
-        // ファイルだけ渡されたら、そのファイルを含むプロジェクトを探す（Assets か AquaUI の親）
-        for (fs::path dir = m_Options.open.front().parent_path(); !dir.empty() && dir != dir.root_path(); dir = dir.parent_path()) {
-            if (fs::is_directory(dir / "Assets", ec) && OpenProject(dir)) {
-                for (const fs::path& f : m_Options.open) OpenDocument(f);
-                break;
-            }
-        }
+        // ファイルだけ渡されたら、そのファイルを含むワークスペース（ゲームのプロジェクトかライブラリ）を開く
+        const auto files = m_Options.open;
+        for (const fs::path& f : files) OpenAnyFile(f);
     }
 }
 
@@ -121,6 +117,15 @@ bool App::OpenProject(const fs::path& dir) {
         return false;
     }
     m_Error.clear();
+    if (m_Project.IsLibrary()) {
+        // ライブラリは RutoEngine と関係なく開く（エディターからの依頼は受けない）
+        AddRecentProject(m_Project.GetDir());
+        GetWindow().SetTitle(std::format("Aqua — {}（ライブラリ）", m_Project.GetName()));
+        Log::Info("ライブラリを開きました: {}", FileSystem::ToUtf8(m_Project.GetDir()));
+        if (m_Project.sendTarget.Valid())
+            Log::Info("送り先: {}（Assets/{}）", FileSystem::ToUtf8(m_Project.sendTarget.project), m_Project.sendTarget.folder);
+        return true;
+    }
     m_Link = Ruto::Aqua::LinkHost::Create(m_Project.GetDir());
     if (!m_Link) {
         // 同じプロジェクトを開いている Aqua がある → そちらに任せて閉じる
@@ -147,6 +152,74 @@ void App::CloseProject() {
     m_Link.reset();
     m_Project = Project{};
     GetWindow().SetTitle("Aqua");
+}
+
+Document* App::OpenAnyFile(const fs::path& file) {
+    if (file.empty()) return nullptr;
+    std::error_code ec;
+    const fs::path ws = FindWorkspaceFor(file);
+    if (!m_Project.IsOpen() || !fs::equivalent(ws, m_Project.GetDir(), ec)) {
+        if (!OpenProject(ws)) return nullptr;
+    }
+    return OpenDocument(file);
+}
+
+void App::ShowOpenFileDialog() {
+    const fs::path start = m_Project.IsOpen() ? m_Project.GetSourceDir() : Platform::GetDocumentsDir();
+    Platform::ShowOpenFileDialog(start, "Aqua のレイアウト（.aqs / .aqua / .rui）", "aqs;aqua;rui", [this](std::optional<fs::path> p) {
+        if (p) OpenAnyFile(*p);
+    });
+}
+
+void App::ShowOpenFolderDialog() {
+    Platform::ShowFolderDialog(m_Project.IsOpen() ? m_Project.GetDir() : Platform::GetDocumentsDir(), [this](std::optional<fs::path> p) {
+        if (p) OpenProject(*p);
+    });
+}
+
+void App::CreateLibraryAt(const fs::path& dir) {
+    std::string error;
+    if (!Project::CreateLibrary(dir, &error)) {
+        m_Error = error;
+        Notify(error, true);
+        return;
+    }
+    if (OpenProject(dir)) Notify("ライブラリを作りました: " + FileSystem::ToUtf8(dir));
+}
+
+void App::SendAll() {
+    if (!m_Project.IsLibrary() || !m_Project.sendTarget.Valid()) return;
+    m_Project.Refresh(true);
+    int ok = 0, failed = 0;
+    std::set<std::string> done;
+    for (const Project::SourceInfo& s : m_Project.GetSources()) {
+        // 書き出しを最新にしてから送る
+        std::error_code ec;
+        bool exported = false;
+        for (auto& d : m_Docs) {
+            if (!fs::equivalent(d->sourcePath, s.path, ec)) continue;
+            if (d->HasPending()) d->Commit();
+            exported = true;
+        }
+        if (!exported) {
+            if (auto doc = Document::Open(m_Project, s.path)) {
+                const bool live = m_Project.sendTarget.live;
+                m_Project.sendTarget.live = false; // 下で送る
+                doc->Export();
+                m_Project.sendTarget.live = live;
+            }
+        }
+        std::string error;
+        if (m_Project.SendLayout(s.output, &error, &done)) {
+            ++ok;
+        } else {
+            ++failed;
+            Log::Error("{}: {}", s.output, error);
+        }
+    }
+    Notify(std::format("{} 個のレイアウトを {} に送りました{}", ok, FileSystem::ToUtf8(m_Project.sendTarget.project.filename()),
+                       failed ? std::format("（{} 個は失敗）", failed) : std::string()),
+           failed > 0);
 }
 
 Document* App::ActiveDocument() {
@@ -198,19 +271,19 @@ void App::CloseDocument(size_t index) {
     WriteSession();
 }
 
-void App::NewDocument(const std::string& name) {
+void App::NewDocument(const std::string& name, LayoutKind kind) {
     if (!m_Project.IsOpen()) return;
     std::string base = name.empty() ? std::string("NewUI") : name;
     std::erase_if(base, [](char c) { return c == '\\' || c == ':' || c == '*' || c == '?' || c == '"' || c == '<' || c == '>' || c == '|'; });
     if (base.empty()) base = "NewUI";
-    fs::path folder = m_Project.GetLayout().SourceDir();
+    fs::path folder = m_Project.GetSourceDir();
     if (!m_NewFolder.empty()) folder /= FileSystem::FromUtf8(m_NewFolder);
     fs::path source = folder / FileSystem::FromUtf8(base + Ruto::Aqua::kSourceExtension);
     std::error_code ec;
     for (int n = 1; fs::exists(source, ec) || !m_Project.FindSourceFor(m_Project.DefaultOutputFor(source)).empty(); ++n)
         source = folder / FileSystem::FromUtf8(std::format("{}{}{}", base, n, Ruto::Aqua::kSourceExtension));
-    auto doc = Document::CreateNew(m_Project, source, m_Project.DefaultOutputFor(source));
-    Log::Info("UI を作成しました: {} → Assets/{}", FileSystem::ToUtf8(source.filename()), doc->output);
+    auto doc = Document::CreateNew(m_Project, source, m_Project.DefaultOutputFor(source), kind);
+    Log::Info("{}を作成しました: {} → {}", LayoutKindLabel(kind), FileSystem::ToUtf8(source.filename()), doc->output);
     m_Docs.push_back(std::move(doc));
     m_Active = static_cast<int>(m_Docs.size()) - 1;
     m_FocusTab = m_Active;
@@ -328,7 +401,8 @@ void App::OnUpdate(float /*dt*/) {
     if (m_Link && now - m_LastSession > 2.0) WriteSession();
     if (m_Project.IsOpen() && now - m_LastEditorCheck > 1.0) {
         m_LastEditorCheck = now;
-        m_EditorRunning = Platform::FileLock::IsLocked(m_Project.GetDir() / "build" / "editor.lock");
+        const fs::path game = m_Project.IsLibrary() ? m_Project.sendTarget.project : m_Project.GetDir();
+        m_EditorRunning = !game.empty() && Platform::FileLock::IsLocked(game / "build" / "editor.lock");
     }
 
     EditorUI::BeginFrame();
@@ -361,7 +435,7 @@ void App::DrawUI() {
     DrawDockSpace();
 
     // パネル
-    if (ImGui::Begin(ICON_FA_FOLDER_TREE "  プロジェクト###Project")) DrawProjectPanel();
+    if (ImGui::Begin(ICON_FA_FOLDER_TREE "  レイアウト###Project")) DrawProjectPanel();
     ImGui::End();
     if (ImGui::Begin(ICON_FA_PALETTE "  パレット###Palette")) DrawPalette(ActiveDocument());
     ImGui::End();
@@ -447,13 +521,8 @@ void App::DrawMenuBar() {
     const bool open = m_Project.IsOpen();
 
     if (ImGui::BeginMenu("ファイル")) {
-        if (ImGui::MenuItem(ICON_FA_FILE_CIRCLE_PLUS "  新しい UI", "Ctrl+N", false, open)) m_OpenNewPopup = true;
-        if (ImGui::MenuItem(ICON_FA_FOLDER_OPEN "  UI を開く...", "Ctrl+O", false, open)) {
-            Platform::ShowOpenFileDialog(m_Project.GetLayout().SourceDir(), "Aqua の UI（.aqs / .aqua / .rui）", "aqs;aqua;rui",
-                                         [this](std::optional<fs::path> p) {
-                                             if (p) OpenDocument(*p);
-                                         });
-        }
+        if (ImGui::MenuItem(ICON_FA_FILE_CIRCLE_PLUS "  新しいレイアウト...", "Ctrl+N", false, open)) m_OpenNewPopup = true;
+        if (ImGui::MenuItem(ICON_FA_FOLDER_OPEN "  レイアウトを開く...", "Ctrl+O")) ShowOpenFileDialog();
         if (ImGui::MenuItem(ICON_FA_FLOPPY_DISK "  保存して書き出す", "Ctrl+S", false, doc != nullptr)) {
             doc->Commit();
             doc->Save();
@@ -462,24 +531,26 @@ void App::DrawMenuBar() {
         }
         if (ImGui::MenuItem(ICON_FA_FILE_EXPORT "  すべての UI を書き出す", "Ctrl+Shift+E", false, open)) ExportAll();
         if (ImGui::MenuItem(ICON_FA_FILE_IMPORT "  .rui を取り込む...", nullptr, false, open)) {
-            Platform::ShowOpenFileDialog(m_Project.GetLayout().AssetsDir(), "以前の UI（.rui）", "rui", [this](std::optional<fs::path> p) {
+            Platform::ShowOpenFileDialog(m_Project.GetAssetRoot(), "以前の UI（.rui）", "rui", [this](std::optional<fs::path> p) {
                 if (p) OpenDocument(*p);
             });
         }
         if (ImGui::MenuItem(ICON_FA_XMARK "  閉じる", "Ctrl+W", false, doc != nullptr)) CloseDocument(static_cast<size_t>(m_Active));
         ImGui::Separator();
-        if (ImGui::MenuItem(ICON_FA_FOLDER "  プロジェクトを開く...")) {
-            Platform::ShowFolderDialog(m_Project.IsOpen() ? m_Project.GetDir() : Platform::GetDocumentsDir(), [this](std::optional<fs::path> p) {
-                if (p) OpenProject(*p);
+        if (ImGui::MenuItem(ICON_FA_FOLDER "  フォルダを開く（ライブラリ / ゲーム）...")) ShowOpenFolderDialog();
+        if (ImGui::MenuItem(ICON_FA_BOOK "  新しいライブラリ...")) {
+            Platform::ShowFolderDialog(Platform::GetDocumentsDir(), [this](std::optional<fs::path> p) {
+                if (p) CreateLibraryAt(*p);
             });
         }
-        if (ImGui::BeginMenu(ICON_FA_CLOCK_ROTATE_LEFT "  最近のプロジェクト")) {
+        if (ImGui::BeginMenu(ICON_FA_CLOCK_ROTATE_LEFT "  最近開いたもの")) {
             for (const fs::path& p : LoadRecentProjects()) {
-                if (ImGui::MenuItem(FileSystem::ToUtf8(p).c_str())) OpenProject(p);
+                const char* icon = IsGameProjectDir(p) ? ICON_FA_GAMEPAD : ICON_FA_BOOK;
+                if (ImGui::MenuItem(std::format("{}  {}", icon, FileSystem::ToUtf8(p)).c_str())) OpenProject(p);
             }
             ImGui::EndMenu();
         }
-        if (ImGui::MenuItem(ICON_FA_DOOR_CLOSED "  プロジェクトを閉じる", nullptr, false, open)) CloseProject();
+        if (ImGui::MenuItem(ICON_FA_DOOR_CLOSED "  閉じる（ようこそ画面へ）", nullptr, false, open)) CloseProject();
         ImGui::Separator();
         if (ImGui::MenuItem(ICON_FA_RIGHT_FROM_BRACKET "  終了")) {
             if (OnCloseRequested()) Quit();
@@ -512,7 +583,17 @@ void App::DrawMenuBar() {
         if (ImGui::MenuItem(ICON_FA_TABLE_COLUMNS "  レイアウトを元に戻す")) m_ResetLayout = true;
         ImGui::EndMenu();
     }
-    if (ImGui::BeginMenu("プロジェクト", open)) {
+    if (m_Project.IsLibrary()) {
+        if (ImGui::BeginMenu("ライブラリ")) {
+            if (ImGui::MenuItem(ICON_FA_PAPER_PLANE "  RutoEngine に送る...")) m_OpenSendPopup = true;
+            if (ImGui::MenuItem(ICON_FA_ARROWS_ROTATE "  すべて送り直す", nullptr, false, m_Project.sendTarget.Valid())) SendAll();
+            ImGui::Separator();
+            if (ImGui::MenuItem(ICON_FA_GEAR "  Aqua の設定...")) m_OpenSettingsPopup = true;
+            if (ImGui::MenuItem(ICON_FA_FOLDER_OPEN "  エクスプローラーで開く")) Platform::OpenInFileBrowser(m_Project.GetDir());
+            if (ImGui::MenuItem(ICON_FA_ROTATE "  一覧を更新")) m_Project.Refresh(true);
+            ImGui::EndMenu();
+        }
+    } else if (ImGui::BeginMenu("プロジェクト", open)) {
         if (ImGui::MenuItem(ICON_FA_GEAR "  Aqua の設定...")) m_OpenSettingsPopup = true;
         if (ImGui::MenuItem(ICON_FA_FOLDER_OPEN "  エクスプローラーで開く")) Platform::OpenInFileBrowser(m_Project.GetDir());
         if (ImGui::MenuItem(ICON_FA_FILE_CODE "  AquaUI フォルダを開く")) Platform::OpenInFileBrowser(m_Project.GetLayout().SourceDir());
@@ -535,9 +616,14 @@ void App::DrawMenuBar() {
         }
     }
 
-    // 右端: 連携の状態（丸い札）
+    // 右端: 連携の状態（丸い札）。ライブラリは送り先（クリックで送り先の設定）
     if (open) {
-        const std::string status = m_EditorRunning ? ICON_FA_LINK "  ライブ反映中" : ICON_FA_LINK_SLASH "  RutoEditor 未起動";
+        const bool library = m_Project.IsLibrary();
+        const SendTarget& target = m_Project.sendTarget;
+        std::string status;
+        if (!library) status = m_EditorRunning ? ICON_FA_LINK "  ライブ反映中" : ICON_FA_LINK_SLASH "  RutoEditor 未起動";
+        else if (!target.Valid()) status = ICON_FA_PAPER_PLANE "  RutoEngine に送る";
+        else status = std::format("{}  {} に{}", ICON_FA_PAPER_PLANE, FileSystem::ToUtf8(target.project.filename()), target.live ? "ライブ反映中" : "送る（手動）");
         const ImVec2 ts = ImGui::CalcTextSize(status.c_str());
         const ImVec2 pad{10.0f * m_Scale, 3.0f * m_Scale};
         const float w = ts.x + pad.x * 2.0f;
@@ -546,14 +632,22 @@ void App::DrawMenuBar() {
         const float h = ImGui::GetFrameHeight();
         const ImVec2 min{p.x, p.y + (h - ts.y) * 0.5f - pad.y};
         const ImVec2 max{p.x + w, min.y + ts.y + pad.y * 2.0f};
-        const ImVec4 col = m_EditorRunning ? Theme::kSuccess : Theme::kTextDim;
+        const ImVec4 col = library ? (target.Valid() && target.live ? Theme::kAccent : Theme::kTextDim) : (m_EditorRunning ? Theme::kSuccess : Theme::kTextDim);
         ImDrawList* dl = ImGui::GetWindowDrawList();
         dl->AddRectFilled(min, max, Theme::U32(col, 0.14f), 100.0f);
         dl->AddRect(min, max, Theme::U32(col, 0.45f), 100.0f);
         dl->AddText({min.x + pad.x, min.y + pad.y}, Theme::U32(col), status.c_str());
-        ImGui::Dummy({w, h});
-        if (ImGui::IsItemHovered())
-            ImGui::SetTooltip("編集すると Assets の .aqua がすぐ書き出され、\nRutoEditor のシーン・ゲームビュー・実行中のゲームに反映されます");
+        if (library) {
+            if (ImGui::InvisibleButton("##send-pill", {w, h})) m_OpenSendPopup = true;
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("%s", target.Valid() ? std::format("送り先: {}\nAssets/{}{}", FileSystem::ToUtf8(target.project), target.folder,
+                                                                  target.live ? "\n編集するたびに送ります（実行中のゲームにもすぐ反映）" : "").c_str()
+                                                     : "このライブラリのレイアウトを RutoEngine のゲームのプロジェクトに送ります");
+        } else {
+            ImGui::Dummy({w, h});
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("編集すると Assets の .aqua がすぐ書き出され、\nRutoEditor のシーン・ゲームビュー・実行中のゲームに反映されます");
+        }
     }
     ImGui::EndMainMenuBar();
 }
@@ -582,11 +676,7 @@ void App::HandleShortcuts() {
     Document* doc = ActiveDocument();
     auto pressed = [](ImGuiKey k) { return ImGui::IsKeyPressed(k, false); };
     if (io.KeyCtrl && pressed(ImGuiKey_N) && m_Project.IsOpen()) m_OpenNewPopup = true;
-    if (io.KeyCtrl && pressed(ImGuiKey_O) && m_Project.IsOpen()) {
-        Platform::ShowOpenFileDialog(m_Project.GetLayout().SourceDir(), "Aqua の UI（.aqs / .aqua / .rui）", "aqs;aqua;rui", [this](std::optional<fs::path> p) {
-            if (p) OpenDocument(*p);
-        });
-    }
+    if (io.KeyCtrl && pressed(ImGuiKey_O)) ShowOpenFileDialog();
     if (io.KeyCtrl && io.KeyShift && pressed(ImGuiKey_E)) ExportAll();
     if (!doc) return;
     if (io.KeyCtrl && pressed(ImGuiKey_S)) {
@@ -695,13 +785,19 @@ void App::DrawStatusBar(float height) {
             ImGui::TextColored(Theme::kError, ICON_FA_TRIANGLE_EXCLAMATION "  %s", doc->GetLastError().c_str());
         } else {
             const double ago = now - doc->GetLastExportTime();
-            ImGui::TextColored(Theme::kTextDim, ICON_FA_FILE_EXPORT "  Assets/%s  ·  %s", doc->output.c_str(),
-                               ago < 2.0 ? "書き出しました" : doc->HasPending() ? "編集中..." : "保存・書き出し済み");
+            const char* state = ago < 2.0 ? "書き出しました" : doc->HasPending() ? "編集中..." : "保存・書き出し済み";
+            if (m_Project.IsLibrary()) {
+                const SendTarget& t = m_Project.sendTarget;
+                const std::string sent = t.Valid() && t.live ? std::format("  ·  {} の Assets/{} に送信", FileSystem::ToUtf8(t.project.filename()), m_Project.SendPathFor(doc->output)) : std::string();
+                ImGui::TextColored(Theme::kTextDim, "%s  %s  ·  %s%s", LayoutKindIcon(doc->kind), doc->output.c_str(), state, sent.c_str());
+            } else {
+                ImGui::TextColored(Theme::kTextDim, "%s  Assets/%s  ·  %s", LayoutKindIcon(doc->kind), doc->output.c_str(), state);
+            }
         }
     } else if (m_Project.IsOpen()) {
-        ImGui::TextColored(Theme::kTextDim, ICON_FA_FOLDER "  %s", FileSystem::ToUtf8(m_Project.GetDir()).c_str());
+        ImGui::TextColored(Theme::kTextDim, "%s  %s", m_Project.IsLibrary() ? ICON_FA_BOOK : ICON_FA_GAMEPAD, FileSystem::ToUtf8(m_Project.GetDir()).c_str());
     } else {
-        ImGui::TextColored(Theme::kTextDim, "プロジェクトを開いてください");
+        ImGui::TextColored(Theme::kTextDim, "ライブラリかゲームのプロジェクトを開いてください");
     }
     ImGui::SameLine();
     const std::string fps = std::format("{:.0f} FPS", GetFPS());
@@ -732,7 +828,7 @@ void App::DrawWelcome() {
     ImGui::BeginGroup();
     DrawLogo(ImGui::GetStyle().FontSizeBase * 2.6f);
     ImGui::Spacing();
-    ImGui::TextColored(Theme::kTextDim, "ゲームの UI（メニュー・HUD・設定画面）を見たまま作る、RutoEngine のための UI デザイナー");
+    ImGui::TextColored(Theme::kTextDim, "ゲームの UI（メニュー・HUD・設定画面）を見たまま作る UI デザイナー。単体でも、RutoEngine とつないでも使えます");
     ImGui::Dummy({0.0f, 14.0f * m_Scale});
     if (!m_Error.empty()) {
         ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + w);
@@ -746,30 +842,39 @@ void App::DrawWelcome() {
     ImGui::PushStyleColor(ImGuiCol_Text, Theme::kAccentInk);
     ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 100.0f);
     ImGui::PushFont(GetBoldFont(), ImGui::GetStyle().FontSizeBase);
-    if (ImGui::Button(ICON_FA_FOLDER_OPEN "  プロジェクトのフォルダを開く...", {std::min(w, 340.0f * m_Scale), 44.0f * m_Scale})) {
+    const ImVec2 buttonSize{std::min((w - 24.0f * m_Scale) / 3.0f, 250.0f * m_Scale), 44.0f * m_Scale};
+    if (ImGui::Button(ICON_FA_FOLDER_OPEN "  フォルダを開く...", buttonSize)) ShowOpenFolderDialog();
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip("ライブラリ（好きなフォルダ）か、RutoEngine のゲームのプロジェクトを開きます");
+    ImGui::PopFont();
+    ImGui::PopStyleColor(4);
+    ImGui::SameLine(0.0f, 12.0f * m_Scale);
+    if (ImGui::Button(ICON_FA_BOOK "  新しいライブラリ...", buttonSize)) {
         Platform::ShowFolderDialog(Platform::GetDocumentsDir(), [this](std::optional<fs::path> p) {
-            if (p) OpenProject(*p);
+            if (p) CreateLibraryAt(*p);
         });
     }
-    ImGui::PopFont();
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip("選んだフォルダに Body・Parts・Images などを作り、レイアウトのライブラリにします（RutoEngine は要りません）");
+    ImGui::SameLine(0.0f, 12.0f * m_Scale);
+    if (ImGui::Button(ICON_FA_FILE "  レイアウトを開く...", buttonSize)) ShowOpenFileDialog();
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip(".aqs / .aqua を 1 つだけ開きます（そのフォルダをライブラリとして開きます）");
     ImGui::PopStyleVar();
-    ImGui::PopStyleColor(4);
     ImGui::Dummy({0.0f, 20.0f * m_Scale});
 
     ImGui::TextColored(Theme::kAccent, ICON_FA_CLOCK_ROTATE_LEFT);
     ImGui::SameLine();
-    ImGui::TextUnformatted("最近のプロジェクト");
+    ImGui::TextUnformatted("最近開いたもの");
     ImGui::SameLine();
-    ImGui::TextDisabled("（RutoLauncher のプロジェクトも表示）");
+    ImGui::TextDisabled("（" ICON_FA_BOOK " ライブラリ・" ICON_FA_GAMEPAD " ゲームのプロジェクト。RutoLauncher のプロジェクトも表示）");
     ImGui::Spacing();
     const auto recent = LoadRecentProjects();
-    if (recent.empty()) ImGui::TextDisabled("まだありません。RutoLauncher でプロジェクトを作ってから開いてください");
+    if (recent.empty()) ImGui::TextDisabled("まだありません。「新しいライブラリ」で作るか、フォルダを開いてください");
     // 1 件ずつ角の丸いカードにする
     std::error_code ec;
     const float cardH = ImGui::GetTextLineHeight() * 2.0f + 18.0f * m_Scale;
     const float rounding = 10.0f * m_Scale;
     for (const fs::path& p : recent) {
-        const bool exists = fs::is_directory(p / "Assets", ec);
+        const bool exists = fs::is_directory(p, ec);
+        const bool game = IsGameProjectDir(p);
         ImGui::PushID(FileSystem::ToUtf8(p).c_str());
         const ImVec2 cp = ImGui::GetCursorScreenPos();
         ImGui::BeginDisabled(!exists);
@@ -789,8 +894,9 @@ void App::DrawWelcome() {
         const ImVec2 ic{cp.x + pad + r, cp.y + cardH * 0.5f};
         const ImVec4 iconCol = exists ? Theme::kAccent : Theme::kTextDim;
         dl->AddCircleFilled(ic, r, Theme::U32(iconCol, 0.16f));
-        const ImVec2 is = ImGui::CalcTextSize(ICON_FA_FOLDER);
-        dl->AddText({ic.x - is.x * 0.5f, ic.y - is.y * 0.5f}, Theme::U32(iconCol), ICON_FA_FOLDER);
+        const char* kindIcon = game ? ICON_FA_GAMEPAD : ICON_FA_BOOK;
+        const ImVec2 is = ImGui::CalcTextSize(kindIcon);
+        dl->AddText({ic.x - is.x * 0.5f, ic.y - is.y * 0.5f}, Theme::U32(iconCol), kindIcon);
         const float tx = ic.x + r + 12.0f * m_Scale;
         const float lh = ImGui::GetTextLineHeight();
         const std::string name = FileSystem::ToUtf8(p.filename());
@@ -830,28 +936,128 @@ void App::DrawLogPanel() {
     ImGui::EndChild();
 }
 
+void App::DrawSendPopup() {
+    if (m_OpenSendPopup) {
+        ImGui::OpenPopup("RutoEngine に送る");
+        m_OpenSendPopup = false;
+        m_SendProjectInput = FileSystem::ToUtf8(m_Project.sendTarget.project);
+        m_SendFolderInput = m_Project.sendTarget.folder;
+    }
+    if (!ImGui::BeginPopupModal("RutoEngine に送る", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) return;
+    SendTarget& t = m_Project.sendTarget;
+    const float w = 460.0f * m_Scale;
+    ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + w);
+    ImGui::TextDisabled("このライブラリのレイアウトを、RutoEngine のゲームのプロジェクトの Assets に書き出します。"
+                        "使っているパーツ・画像・フォント・シェーダーも一緒に送り、中のパスは送り先に合わせて書き換えます。");
+    ImGui::PopTextWrapPos();
+    ImGui::Spacing();
+
+    ImGui::TextUnformatted("送り先のプロジェクト");
+    ImGui::SetNextItemWidth(w - ImGui::GetFrameHeight() * 1.2f - 4.0f);
+    if (ImGui::BeginCombo("##send-project", m_SendProjectInput.empty() ? "(選んでください)" : m_SendProjectInput.c_str(), ImGuiComboFlags_HeightLarge)) {
+        for (const fs::path& p : LoadRecentProjects()) {
+            if (!IsGameProjectDir(p)) continue;
+            const std::string u = FileSystem::ToUtf8(p);
+            if (ImGui::Selectable(std::format(ICON_FA_GAMEPAD "  {}##{}", FileSystem::ToUtf8(p.filename()), u).c_str(), u == m_SendProjectInput)) m_SendProjectInput = u;
+            if (ImGui::IsItemHovered()) ImGui::SetTooltip("%s", u.c_str());
+        }
+        ImGui::EndCombo();
+    }
+    ImGui::SameLine(0.0f, 4.0f);
+    if (IconButton(ICON_FA_FOLDER_OPEN, "フォルダを選ぶ")) {
+        Platform::ShowFolderDialog(Platform::GetDocumentsDir(), [this](std::optional<fs::path> p) {
+            if (p) m_SendProjectInput = FileSystem::ToUtf8(*p);
+        });
+    }
+    const fs::path projectDir = FileSystem::FromUtf8(m_SendProjectInput);
+    const bool validProject = !m_SendProjectInput.empty() && IsGameProjectDir(projectDir);
+    if (!m_SendProjectInput.empty() && !validProject) ImGui::TextColored(Theme::kError, ICON_FA_TRIANGLE_EXCLAMATION "  Assets フォルダがありません（RutoEngine のプロジェクトを選んでください）");
+
+    ImGui::Spacing();
+    ImGui::TextUnformatted("送り先のフォルダ（Assets の中）");
+    ImGui::SetNextItemWidth(w);
+    ImGui::InputTextWithHint("##send-folder", "例: UI/MyLibrary", &m_SendFolderInput);
+    ImGui::Checkbox("編集するたびに送る（RutoEditor・実行中のゲームにすぐ反映）", &t.live);
+    if (validProject) {
+        SendTarget preview = t;
+        preview.project = projectDir;
+        preview.folder = m_SendFolderInput;
+        Project& pr = m_Project;
+        const SendTarget saved = pr.sendTarget;
+        pr.sendTarget = preview;
+        if (Document* doc = ActiveDocument()) ImGui::TextDisabled(ICON_FA_ARROW_RIGHT "  例: %s → Assets/%s", doc->output.c_str(), pr.SendPathFor(doc->output).c_str());
+        pr.sendTarget = saved;
+    }
+    ImGui::Spacing();
+    ImGui::BeginDisabled(!validProject);
+    ImGui::PushStyleColor(ImGuiCol_Button, Theme::kAccent);
+    ImGui::PushStyleColor(ImGuiCol_Text, Theme::kAccentInk);
+    if (ImGui::Button(ICON_FA_PAPER_PLANE "  送る（すべてのレイアウト）", {220.0f * m_Scale, 0.0f})) {
+        t.project = projectDir;
+        t.folder = m_SendFolderInput;
+        m_Project.SaveSendTarget();
+        SendAll();
+        ImGui::CloseCurrentPopup();
+    }
+    ImGui::PopStyleColor(2);
+    ImGui::EndDisabled();
+    ImGui::SameLine();
+    ImGui::BeginDisabled(!t.Valid());
+    if (ImGui::Button("送り先を外す", {120.0f * m_Scale, 0.0f})) {
+        t = {};
+        t.folder = "UI/" + ToIdentifier(m_Project.GetName());
+        m_Project.SaveSendTarget();
+        Notify("送り先を外しました");
+        ImGui::CloseCurrentPopup();
+    }
+    ImGui::EndDisabled();
+    ImGui::SameLine();
+    if (ImGui::Button("閉じる", {100.0f * m_Scale, 0.0f}) || ImGui::IsKeyPressed(ImGuiKey_Escape)) {
+        if (t.Valid()) m_Project.SaveSendTarget(); // ライブ反映の切り替えだけ保存
+        ImGui::CloseCurrentPopup();
+    }
+    ImGui::EndPopup();
+}
+
 void App::DrawPopups() {
+    DrawSendPopup();
     if (m_OpenNewPopup) {
-        ImGui::OpenPopup("新しい UI");
-        m_NewName = "NewUI";
-        m_NewFolder.clear();
+        ImGui::OpenPopup("新しいレイアウト");
+        m_NewName = m_NewKind == LayoutKind::Part ? "NewPart" : "NewUI";
+        m_NewFolder = m_Project.DefaultFolderFor(m_NewKind);
         m_OpenNewPopup = false;
     }
-    if (ImGui::BeginPopupModal("新しい UI", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+    if (ImGui::BeginPopupModal("新しいレイアウト", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+        // 種類（Body: 画面のいちばん親 / パーツ: ほかのレイアウトに部品として入れる）
+        for (LayoutKind k : {LayoutKind::Body, LayoutKind::Part}) {
+            if (k == LayoutKind::Part) ImGui::SameLine();
+            const bool selected = m_NewKind == k;
+            ImGui::PushStyleColor(ImGuiCol_Button, selected ? Theme::kAccent : Theme::kFrame);
+            ImGui::PushStyleColor(ImGuiCol_Text, selected ? Theme::kAccentInk : Theme::kText);
+            if (ImGui::Button(std::format("{}  {}", LayoutKindIcon(k), LayoutKindLabel(k)).c_str(), {176.0f * m_Scale, 0.0f}) && !selected) {
+                // フォルダが既定のままなら、種類に合わせて変える
+                if (m_NewFolder == m_Project.DefaultFolderFor(m_NewKind)) m_NewFolder = m_Project.DefaultFolderFor(k);
+                if (m_NewName == "NewUI" || m_NewName == "NewPart") m_NewName = k == LayoutKind::Part ? "NewPart" : "NewUI";
+                m_NewKind = k;
+            }
+            ImGui::PopStyleColor(2);
+        }
+        ImGui::TextDisabled("%s", m_NewKind == LayoutKind::Part ? "ほかのレイアウト（Body・パーツ）に部品として入れて使い回す" : "画面のいちばん親のレイアウト（タイトル・HUD・ポーズ画面など）");
+        ImGui::Spacing();
         ImGui::TextDisabled("名前（スクリプトからは AquaUI::名前 で使えます）");
         if (ImGui::IsWindowAppearing()) ImGui::SetKeyboardFocusHere();
         ImGui::SetNextItemWidth(360.0f * m_Scale);
         const bool enter = ImGui::InputText("##name", &m_NewName, ImGuiInputTextFlags_EnterReturnsTrue);
-        ImGui::TextDisabled("フォルダ（AquaUI の中。空でよい）");
+        ImGui::TextDisabled(m_Project.IsLibrary() ? "フォルダ（ライブラリの中）" : "フォルダ（AquaUI の中。空でよい）");
         ImGui::SetNextItemWidth(360.0f * m_Scale);
         ImGui::InputTextWithHint("##folder", "例: Menu", &m_NewFolder);
         if (m_Project.IsOpen()) {
-            const fs::path src = m_Project.GetLayout().SourceDir() / FileSystem::FromUtf8(m_NewFolder) / FileSystem::FromUtf8(m_NewName + ".aqs");
-            ImGui::TextDisabled(ICON_FA_ARROW_RIGHT "  Assets/%s", m_Project.DefaultOutputFor(src).c_str());
+            const fs::path src = m_Project.GetSourceDir() / FileSystem::FromUtf8(m_NewFolder) / FileSystem::FromUtf8(m_NewName + ".aqs");
+            ImGui::TextDisabled(ICON_FA_ARROW_RIGHT "  %s%s", m_Project.IsLibrary() ? "" : "Assets/", m_Project.DefaultOutputFor(src).c_str());
         }
         ImGui::Spacing();
         if (ImGui::Button("作成", {120.0f * m_Scale, 0.0f}) || enter) {
-            NewDocument(m_NewName);
+            NewDocument(m_NewName, m_NewKind);
             ImGui::CloseCurrentPopup();
         }
         ImGui::SameLine();
@@ -866,12 +1072,19 @@ void App::DrawPopups() {
     if (ImGui::BeginPopupModal("Aqua の設定", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
         ProjectSettingsData& s = m_Project.settings;
         bool changed = false;
-        ImGui::TextDisabled("プロジェクトごとの設定（ProjectSettings/Aqua.json）");
-        ImGui::Spacing();
-        ImGui::SetNextItemWidth(260.0f * m_Scale);
-        changed |= ImGui::InputText("書き出し先（Assets の中のフォルダ）", &s.outputFolder);
-        changed |= ImGui::Checkbox("スクリプト用のヘッダーを書き出す（Source/AquaGenerated）", &s.generateHeaders);
-        changed |= ImGui::Checkbox("ドラッグ中もライブで書き出す（RutoEditor・ゲームにすぐ反映）", &s.liveExport);
+        if (m_Project.IsLibrary()) {
+            ImGui::TextDisabled("ライブラリの設定（%s）", kLibraryFile);
+            ImGui::Spacing();
+            changed |= ImGui::Checkbox("ドラッグ中もライブで書き出す（送り先のゲームにもすぐ反映）", &s.liveExport);
+            ImGui::TextDisabled("RutoEngine への送り先は「ライブラリ > RutoEngine に送る」で決めます");
+        } else {
+            ImGui::TextDisabled("プロジェクトごとの設定（ProjectSettings/Aqua.json）");
+            ImGui::Spacing();
+            ImGui::SetNextItemWidth(260.0f * m_Scale);
+            changed |= ImGui::InputText("書き出し先（Assets の中のフォルダ）", &s.outputFolder);
+            changed |= ImGui::Checkbox("スクリプト用のヘッダーを書き出す（Source/AquaGenerated）", &s.generateHeaders);
+            changed |= ImGui::Checkbox("ドラッグ中もライブで書き出す（RutoEditor・ゲームにすぐ反映）", &s.liveExport);
+        }
         if (changed) m_Project.SaveSettings();
         ImGui::Spacing();
         if (ImGui::Button("閉じる", {120.0f * m_Scale, 0.0f}) || ImGui::IsKeyPressed(ImGuiKey_Escape)) ImGui::CloseCurrentPopup();

@@ -8,6 +8,8 @@
 
 #include "AquaApp.h"
 
+#include <Ruto/Aqua/AquaFormat.h>
+
 #include <Ruto/EditorUI/EditorUI.h>
 #include <Ruto/EditorUI/Widgets.h>
 
@@ -40,6 +42,18 @@ bool IsImageExt(const std::string& e) { return e == ".png" || e == ".jpg" || e =
 bool IsFontExt(const std::string& e) { return e == ".ttf" || e == ".otf" || e == ".ttc" || e == ".bdf" || e == ".fnt" || e == ".rfont"; }
 bool IsAudioExt(const std::string& e) { return e == ".wav" || e == ".ogg"; }
 bool IsUIExt(const std::string& e) { return e == ".aqua" || e == ".rui"; }
+
+// layout（.aqua）が、中の部品をたどって target を使っているか（部品の入れ子が輪にならないように）
+bool LayoutUses(const std::string& layout, const std::string& target, int depth = 0) {
+    if (layout == target) return true;
+    if (depth > 16) return true; // 深すぎるのは輪とみなす
+    const auto bin = Ruto::Aqua::ReadFile(Assets::GetPath(layout));
+    if (!bin) return false;
+    for (const std::string& d : bin->dependencies) {
+        if (IsUIExt(LowerExtOf(d)) && LayoutUses(d, target, depth + 1)) return true;
+    }
+    return false;
+}
 bool IsShaderExt(const std::string& e) { return e == ".uishader"; }
 
 // テキストの入力欄で選んでいた範囲（タグを入れるボタンが使う。バイトの位置）
@@ -526,6 +540,14 @@ bool App::DropAsset(Document& doc, const std::string& assetPath, Widget* target,
             Notify("自分自身は部品として入れられません", true);
             return false;
         }
+        if (m_Project.KindOf(assetPath, LayoutKind::Part) == LayoutKind::Body) {
+            Notify("Body は部品として入れられません（一覧の右クリックで「パーツにする」と入れられます）", true);
+            return false;
+        }
+        if (LayoutUses(assetPath, doc.output)) {
+            Notify("そのパーツはこのレイアウトを中で使っているので入れられません（入れ子が輪になります）", true);
+            return false;
+        }
         Widget* parent = target;
         while (parent && !(parent->CanAddChild() && !parent->generated)) parent = parent->GetParent();
         auto* uw = dynamic_cast<UIUserWidget*>(AddWidget(doc, "UIUserWidget", parent ? parent : asset.root.get(), -1, &localPos));
@@ -554,16 +576,25 @@ void App::DrawDocumentArea() {
     }
     if (m_Docs.empty()) {
         ImGui::Spacing();
-        ImGui::TextDisabled(ICON_FA_OBJECT_GROUP "  UI を開いてください");
-        ImGui::TextDisabled("左の「プロジェクト」から選ぶか、新しい UI を作ります。");
+        ImGui::TextDisabled(ICON_FA_OBJECT_GROUP "  レイアウトを開いてください");
+        ImGui::TextDisabled("左の「レイアウト」から選ぶか、新しいレイアウトを作ります。");
         ImGui::Spacing();
-        if (ImGui::Button(ICON_FA_FILE_CIRCLE_PLUS "  新しい UI")) m_OpenNewPopup = true;
+        if (ImGui::Button(ICON_FA_DESKTOP "  新しい Body")) {
+            m_NewKind = LayoutKind::Body;
+            m_OpenNewPopup = true;
+        }
+        ImGui::SameLine();
+        if (ImGui::Button(ICON_FA_PUZZLE_PIECE "  新しいパーツ")) {
+            m_NewKind = LayoutKind::Part;
+            m_OpenNewPopup = true;
+        }
         const auto& sources = m_Project.GetSources();
         if (!sources.empty()) {
             ImGui::Spacing();
-            ImGui::SeparatorText("最近の UI");
+            ImGui::SeparatorText("レイアウト");
             for (const auto& s : sources) {
-                if (ImGui::Selectable(std::format(ICON_FA_OBJECT_GROUP "  {}  →  Assets/{}", FileSystem::ToUtf8(s.path.stem()), s.output).c_str())) OpenDocument(s.path);
+                if (ImGui::Selectable(std::format("{}  {}  →  {}{}", LayoutKindIcon(s.kind), FileSystem::ToUtf8(s.path.stem()), m_Project.IsLibrary() ? "" : "Assets/", s.output).c_str()))
+                    OpenDocument(s.path);
             }
         }
         ImGui::End();
@@ -576,7 +607,7 @@ void App::DrawDocumentArea() {
             bool open = true;
             ImGuiTabItemFlags flags = doc.HasPending() ? ImGuiTabItemFlags_UnsavedDocument : 0;
             if (m_FocusTab == static_cast<int>(i)) flags |= ImGuiTabItemFlags_SetSelected;
-            const std::string label = std::format("{}  {}###doc{}", ICON_FA_OBJECT_GROUP, doc.GetTitle(), static_cast<const void*>(&doc));
+            const std::string label = std::format("{}  {}###doc{}", LayoutKindIcon(doc.kind), doc.GetTitle(), static_cast<const void*>(&doc));
             if (ImGui::BeginTabItem(label.c_str(), &open, flags)) {
                 if (m_FocusTab < 0 || m_FocusTab == static_cast<int>(i)) m_Active = static_cast<int>(i);
                 if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
@@ -692,17 +723,23 @@ void App::DrawToolbar(Document& doc) {
     }
     if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) ImGui::SetTooltip("いろいろな画面の大きさで、アンカーと拡大縮小（Canvas Scaler）の結果を確かめる");
     ImGui::SameLine();
-    if (IconButton(ICON_FA_GEAR, "UI の設定（基準解像度）")) ImGui::OpenPopup("ui-settings");
+    if (IconButton(ICON_FA_GEAR, "レイアウトの設定（種類・基準解像度）")) ImGui::OpenPopup("ui-settings");
     if (ImGui::BeginPopup("ui-settings")) {
-        ImGui::SeparatorText("UI の設定");
+        ImGui::SeparatorText("レイアウトの設定");
+        int kind = doc.IsPart() ? 1 : 0;
+        ImGui::TextUnformatted("種類");
+        ImGui::SameLine();
+        if (ImGui::RadioButton(ICON_FA_DESKTOP " Body（画面）", &kind, 0)) doc.SetKind(LayoutKind::Body);
+        ImGui::SameLine();
+        if (ImGui::RadioButton(ICON_FA_PUZZLE_PIECE " パーツ（部品）", &kind, 1)) doc.SetKind(LayoutKind::Part);
         int res[2] = {static_cast<int>(asset.referenceResolution.x), static_cast<int>(asset.referenceResolution.y)};
-        if (ImGui::DragInt2("基準解像度", res, 1.0f, 160, 8192)) {
-            asset.referenceResolution = {static_cast<float>(std::max(res[0], 160)), static_cast<float>(std::max(res[1], 120))};
+        if (ImGui::DragInt2(doc.IsPart() ? "パーツの大きさ" : "基準解像度", res, 1.0f, 16, 8192)) {
+            asset.referenceResolution = {static_cast<float>(std::max(res[0], 16)), static_cast<float>(std::max(res[1], 16))};
             doc.Changed();
         }
-        ImGui::TextDisabled("この大きさでデザインし、実際の画面に合わせて拡大縮小されます");
+        ImGui::TextDisabled("%s", doc.IsPart() ? "部品として入れたときの最初の大きさ（入れた先で変えられます）" : "この大きさでデザインし、実際の画面に合わせて拡大縮小されます");
         ImGui::Spacing();
-        ImGui::TextDisabled("書き出し先（Assets からの相対パス）");
+        ImGui::TextDisabled("%s", m_Project.IsLibrary() ? "書き出し先（ライブラリからの相対パス）" : "書き出し先（Assets からの相対パス）");
         std::string out = doc.output;
         ImGui::SetNextItemWidth(280.0f * m_Scale);
         if (ImGui::InputText("##output", &out, ImGuiInputTextFlags_EnterReturnsTrue) && !out.empty()) {
@@ -712,7 +749,7 @@ void App::DrawToolbar(Document& doc) {
             doc.Save();
             doc.Export();
             m_Project.Refresh(true);
-            Notify("書き出し先を変えました: Assets/" + out);
+            Notify("書き出し先を変えました: " + out);
         }
         ImGui::EndPopup();
     }
@@ -788,6 +825,43 @@ void App::DrawPalette(Document* doc) {
             ImGui::EndDragDropSource();
         }
         ImGui::PopID();
+    }
+
+    // パーツ（このワークスペースのパーツを部品として入れる）
+    ImGui::PushStyleColor(ImGuiCol_Text, Theme::kAccent);
+    ImGui::SeparatorText("パーツ");
+    ImGui::PopStyleColor();
+    int shown = 0;
+    for (const Project::SourceInfo& s : m_Project.GetSources()) {
+        if (s.kind != LayoutKind::Part) continue;
+        const std::string name = FileSystem::ToUtf8(s.path.stem());
+        if (!q.empty() && name.find(q) == std::string::npos) continue;
+        ++shown;
+        const bool self = doc && (s.output == doc->output || LayoutUses(s.output, doc->output));
+        ImGui::PushID(s.output.c_str());
+        ImGui::BeginDisabled(self);
+        const ImVec2 rowPos = ImGui::GetCursorScreenPos();
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetFontSize() * 1.7f);
+        if (ImGui::Selectable(name.c_str(), false) && doc) {
+            Widget* target = doc->ui.hasSelection ? Resolve(doc->asset->root.get(), doc->ui.selection) : doc->asset->root.get();
+            const Vec2 center = doc->asset->referenceResolution * 0.5f;
+            DropAsset(*doc, s.output, target ? target : doc->asset->root.get(), center);
+        }
+        ImGui::GetWindowDrawList()->AddText({rowPos.x + 2.0f, rowPos.y}, ToU32(Theme::kCoral), ICON_FA_PUZZLE_PIECE);
+        ImGui::EndDisabled();
+        if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal | ImGuiHoveredFlags_AllowWhenDisabled))
+            ImGui::SetTooltip("%s", self ? "このレイアウト自身（か、これを使っているパーツ）なので入れられません" : "パーツ（部品）\nクリックで追加・キャンバスや階層へドラッグ");
+        if (!self && ImGui::BeginDragDropSource()) {
+            ImGui::SetDragDropPayload(kAssetPayload, s.output.data(), s.output.size());
+            ImGui::Text(ICON_FA_PUZZLE_PIECE "  %s", name.c_str());
+            ImGui::EndDragDropSource();
+        }
+        ImGui::PopID();
+    }
+    if (shown == 0 && q.empty()) {
+        ImGui::PushTextWrapPos(0.0f);
+        ImGui::TextDisabled("パーツを作ると、ここから部品として入れられます");
+        ImGui::PopTextWrapPos();
     }
 }
 
@@ -1333,6 +1407,24 @@ void App::DrawCanvas(Document& doc) {
 
     // ---- 重ねて描く（選択・ホバー・アンカー・吸い付きの線） ----
     if (!ui.preview) {
+        // Null ペインは何も描かないので、デザイン中だけ四隅のかぎと基準点（ピボット）の十字で場所を示す
+        if (docRoot) {
+            const ImU32 mark = Theme::U32(Theme::kTextDim, 0.75f);
+            docRoot->ForEach([&](Widget& w) {
+                if (std::string_view(w.GetTypeName()) != "UINullPane" || !w.IsVisible()) return;
+                const ImRect r = toScreen(w.GetScreenRect());
+                const float len = std::min({10.0f, r.GetWidth() * 0.5f, r.GetHeight() * 0.5f});
+                for (int i = 0; i < 4; ++i) {
+                    const ImVec2 c{i & 1 ? r.Max.x : r.Min.x, i & 2 ? r.Max.y : r.Min.y};
+                    const float sx = i & 1 ? -1.0f : 1.0f, sy = i & 2 ? -1.0f : 1.0f;
+                    dl->AddLine(c, {c.x + len * sx, c.y}, mark, 1.0f);
+                    dl->AddLine(c, {c.x, c.y + len * sy}, mark, 1.0f);
+                }
+                const ImVec2 pv{r.Min.x + r.GetWidth() * w.slot.pivot.x, r.Min.y + r.GetHeight() * w.slot.pivot.y};
+                dl->AddLine({pv.x - 6.0f, pv.y}, {pv.x + 6.0f, pv.y}, mark, 1.0f);
+                dl->AddLine({pv.x, pv.y - 6.0f}, {pv.x, pv.y + 6.0f}, mark, 1.0f);
+            });
+        }
         if (hoverDoc && hoverDoc != selDoc) {
             const ImRect r = toScreen(hoverDoc->GetScreenRect());
             dl->AddRect(r.Min, r.Max, Theme::U32(Theme::kAccent, 0.55f), 0.0f, 0, 1.0f);

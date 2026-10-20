@@ -1,0 +1,47 @@
+From ff4bed735d87304f0ea6810d51c328733fd9f3f1 Mon Sep 17 00:00:00 2001
+From: Shiruba <koko0909e@gmail.com>
+Date: Wed, 21 Oct 2026 04:37:52 +0900
+Subject: [PATCH] Add UINullPane, a widget that draws nothing
+
+A null pane has no drawing and no hit area. It groups children so they
+can be moved, scaled and animated together around one origin; children
+are placed like in a Canvas Panel (anchors and pivot).
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ Modules/Engine/include/Ruto/Engine/Widgets.h | 6 ++++++
+ Modules/Engine/src/Widgets.cpp               | 1 +
+ 2 files changed, 7 insertions(+)
+
+diff --git a/Modules/Engine/include/Ruto/Engine/Widgets.h b/Modules/Engine/include/Ruto/Engine/Widgets.h
+index 239c2c0..4ef4feb 100644
+--- a/Modules/Engine/include/Ruto/Engine/Widgets.h
++++ b/Modules/Engine/include/Ruto/Engine/Widgets.h
+@@ -235,6 +235,12 @@ class UICanvasPanel : public Widget {
+     void ArrangeChildren(WidgetContext& ctx) override;
+ };
+ 
++// 何も描かない入れ物（ヌルペイン）。描画もクリックの当たりも無く、子をまとめて動かす・拡大縮小する・
++// アニメーションさせるための基準点にする。子の置き方は Canvas Panel と同じ（アンカーとピボット）
++class UINullPane : public UICanvasPanel {
++    RUTO_WIDGET(UINullPane)
++};
++
+ // 横に並べる（Unreal の Horizontal Box / Unity の Horizontal Layout Group）
+ class UIHorizontalBox : public Widget {
+     RUTO_WIDGET(UIHorizontalBox)
+diff --git a/Modules/Engine/src/Widgets.cpp b/Modules/Engine/src/Widgets.cpp
+index 33d6614..81b8569 100644
+--- a/Modules/Engine/src/Widgets.cpp
++++ b/Modules/Engine/src/Widgets.cpp
+@@ -82,6 +82,7 @@ void EnsureBuiltins() {
+     if (s_Done) return;
+     s_Done = true;
+     Reg<UICanvasPanel>("UICanvasPanel", "キャンバスパネル", "パネル", "子をアンカーとピボットで自由に置く（Unity の Canvas）");
++    Reg<UINullPane>("UINullPane", "Null ペイン", "パネル", "何も描かない入れ物。子をまとめて動かす・拡大する・アニメーションさせる基準点（子の置き方はキャンバスパネルと同じ）");
+     Reg<UIVerticalBox>("UIVerticalBox", "縦に並べる", "パネル", "子を上から順に並べる（Vertical Box）");
+     Reg<UIHorizontalBox>("UIHorizontalBox", "横に並べる", "パネル", "子を左から順に並べる（Horizontal Box）");
+     Reg<UIOverlay>("UIOverlay", "重ねる", "パネル", "子を重ねて置く（後の子ほど手前）");
+-- 
+2.53.0.windows.1
+

@@ -15,6 +15,7 @@ using namespace Ruto::EditorUI;
 
 const char* WidgetIcon(std::string_view type) {
     if (type == "UICanvasPanel") return ICON_FA_VECTOR_SQUARE;
+    if (type == "UINullPane") return ICON_FA_CROSSHAIRS;
     if (type == "UIVerticalBox") return ICON_FA_BARS;
     if (type == "UIHorizontalBox") return ICON_FA_GRIP_LINES_VERTICAL;
     if (type == "UIOverlay") return ICON_FA_LAYER_GROUP;
@@ -39,6 +40,7 @@ const char* WidgetIcon(std::string_view type) {
 ImVec4 WidgetIconColor(std::string_view type) {
     const WidgetTypeInfo* info = WidgetRegistry::Find(type);
     if (!info) return Theme::kTextDim;
+    if (type == "UINullPane") return Theme::kTextDim; // 何も描かない
     if (info->category == "パネル") return {0.55f, 0.75f, 1.0f, 1.0f};
     if (info->category == "入力") return {0.55f, 0.9f, 0.6f, 1.0f};
     if (info->category == "部品") return {0.95f, 0.65f, 0.95f, 1.0f};
@@ -250,6 +252,7 @@ Vec2 DefaultCanvasSize(std::string_view type) {
     if (type == "UIGridPanel" || type == "UIWrapBox") return {640, 420};
     if (type == "UIScrollBox") return {520, 420};
     if (type == "UICanvasPanel" || type == "UIOverlay") return {640, 420};
+    if (type == "UINullPane") return {200, 200};
     return {200, 200};
 }
 

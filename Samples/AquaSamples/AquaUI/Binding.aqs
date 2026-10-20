@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <AquaSource version="2" output="UI/Binding.aqua" generator="Aqua 1.0.0">
+  <string key="kind">body</string>
   <object key="document">
     <string key="format">RutoUI</string>
     <number key="version">1</number>

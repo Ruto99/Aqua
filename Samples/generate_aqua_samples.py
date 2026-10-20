@@ -349,13 +349,15 @@ def apply_styles(w, styles):
         apply_styles(c, styles)
 
 
-def document(root_children, animations=None, styles=None):
+def document(root_children, animations=None, styles=None, kind="body", resolution=(1920, 1080)):
+    """kind: "body"（画面のいちばん親）か "part"（部品として入れるパーツ）。"""
     root = widget("UICanvasPanel", "Root", children=root_children)
     apply_styles(root, styles or [])
     return {
         "format": "RutoUI",
         "version": 1,
-        "referenceResolution": [1920, 1080],
+        "kind": kind,
+        "referenceResolution": list(resolution),
         "root": root,
         "animations": animations or [],
         "styles": styles or [],
@@ -1063,7 +1065,7 @@ def make_binding():
 
 
 def make_status_card():
-    """部品（ユーザーウィジェット）として使う小さな UI。"""
+    """パーツ（ほかのレイアウトに部品として入れる小さなレイアウト）。"""
     body = vbox(
         "StatusBody",
         [
@@ -1081,7 +1083,7 @@ def make_status_card():
         spacing=12,
     )
     card_ = border("StatusCard", body, PANEL, 18, (22, 18, 22, 20), slot=at(0, 0, 360, 190))
-    return document([card_])
+    return document([card_], kind="part", resolution=(360, 190))
 
 
 def make_styles():

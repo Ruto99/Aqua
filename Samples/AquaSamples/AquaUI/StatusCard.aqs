@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <AquaSource version="2" output="UI/StatusCard.aqua" generator="Aqua 1.0.0">
+  <string key="kind">part</string>
   <object key="document">
     <string key="format">RutoUI</string>
     <number key="version">1</number>
     <array key="referenceResolution">
-      <number>1920</number>
-      <number>1080</number>
+      <number>360</number>
+      <number>190</number>
     </array>
     <object key="root">
       <string key="type">UICanvasPanel</string>
