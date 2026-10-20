@@ -5,6 +5,16 @@ RutoEngine とは別のアプリで、作った UI は `.aqua`（UI のバイナ
 
 ![Aqua](docs/aqua.png)
 
+## 起動
+
+**`Aqua.bat` をダブルクリック**すると Aqua が単独で開く（ようこそ画面から最近のプロジェクト・RutoLauncher のプロジェクトを選ぶか、フォルダを開く）。
+
+- まだビルドしていないとき、または Aqua のソース・RutoEngine の SDK が `bin\Aqua.exe` より新しいときは、先に自動でビルドしてから開く。
+- ビルドに失敗しても前の `bin\Aqua.exe` があれば、それを開く。
+- 引数はそのまま Aqua に渡る（例: `Aqua.bat --project D:\Games\MyGame`、`Aqua.bat D:\Games\MyGame\Assets\UI\Title.aqua`）。
+
+ショートカットを作るなら `Aqua.bat` か、ビルド後の `bin\Aqua.exe` を指せばよい。
+
 ## ビルド
 
 RutoEngine の SDK（ビルド済みのエンジン）をリンクして作る。先に RutoEngine の `Setup.bat` で SDK を作っておく。
@@ -22,6 +32,8 @@ RutoEngine の場所は、環境変数 `RUTO_ENGINE_DIR` → このフォルダ�
 MyProgram/
 ├─ RutoEngine/   エンジン（SDK/Debug・SDK/Release を Aqua がリンクする）
 └─ Aqua/         このフォルダ
+   ├─ Aqua.bat         Aqua を開く（必要ならビルドしてから）
+   ├─ build.bat        ビルド
    ├─ Source/          Aqua のソース
    ├─ Resources/       アイコン（make_icon.py で作り直せる）
    ├─ build/           ビルドフォルダ（debug / release）

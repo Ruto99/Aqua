@@ -42,6 +42,8 @@ if /i "%ACTION%"=="install" (
     )
     cmake --install "build\%CONFIG%"
     if errorlevel 1 goto :failed
+    rem Remove the old exe now unless it is still running
+    del /q "bin\Aqua.exe.old" >nul 2>nul
     echo [Aqua] Installed: %~dp0bin\Aqua.exe
 )
 if /i "%ACTION%"=="run" start "" "build\%CONFIG%\bin\Aqua.exe"
