@@ -23,10 +23,17 @@
           <number>1</number>
           <number>1</number>
         </array>
+        <number key="rotation">0</number>
+        <array key="transformOrigin">
+          <number>0.5</number>
+          <number>0.5</number>
+        </array>
         <bool key="clipChildren">false</bool>
         <string key="tooltip"/>
         <string key="visibleBind"/>
         <string key="shader"/>
+        <bool key="vertexColorsEnabled">false</bool>
+        <string key="userData"/>
       </object>
       <object key="properties"/>
       <object key="slot">
@@ -79,10 +86,17 @@
               <number>1</number>
               <number>1</number>
             </array>
+            <number key="rotation">0</number>
+            <array key="transformOrigin">
+              <number>0.5</number>
+              <number>0.5</number>
+            </array>
             <bool key="clipChildren">false</bool>
             <string key="tooltip"/>
             <string key="visibleBind"/>
             <string key="shader"/>
+            <bool key="vertexColorsEnabled">false</bool>
+            <string key="userData"/>
           </object>
           <object key="properties">
             <string key="texture"/>
@@ -156,10 +170,17 @@
               <number>1</number>
               <number>1</number>
             </array>
+            <number key="rotation">0</number>
+            <array key="transformOrigin">
+              <number>0.5</number>
+              <number>0.5</number>
+            </array>
             <bool key="clipChildren">false</bool>
             <string key="tooltip"/>
             <string key="visibleBind"/>
             <string key="shader"/>
+            <bool key="vertexColorsEnabled">false</bool>
+            <string key="userData"/>
           </object>
           <object key="properties">
             <number key="spacing">28</number>
@@ -220,10 +241,17 @@
                   <number>1</number>
                   <number>1</number>
                 </array>
+                <number key="rotation">0</number>
+                <array key="transformOrigin">
+                  <number>0.5</number>
+                  <number>0.5</number>
+                </array>
                 <bool key="clipChildren">false</bool>
                 <string key="tooltip"/>
                 <string key="visibleBind"/>
                 <string key="shader"/>
+                <bool key="vertexColorsEnabled">false</bool>
+                <string key="userData"/>
               </object>
               <object key="properties">
                 <string key="text">← メニュー</string>
@@ -329,10 +357,17 @@
                   <number>1</number>
                   <number>1</number>
                 </array>
+                <number key="rotation">0</number>
+                <array key="transformOrigin">
+                  <number>0.5</number>
+                  <number>0.5</number>
+                </array>
                 <bool key="clipChildren">false</bool>
                 <string key="tooltip"/>
                 <string key="visibleBind"/>
                 <string key="shader"/>
+                <bool key="vertexColorsEnabled">false</bool>
+                <string key="userData"/>
               </object>
               <object key="properties">
                 <number key="spacing">2</number>
@@ -393,6 +428,11 @@
                       <number>1</number>
                       <number>1</number>
                     </array>
+                    <number key="rotation">0</number>
+                    <array key="transformOrigin">
+                      <number>0.5</number>
+                      <number>0.5</number>
+                    </array>
                     <bool key="clipChildren">false</bool>
                     <string key="tooltip"/>
                     <string key="visibleBind"/>
@@ -434,6 +474,8 @@
                       <number>0</number>
                       <number>0</number>
                     </array>
+                    <bool key="vertexColorsEnabled">false</bool>
+                    <string key="userData"/>
                   </object>
                   <object key="properties">
                     <string key="text">UI シェーダー</string>
@@ -524,10 +566,17 @@
                       <number>1</number>
                       <number>1</number>
                     </array>
+                    <number key="rotation">0</number>
+                    <array key="transformOrigin">
+                      <number>0.5</number>
+                      <number>0.5</number>
+                    </array>
                     <bool key="clipChildren">false</bool>
                     <string key="tooltip"/>
                     <string key="visibleBind"/>
                     <string key="shader"/>
+                    <bool key="vertexColorsEnabled">false</bool>
+                    <string key="userData"/>
                   </object>
                   <object key="properties">
                     <string key="text">ウィジェットの common に shader（.uishader）を指定。子にも掛かる</string>
@@ -622,10 +671,17 @@
               <number>1</number>
               <number>1</number>
             </array>
+            <number key="rotation">0</number>
+            <array key="transformOrigin">
+              <number>0.5</number>
+              <number>0.5</number>
+            </array>
             <bool key="clipChildren">false</bool>
             <string key="tooltip"/>
             <string key="visibleBind"/>
             <string key="shader"/>
+            <bool key="vertexColorsEnabled">false</bool>
+            <string key="userData"/>
           </object>
           <object key="properties">
             <number key="columns">4</number>
@@ -691,10 +747,17 @@
                   <number>1</number>
                   <number>1</number>
                 </array>
+                <number key="rotation">0</number>
+                <array key="transformOrigin">
+                  <number>0.5</number>
+                  <number>0.5</number>
+                </array>
                 <bool key="clipChildren">false</bool>
                 <string key="tooltip"/>
                 <string key="visibleBind"/>
                 <string key="shader"/>
+                <bool key="vertexColorsEnabled">false</bool>
+                <string key="userData"/>
               </object>
               <object key="properties">
                 <array key="background">
@@ -781,10 +844,17 @@
                       <number>1</number>
                       <number>1</number>
                     </array>
+                    <number key="rotation">0</number>
+                    <array key="transformOrigin">
+                      <number>0.5</number>
+                      <number>0.5</number>
+                    </array>
                     <bool key="clipChildren">false</bool>
                     <string key="tooltip"/>
                     <string key="visibleBind"/>
                     <string key="shader"/>
+                    <bool key="vertexColorsEnabled">false</bool>
+                    <string key="userData"/>
                   </object>
                   <object key="properties">
                     <number key="spacing">8</number>
@@ -845,10 +915,17 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <number key="widthOverride">270</number>
@@ -912,6 +989,11 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
@@ -953,6 +1035,8 @@
                               <number>0</number>
                               <number>0</number>
                             </array>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties"/>
                           <object key="slot">
@@ -1005,10 +1089,17 @@
                                   <number>1</number>
                                   <number>1</number>
                                 </array>
+                                <number key="rotation">0</number>
+                                <array key="transformOrigin">
+                                  <number>0.5</number>
+                                  <number>0.5</number>
+                                </array>
                                 <bool key="clipChildren">false</bool>
                                 <string key="tooltip"/>
                                 <string key="visibleBind"/>
                                 <string key="shader"/>
+                                <bool key="vertexColorsEnabled">false</bool>
+                                <string key="userData"/>
                               </object>
                               <object key="properties">
                                 <array key="background">
@@ -1096,10 +1187,17 @@
                                   <number>1</number>
                                   <number>1</number>
                                 </array>
+                                <number key="rotation">0</number>
+                                <array key="transformOrigin">
+                                  <number>0.5</number>
+                                  <number>0.5</number>
+                                </array>
                                 <bool key="clipChildren">false</bool>
                                 <string key="tooltip"/>
                                 <string key="visibleBind"/>
                                 <string key="shader"/>
+                                <bool key="vertexColorsEnabled">false</bool>
+                                <string key="userData"/>
                               </object>
                               <object key="properties">
                                 <number key="spacing">8</number>
@@ -1160,10 +1258,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -1237,10 +1342,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -1314,10 +1426,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -1391,10 +1510,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -1470,10 +1596,17 @@
                                   <number>1</number>
                                   <number>1</number>
                                 </array>
+                                <number key="rotation">0</number>
+                                <array key="transformOrigin">
+                                  <number>0.5</number>
+                                  <number>0.5</number>
+                                </array>
                                 <bool key="clipChildren">false</bool>
                                 <string key="tooltip"/>
                                 <string key="visibleBind"/>
                                 <string key="shader"/>
+                                <bool key="vertexColorsEnabled">false</bool>
+                                <string key="userData"/>
                               </object>
                               <object key="properties">
                                 <string key="text">Aqua</string>
@@ -1568,10 +1701,17 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <string key="text">グレースケール</string>
@@ -1662,10 +1802,17 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <string key="text">Grayscale.uishader</string>
@@ -1760,10 +1907,17 @@
                   <number>1</number>
                   <number>1</number>
                 </array>
+                <number key="rotation">0</number>
+                <array key="transformOrigin">
+                  <number>0.5</number>
+                  <number>0.5</number>
+                </array>
                 <bool key="clipChildren">false</bool>
                 <string key="tooltip"/>
                 <string key="visibleBind"/>
                 <string key="shader"/>
+                <bool key="vertexColorsEnabled">false</bool>
+                <string key="userData"/>
               </object>
               <object key="properties">
                 <array key="background">
@@ -1850,10 +2004,17 @@
                       <number>1</number>
                       <number>1</number>
                     </array>
+                    <number key="rotation">0</number>
+                    <array key="transformOrigin">
+                      <number>0.5</number>
+                      <number>0.5</number>
+                    </array>
                     <bool key="clipChildren">false</bool>
                     <string key="tooltip"/>
                     <string key="visibleBind"/>
                     <string key="shader"/>
+                    <bool key="vertexColorsEnabled">false</bool>
+                    <string key="userData"/>
                   </object>
                   <object key="properties">
                     <number key="spacing">8</number>
@@ -1914,10 +2075,17 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <number key="widthOverride">270</number>
@@ -1981,6 +2149,11 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
@@ -2022,6 +2195,8 @@
                               <number>0</number>
                               <number>0</number>
                             </array>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties"/>
                           <object key="slot">
@@ -2074,10 +2249,17 @@
                                   <number>1</number>
                                   <number>1</number>
                                 </array>
+                                <number key="rotation">0</number>
+                                <array key="transformOrigin">
+                                  <number>0.5</number>
+                                  <number>0.5</number>
+                                </array>
                                 <bool key="clipChildren">false</bool>
                                 <string key="tooltip"/>
                                 <string key="visibleBind"/>
                                 <string key="shader"/>
+                                <bool key="vertexColorsEnabled">false</bool>
+                                <string key="userData"/>
                               </object>
                               <object key="properties">
                                 <array key="background">
@@ -2165,10 +2347,17 @@
                                   <number>1</number>
                                   <number>1</number>
                                 </array>
+                                <number key="rotation">0</number>
+                                <array key="transformOrigin">
+                                  <number>0.5</number>
+                                  <number>0.5</number>
+                                </array>
                                 <bool key="clipChildren">false</bool>
                                 <string key="tooltip"/>
                                 <string key="visibleBind"/>
                                 <string key="shader"/>
+                                <bool key="vertexColorsEnabled">false</bool>
+                                <string key="userData"/>
                               </object>
                               <object key="properties">
                                 <number key="spacing">8</number>
@@ -2229,10 +2418,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -2306,10 +2502,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -2383,10 +2586,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -2460,10 +2670,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -2539,10 +2756,17 @@
                                   <number>1</number>
                                   <number>1</number>
                                 </array>
+                                <number key="rotation">0</number>
+                                <array key="transformOrigin">
+                                  <number>0.5</number>
+                                  <number>0.5</number>
+                                </array>
                                 <bool key="clipChildren">false</bool>
                                 <string key="tooltip"/>
                                 <string key="visibleBind"/>
                                 <string key="shader"/>
+                                <bool key="vertexColorsEnabled">false</bool>
+                                <string key="userData"/>
                               </object>
                               <object key="properties">
                                 <string key="text">Aqua</string>
@@ -2637,10 +2861,17 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <string key="text">セピア</string>
@@ -2731,10 +2962,17 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <string key="text">Sepia.uishader</string>
@@ -2829,10 +3067,17 @@
                   <number>1</number>
                   <number>1</number>
                 </array>
+                <number key="rotation">0</number>
+                <array key="transformOrigin">
+                  <number>0.5</number>
+                  <number>0.5</number>
+                </array>
                 <bool key="clipChildren">false</bool>
                 <string key="tooltip"/>
                 <string key="visibleBind"/>
                 <string key="shader"/>
+                <bool key="vertexColorsEnabled">false</bool>
+                <string key="userData"/>
               </object>
               <object key="properties">
                 <array key="background">
@@ -2919,10 +3164,17 @@
                       <number>1</number>
                       <number>1</number>
                     </array>
+                    <number key="rotation">0</number>
+                    <array key="transformOrigin">
+                      <number>0.5</number>
+                      <number>0.5</number>
+                    </array>
                     <bool key="clipChildren">false</bool>
                     <string key="tooltip"/>
                     <string key="visibleBind"/>
                     <string key="shader"/>
+                    <bool key="vertexColorsEnabled">false</bool>
+                    <string key="userData"/>
                   </object>
                   <object key="properties">
                     <number key="spacing">8</number>
@@ -2983,10 +3235,17 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <number key="widthOverride">270</number>
@@ -3050,6 +3309,11 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
@@ -3091,6 +3355,8 @@
                               <number>0</number>
                               <number>0</number>
                             </array>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties"/>
                           <object key="slot">
@@ -3143,10 +3409,17 @@
                                   <number>1</number>
                                   <number>1</number>
                                 </array>
+                                <number key="rotation">0</number>
+                                <array key="transformOrigin">
+                                  <number>0.5</number>
+                                  <number>0.5</number>
+                                </array>
                                 <bool key="clipChildren">false</bool>
                                 <string key="tooltip"/>
                                 <string key="visibleBind"/>
                                 <string key="shader"/>
+                                <bool key="vertexColorsEnabled">false</bool>
+                                <string key="userData"/>
                               </object>
                               <object key="properties">
                                 <array key="background">
@@ -3234,10 +3507,17 @@
                                   <number>1</number>
                                   <number>1</number>
                                 </array>
+                                <number key="rotation">0</number>
+                                <array key="transformOrigin">
+                                  <number>0.5</number>
+                                  <number>0.5</number>
+                                </array>
                                 <bool key="clipChildren">false</bool>
                                 <string key="tooltip"/>
                                 <string key="visibleBind"/>
                                 <string key="shader"/>
+                                <bool key="vertexColorsEnabled">false</bool>
+                                <string key="userData"/>
                               </object>
                               <object key="properties">
                                 <number key="spacing">8</number>
@@ -3298,10 +3578,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -3375,10 +3662,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -3452,10 +3746,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -3529,10 +3830,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -3608,10 +3916,17 @@
                                   <number>1</number>
                                   <number>1</number>
                                 </array>
+                                <number key="rotation">0</number>
+                                <array key="transformOrigin">
+                                  <number>0.5</number>
+                                  <number>0.5</number>
+                                </array>
                                 <bool key="clipChildren">false</bool>
                                 <string key="tooltip"/>
                                 <string key="visibleBind"/>
                                 <string key="shader"/>
+                                <bool key="vertexColorsEnabled">false</bool>
+                                <string key="userData"/>
                               </object>
                               <object key="properties">
                                 <string key="text">Aqua</string>
@@ -3706,10 +4021,17 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <string key="text">白く光らせる</string>
@@ -3800,10 +4122,17 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <string key="text">Flash.uishader</string>
@@ -3898,10 +4227,17 @@
                   <number>1</number>
                   <number>1</number>
                 </array>
+                <number key="rotation">0</number>
+                <array key="transformOrigin">
+                  <number>0.5</number>
+                  <number>0.5</number>
+                </array>
                 <bool key="clipChildren">false</bool>
                 <string key="tooltip"/>
                 <string key="visibleBind"/>
                 <string key="shader"/>
+                <bool key="vertexColorsEnabled">false</bool>
+                <string key="userData"/>
               </object>
               <object key="properties">
                 <array key="background">
@@ -3988,10 +4324,17 @@
                       <number>1</number>
                       <number>1</number>
                     </array>
+                    <number key="rotation">0</number>
+                    <array key="transformOrigin">
+                      <number>0.5</number>
+                      <number>0.5</number>
+                    </array>
                     <bool key="clipChildren">false</bool>
                     <string key="tooltip"/>
                     <string key="visibleBind"/>
                     <string key="shader"/>
+                    <bool key="vertexColorsEnabled">false</bool>
+                    <string key="userData"/>
                   </object>
                   <object key="properties">
                     <number key="spacing">8</number>
@@ -4052,10 +4395,17 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <number key="widthOverride">270</number>
@@ -4119,6 +4469,11 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
@@ -4160,6 +4515,8 @@
                               <number>0</number>
                               <number>0</number>
                             </array>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties"/>
                           <object key="slot">
@@ -4212,10 +4569,17 @@
                                   <number>1</number>
                                   <number>1</number>
                                 </array>
+                                <number key="rotation">0</number>
+                                <array key="transformOrigin">
+                                  <number>0.5</number>
+                                  <number>0.5</number>
+                                </array>
                                 <bool key="clipChildren">false</bool>
                                 <string key="tooltip"/>
                                 <string key="visibleBind"/>
                                 <string key="shader"/>
+                                <bool key="vertexColorsEnabled">false</bool>
+                                <string key="userData"/>
                               </object>
                               <object key="properties">
                                 <array key="background">
@@ -4303,10 +4667,17 @@
                                   <number>1</number>
                                   <number>1</number>
                                 </array>
+                                <number key="rotation">0</number>
+                                <array key="transformOrigin">
+                                  <number>0.5</number>
+                                  <number>0.5</number>
+                                </array>
                                 <bool key="clipChildren">false</bool>
                                 <string key="tooltip"/>
                                 <string key="visibleBind"/>
                                 <string key="shader"/>
+                                <bool key="vertexColorsEnabled">false</bool>
+                                <string key="userData"/>
                               </object>
                               <object key="properties">
                                 <number key="spacing">8</number>
@@ -4367,10 +4738,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -4444,10 +4822,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -4521,10 +4906,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -4598,10 +4990,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -4677,10 +5076,17 @@
                                   <number>1</number>
                                   <number>1</number>
                                 </array>
+                                <number key="rotation">0</number>
+                                <array key="transformOrigin">
+                                  <number>0.5</number>
+                                  <number>0.5</number>
+                                </array>
                                 <bool key="clipChildren">false</bool>
                                 <string key="tooltip"/>
                                 <string key="visibleBind"/>
                                 <string key="shader"/>
+                                <bool key="vertexColorsEnabled">false</bool>
+                                <string key="userData"/>
                               </object>
                               <object key="properties">
                                 <string key="text">Aqua</string>
@@ -4775,10 +5181,17 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <string key="text">光が流れる</string>
@@ -4869,10 +5282,17 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <string key="text">Shine.uishader</string>
@@ -4967,10 +5387,17 @@
                   <number>1</number>
                   <number>1</number>
                 </array>
+                <number key="rotation">0</number>
+                <array key="transformOrigin">
+                  <number>0.5</number>
+                  <number>0.5</number>
+                </array>
                 <bool key="clipChildren">false</bool>
                 <string key="tooltip"/>
                 <string key="visibleBind"/>
                 <string key="shader"/>
+                <bool key="vertexColorsEnabled">false</bool>
+                <string key="userData"/>
               </object>
               <object key="properties">
                 <array key="background">
@@ -5057,10 +5484,17 @@
                       <number>1</number>
                       <number>1</number>
                     </array>
+                    <number key="rotation">0</number>
+                    <array key="transformOrigin">
+                      <number>0.5</number>
+                      <number>0.5</number>
+                    </array>
                     <bool key="clipChildren">false</bool>
                     <string key="tooltip"/>
                     <string key="visibleBind"/>
                     <string key="shader"/>
+                    <bool key="vertexColorsEnabled">false</bool>
+                    <string key="userData"/>
                   </object>
                   <object key="properties">
                     <number key="spacing">8</number>
@@ -5121,10 +5555,17 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <number key="widthOverride">270</number>
@@ -5188,6 +5629,11 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
@@ -5229,6 +5675,8 @@
                               <number>0</number>
                               <number>0</number>
                             </array>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties"/>
                           <object key="slot">
@@ -5281,10 +5729,17 @@
                                   <number>1</number>
                                   <number>1</number>
                                 </array>
+                                <number key="rotation">0</number>
+                                <array key="transformOrigin">
+                                  <number>0.5</number>
+                                  <number>0.5</number>
+                                </array>
                                 <bool key="clipChildren">false</bool>
                                 <string key="tooltip"/>
                                 <string key="visibleBind"/>
                                 <string key="shader"/>
+                                <bool key="vertexColorsEnabled">false</bool>
+                                <string key="userData"/>
                               </object>
                               <object key="properties">
                                 <array key="background">
@@ -5372,10 +5827,17 @@
                                   <number>1</number>
                                   <number>1</number>
                                 </array>
+                                <number key="rotation">0</number>
+                                <array key="transformOrigin">
+                                  <number>0.5</number>
+                                  <number>0.5</number>
+                                </array>
                                 <bool key="clipChildren">false</bool>
                                 <string key="tooltip"/>
                                 <string key="visibleBind"/>
                                 <string key="shader"/>
+                                <bool key="vertexColorsEnabled">false</bool>
+                                <string key="userData"/>
                               </object>
                               <object key="properties">
                                 <number key="spacing">8</number>
@@ -5436,10 +5898,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -5513,10 +5982,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -5590,10 +6066,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -5667,10 +6150,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -5746,10 +6236,17 @@
                                   <number>1</number>
                                   <number>1</number>
                                 </array>
+                                <number key="rotation">0</number>
+                                <array key="transformOrigin">
+                                  <number>0.5</number>
+                                  <number>0.5</number>
+                                </array>
                                 <bool key="clipChildren">false</bool>
                                 <string key="tooltip"/>
                                 <string key="visibleBind"/>
                                 <string key="shader"/>
+                                <bool key="vertexColorsEnabled">false</bool>
+                                <string key="userData"/>
                               </object>
                               <object key="properties">
                                 <string key="text">Aqua</string>
@@ -5844,10 +6341,17 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <string key="text">ディゾルブ</string>
@@ -5938,10 +6442,17 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <string key="text">Dissolve.uishader</string>
@@ -6036,10 +6547,17 @@
                   <number>1</number>
                   <number>1</number>
                 </array>
+                <number key="rotation">0</number>
+                <array key="transformOrigin">
+                  <number>0.5</number>
+                  <number>0.5</number>
+                </array>
                 <bool key="clipChildren">false</bool>
                 <string key="tooltip"/>
                 <string key="visibleBind"/>
                 <string key="shader"/>
+                <bool key="vertexColorsEnabled">false</bool>
+                <string key="userData"/>
               </object>
               <object key="properties">
                 <array key="background">
@@ -6126,10 +6644,17 @@
                       <number>1</number>
                       <number>1</number>
                     </array>
+                    <number key="rotation">0</number>
+                    <array key="transformOrigin">
+                      <number>0.5</number>
+                      <number>0.5</number>
+                    </array>
                     <bool key="clipChildren">false</bool>
                     <string key="tooltip"/>
                     <string key="visibleBind"/>
                     <string key="shader"/>
+                    <bool key="vertexColorsEnabled">false</bool>
+                    <string key="userData"/>
                   </object>
                   <object key="properties">
                     <number key="spacing">8</number>
@@ -6190,10 +6715,17 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <number key="widthOverride">270</number>
@@ -6257,6 +6789,11 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
@@ -6298,6 +6835,8 @@
                               <number>0</number>
                               <number>0</number>
                             </array>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties"/>
                           <object key="slot">
@@ -6350,10 +6889,17 @@
                                   <number>1</number>
                                   <number>1</number>
                                 </array>
+                                <number key="rotation">0</number>
+                                <array key="transformOrigin">
+                                  <number>0.5</number>
+                                  <number>0.5</number>
+                                </array>
                                 <bool key="clipChildren">false</bool>
                                 <string key="tooltip"/>
                                 <string key="visibleBind"/>
                                 <string key="shader"/>
+                                <bool key="vertexColorsEnabled">false</bool>
+                                <string key="userData"/>
                               </object>
                               <object key="properties">
                                 <array key="background">
@@ -6441,10 +6987,17 @@
                                   <number>1</number>
                                   <number>1</number>
                                 </array>
+                                <number key="rotation">0</number>
+                                <array key="transformOrigin">
+                                  <number>0.5</number>
+                                  <number>0.5</number>
+                                </array>
                                 <bool key="clipChildren">false</bool>
                                 <string key="tooltip"/>
                                 <string key="visibleBind"/>
                                 <string key="shader"/>
+                                <bool key="vertexColorsEnabled">false</bool>
+                                <string key="userData"/>
                               </object>
                               <object key="properties">
                                 <number key="spacing">8</number>
@@ -6505,10 +7058,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -6582,10 +7142,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -6659,10 +7226,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -6736,10 +7310,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -6815,10 +7396,17 @@
                                   <number>1</number>
                                   <number>1</number>
                                 </array>
+                                <number key="rotation">0</number>
+                                <array key="transformOrigin">
+                                  <number>0.5</number>
+                                  <number>0.5</number>
+                                </array>
                                 <bool key="clipChildren">false</bool>
                                 <string key="tooltip"/>
                                 <string key="visibleBind"/>
                                 <string key="shader"/>
+                                <bool key="vertexColorsEnabled">false</bool>
+                                <string key="userData"/>
                               </object>
                               <object key="properties">
                                 <string key="text">Aqua</string>
@@ -6913,10 +7501,17 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <string key="text">グラデーション</string>
@@ -7007,10 +7602,17 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <string key="text">Gradient.uishader</string>
@@ -7105,10 +7707,17 @@
                   <number>1</number>
                   <number>1</number>
                 </array>
+                <number key="rotation">0</number>
+                <array key="transformOrigin">
+                  <number>0.5</number>
+                  <number>0.5</number>
+                </array>
                 <bool key="clipChildren">false</bool>
                 <string key="tooltip"/>
                 <string key="visibleBind"/>
                 <string key="shader"/>
+                <bool key="vertexColorsEnabled">false</bool>
+                <string key="userData"/>
               </object>
               <object key="properties">
                 <array key="background">
@@ -7195,10 +7804,17 @@
                       <number>1</number>
                       <number>1</number>
                     </array>
+                    <number key="rotation">0</number>
+                    <array key="transformOrigin">
+                      <number>0.5</number>
+                      <number>0.5</number>
+                    </array>
                     <bool key="clipChildren">false</bool>
                     <string key="tooltip"/>
                     <string key="visibleBind"/>
                     <string key="shader"/>
+                    <bool key="vertexColorsEnabled">false</bool>
+                    <string key="userData"/>
                   </object>
                   <object key="properties">
                     <number key="spacing">8</number>
@@ -7259,10 +7875,17 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <number key="widthOverride">270</number>
@@ -7326,6 +7949,11 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
@@ -7367,6 +7995,8 @@
                               <number>0</number>
                               <number>0</number>
                             </array>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties"/>
                           <object key="slot">
@@ -7419,10 +8049,17 @@
                                   <number>1</number>
                                   <number>1</number>
                                 </array>
+                                <number key="rotation">0</number>
+                                <array key="transformOrigin">
+                                  <number>0.5</number>
+                                  <number>0.5</number>
+                                </array>
                                 <bool key="clipChildren">false</bool>
                                 <string key="tooltip"/>
                                 <string key="visibleBind"/>
                                 <string key="shader"/>
+                                <bool key="vertexColorsEnabled">false</bool>
+                                <string key="userData"/>
                               </object>
                               <object key="properties">
                                 <array key="background">
@@ -7510,10 +8147,17 @@
                                   <number>1</number>
                                   <number>1</number>
                                 </array>
+                                <number key="rotation">0</number>
+                                <array key="transformOrigin">
+                                  <number>0.5</number>
+                                  <number>0.5</number>
+                                </array>
                                 <bool key="clipChildren">false</bool>
                                 <string key="tooltip"/>
                                 <string key="visibleBind"/>
                                 <string key="shader"/>
+                                <bool key="vertexColorsEnabled">false</bool>
+                                <string key="userData"/>
                               </object>
                               <object key="properties">
                                 <number key="spacing">8</number>
@@ -7574,10 +8218,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -7651,10 +8302,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -7728,10 +8386,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -7805,10 +8470,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -7884,10 +8556,17 @@
                                   <number>1</number>
                                   <number>1</number>
                                 </array>
+                                <number key="rotation">0</number>
+                                <array key="transformOrigin">
+                                  <number>0.5</number>
+                                  <number>0.5</number>
+                                </array>
                                 <bool key="clipChildren">false</bool>
                                 <string key="tooltip"/>
                                 <string key="visibleBind"/>
                                 <string key="shader"/>
+                                <bool key="vertexColorsEnabled">false</bool>
+                                <string key="userData"/>
                               </object>
                               <object key="properties">
                                 <string key="text">Aqua</string>
@@ -7982,10 +8661,17 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <string key="text">虹色</string>
@@ -8076,10 +8762,17 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <string key="text">Rainbow.uishader</string>
@@ -8174,10 +8867,17 @@
                   <number>1</number>
                   <number>1</number>
                 </array>
+                <number key="rotation">0</number>
+                <array key="transformOrigin">
+                  <number>0.5</number>
+                  <number>0.5</number>
+                </array>
                 <bool key="clipChildren">false</bool>
                 <string key="tooltip"/>
                 <string key="visibleBind"/>
                 <string key="shader"/>
+                <bool key="vertexColorsEnabled">false</bool>
+                <string key="userData"/>
               </object>
               <object key="properties">
                 <array key="background">
@@ -8264,10 +8964,17 @@
                       <number>1</number>
                       <number>1</number>
                     </array>
+                    <number key="rotation">0</number>
+                    <array key="transformOrigin">
+                      <number>0.5</number>
+                      <number>0.5</number>
+                    </array>
                     <bool key="clipChildren">false</bool>
                     <string key="tooltip"/>
                     <string key="visibleBind"/>
                     <string key="shader"/>
+                    <bool key="vertexColorsEnabled">false</bool>
+                    <string key="userData"/>
                   </object>
                   <object key="properties">
                     <number key="spacing">8</number>
@@ -8328,10 +9035,17 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <number key="widthOverride">270</number>
@@ -8395,6 +9109,11 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
@@ -8436,6 +9155,8 @@
                               <number>0</number>
                               <number>0</number>
                             </array>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties"/>
                           <object key="slot">
@@ -8488,10 +9209,17 @@
                                   <number>1</number>
                                   <number>1</number>
                                 </array>
+                                <number key="rotation">0</number>
+                                <array key="transformOrigin">
+                                  <number>0.5</number>
+                                  <number>0.5</number>
+                                </array>
                                 <bool key="clipChildren">false</bool>
                                 <string key="tooltip"/>
                                 <string key="visibleBind"/>
                                 <string key="shader"/>
+                                <bool key="vertexColorsEnabled">false</bool>
+                                <string key="userData"/>
                               </object>
                               <object key="properties">
                                 <array key="background">
@@ -8579,10 +9307,17 @@
                                   <number>1</number>
                                   <number>1</number>
                                 </array>
+                                <number key="rotation">0</number>
+                                <array key="transformOrigin">
+                                  <number>0.5</number>
+                                  <number>0.5</number>
+                                </array>
                                 <bool key="clipChildren">false</bool>
                                 <string key="tooltip"/>
                                 <string key="visibleBind"/>
                                 <string key="shader"/>
+                                <bool key="vertexColorsEnabled">false</bool>
+                                <string key="userData"/>
                               </object>
                               <object key="properties">
                                 <number key="spacing">8</number>
@@ -8643,10 +9378,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -8720,10 +9462,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -8797,10 +9546,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -8874,10 +9630,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -8953,10 +9716,17 @@
                                   <number>1</number>
                                   <number>1</number>
                                 </array>
+                                <number key="rotation">0</number>
+                                <array key="transformOrigin">
+                                  <number>0.5</number>
+                                  <number>0.5</number>
+                                </array>
                                 <bool key="clipChildren">false</bool>
                                 <string key="tooltip"/>
                                 <string key="visibleBind"/>
                                 <string key="shader"/>
+                                <bool key="vertexColorsEnabled">false</bool>
+                                <string key="userData"/>
                               </object>
                               <object key="properties">
                                 <string key="text">Aqua</string>
@@ -9051,10 +9821,17 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <string key="text">色相を回す</string>
@@ -9145,10 +9922,17 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <string key="text">HueShift.uishader</string>
@@ -9243,10 +10027,17 @@
                   <number>1</number>
                   <number>1</number>
                 </array>
+                <number key="rotation">0</number>
+                <array key="transformOrigin">
+                  <number>0.5</number>
+                  <number>0.5</number>
+                </array>
                 <bool key="clipChildren">false</bool>
                 <string key="tooltip"/>
                 <string key="visibleBind"/>
                 <string key="shader"/>
+                <bool key="vertexColorsEnabled">false</bool>
+                <string key="userData"/>
               </object>
               <object key="properties">
                 <array key="background">
@@ -9333,10 +10124,17 @@
                       <number>1</number>
                       <number>1</number>
                     </array>
+                    <number key="rotation">0</number>
+                    <array key="transformOrigin">
+                      <number>0.5</number>
+                      <number>0.5</number>
+                    </array>
                     <bool key="clipChildren">false</bool>
                     <string key="tooltip"/>
                     <string key="visibleBind"/>
                     <string key="shader"/>
+                    <bool key="vertexColorsEnabled">false</bool>
+                    <string key="userData"/>
                   </object>
                   <object key="properties">
                     <number key="spacing">8</number>
@@ -9397,10 +10195,17 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <number key="widthOverride">270</number>
@@ -9464,6 +10269,11 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
@@ -9505,6 +10315,8 @@
                               <number>0</number>
                               <number>0</number>
                             </array>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties"/>
                           <object key="slot">
@@ -9557,10 +10369,17 @@
                                   <number>1</number>
                                   <number>1</number>
                                 </array>
+                                <number key="rotation">0</number>
+                                <array key="transformOrigin">
+                                  <number>0.5</number>
+                                  <number>0.5</number>
+                                </array>
                                 <bool key="clipChildren">false</bool>
                                 <string key="tooltip"/>
                                 <string key="visibleBind"/>
                                 <string key="shader"/>
+                                <bool key="vertexColorsEnabled">false</bool>
+                                <string key="userData"/>
                               </object>
                               <object key="properties">
                                 <array key="background">
@@ -9648,10 +10467,17 @@
                                   <number>1</number>
                                   <number>1</number>
                                 </array>
+                                <number key="rotation">0</number>
+                                <array key="transformOrigin">
+                                  <number>0.5</number>
+                                  <number>0.5</number>
+                                </array>
                                 <bool key="clipChildren">false</bool>
                                 <string key="tooltip"/>
                                 <string key="visibleBind"/>
                                 <string key="shader"/>
+                                <bool key="vertexColorsEnabled">false</bool>
+                                <string key="userData"/>
                               </object>
                               <object key="properties">
                                 <number key="spacing">8</number>
@@ -9712,10 +10538,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -9789,10 +10622,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -9866,10 +10706,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -9943,10 +10790,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -10022,10 +10876,17 @@
                                   <number>1</number>
                                   <number>1</number>
                                 </array>
+                                <number key="rotation">0</number>
+                                <array key="transformOrigin">
+                                  <number>0.5</number>
+                                  <number>0.5</number>
+                                </array>
                                 <bool key="clipChildren">false</bool>
                                 <string key="tooltip"/>
                                 <string key="visibleBind"/>
                                 <string key="shader"/>
+                                <bool key="vertexColorsEnabled">false</bool>
+                                <string key="userData"/>
                               </object>
                               <object key="properties">
                                 <string key="text">Aqua</string>
@@ -10120,10 +10981,17 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <string key="text">点滅</string>
@@ -10214,10 +11082,17 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <string key="text">Blink.uishader</string>
@@ -10312,10 +11187,17 @@
                   <number>1</number>
                   <number>1</number>
                 </array>
+                <number key="rotation">0</number>
+                <array key="transformOrigin">
+                  <number>0.5</number>
+                  <number>0.5</number>
+                </array>
                 <bool key="clipChildren">false</bool>
                 <string key="tooltip"/>
                 <string key="visibleBind"/>
                 <string key="shader"/>
+                <bool key="vertexColorsEnabled">false</bool>
+                <string key="userData"/>
               </object>
               <object key="properties">
                 <array key="background">
@@ -10402,10 +11284,17 @@
                       <number>1</number>
                       <number>1</number>
                     </array>
+                    <number key="rotation">0</number>
+                    <array key="transformOrigin">
+                      <number>0.5</number>
+                      <number>0.5</number>
+                    </array>
                     <bool key="clipChildren">false</bool>
                     <string key="tooltip"/>
                     <string key="visibleBind"/>
                     <string key="shader"/>
+                    <bool key="vertexColorsEnabled">false</bool>
+                    <string key="userData"/>
                   </object>
                   <object key="properties">
                     <number key="spacing">8</number>
@@ -10466,10 +11355,17 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <number key="widthOverride">270</number>
@@ -10533,6 +11429,11 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
@@ -10574,6 +11475,8 @@
                               <number>0</number>
                               <number>0</number>
                             </array>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties"/>
                           <object key="slot">
@@ -10626,10 +11529,17 @@
                                   <number>1</number>
                                   <number>1</number>
                                 </array>
+                                <number key="rotation">0</number>
+                                <array key="transformOrigin">
+                                  <number>0.5</number>
+                                  <number>0.5</number>
+                                </array>
                                 <bool key="clipChildren">false</bool>
                                 <string key="tooltip"/>
                                 <string key="visibleBind"/>
                                 <string key="shader"/>
+                                <bool key="vertexColorsEnabled">false</bool>
+                                <string key="userData"/>
                               </object>
                               <object key="properties">
                                 <array key="background">
@@ -10717,10 +11627,17 @@
                                   <number>1</number>
                                   <number>1</number>
                                 </array>
+                                <number key="rotation">0</number>
+                                <array key="transformOrigin">
+                                  <number>0.5</number>
+                                  <number>0.5</number>
+                                </array>
                                 <bool key="clipChildren">false</bool>
                                 <string key="tooltip"/>
                                 <string key="visibleBind"/>
                                 <string key="shader"/>
+                                <bool key="vertexColorsEnabled">false</bool>
+                                <string key="userData"/>
                               </object>
                               <object key="properties">
                                 <number key="spacing">8</number>
@@ -10781,10 +11698,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -10858,10 +11782,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -10935,10 +11866,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -11012,10 +11950,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -11091,10 +12036,17 @@
                                   <number>1</number>
                                   <number>1</number>
                                 </array>
+                                <number key="rotation">0</number>
+                                <array key="transformOrigin">
+                                  <number>0.5</number>
+                                  <number>0.5</number>
+                                </array>
                                 <bool key="clipChildren">false</bool>
                                 <string key="tooltip"/>
                                 <string key="visibleBind"/>
                                 <string key="shader"/>
+                                <bool key="vertexColorsEnabled">false</bool>
+                                <string key="userData"/>
                               </object>
                               <object key="properties">
                                 <string key="text">Aqua</string>
@@ -11189,10 +12141,17 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <string key="text">走査線</string>
@@ -11283,10 +12242,17 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <string key="text">Scanlines.uishader</string>
@@ -11381,10 +12347,17 @@
                   <number>1</number>
                   <number>1</number>
                 </array>
+                <number key="rotation">0</number>
+                <array key="transformOrigin">
+                  <number>0.5</number>
+                  <number>0.5</number>
+                </array>
                 <bool key="clipChildren">false</bool>
                 <string key="tooltip"/>
                 <string key="visibleBind"/>
                 <string key="shader"/>
+                <bool key="vertexColorsEnabled">false</bool>
+                <string key="userData"/>
               </object>
               <object key="properties">
                 <array key="background">
@@ -11471,10 +12444,17 @@
                       <number>1</number>
                       <number>1</number>
                     </array>
+                    <number key="rotation">0</number>
+                    <array key="transformOrigin">
+                      <number>0.5</number>
+                      <number>0.5</number>
+                    </array>
                     <bool key="clipChildren">false</bool>
                     <string key="tooltip"/>
                     <string key="visibleBind"/>
                     <string key="shader"/>
+                    <bool key="vertexColorsEnabled">false</bool>
+                    <string key="userData"/>
                   </object>
                   <object key="properties">
                     <number key="spacing">8</number>
@@ -11535,10 +12515,17 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <number key="widthOverride">270</number>
@@ -11602,6 +12589,11 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
@@ -11643,6 +12635,8 @@
                               <number>0</number>
                               <number>0</number>
                             </array>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties"/>
                           <object key="slot">
@@ -11695,10 +12689,17 @@
                                   <number>1</number>
                                   <number>1</number>
                                 </array>
+                                <number key="rotation">0</number>
+                                <array key="transformOrigin">
+                                  <number>0.5</number>
+                                  <number>0.5</number>
+                                </array>
                                 <bool key="clipChildren">false</bool>
                                 <string key="tooltip"/>
                                 <string key="visibleBind"/>
                                 <string key="shader"/>
+                                <bool key="vertexColorsEnabled">false</bool>
+                                <string key="userData"/>
                               </object>
                               <object key="properties">
                                 <array key="background">
@@ -11786,10 +12787,17 @@
                                   <number>1</number>
                                   <number>1</number>
                                 </array>
+                                <number key="rotation">0</number>
+                                <array key="transformOrigin">
+                                  <number>0.5</number>
+                                  <number>0.5</number>
+                                </array>
                                 <bool key="clipChildren">false</bool>
                                 <string key="tooltip"/>
                                 <string key="visibleBind"/>
                                 <string key="shader"/>
+                                <bool key="vertexColorsEnabled">false</bool>
+                                <string key="userData"/>
                               </object>
                               <object key="properties">
                                 <number key="spacing">8</number>
@@ -11850,10 +12858,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -11927,10 +12942,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -12004,10 +13026,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -12081,10 +13110,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -12160,10 +13196,17 @@
                                   <number>1</number>
                                   <number>1</number>
                                 </array>
+                                <number key="rotation">0</number>
+                                <array key="transformOrigin">
+                                  <number>0.5</number>
+                                  <number>0.5</number>
+                                </array>
                                 <bool key="clipChildren">false</bool>
                                 <string key="tooltip"/>
                                 <string key="visibleBind"/>
                                 <string key="shader"/>
+                                <bool key="vertexColorsEnabled">false</bool>
+                                <string key="userData"/>
                               </object>
                               <object key="properties">
                                 <string key="text">Aqua</string>
@@ -12258,10 +13301,17 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <string key="text">ホログラム</string>
@@ -12352,10 +13402,17 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <string key="text">Hologram.uishader</string>
@@ -12450,10 +13507,17 @@
                   <number>1</number>
                   <number>1</number>
                 </array>
+                <number key="rotation">0</number>
+                <array key="transformOrigin">
+                  <number>0.5</number>
+                  <number>0.5</number>
+                </array>
                 <bool key="clipChildren">false</bool>
                 <string key="tooltip"/>
                 <string key="visibleBind"/>
                 <string key="shader"/>
+                <bool key="vertexColorsEnabled">false</bool>
+                <string key="userData"/>
               </object>
               <object key="properties">
                 <array key="background">
@@ -12540,10 +13604,17 @@
                       <number>1</number>
                       <number>1</number>
                     </array>
+                    <number key="rotation">0</number>
+                    <array key="transformOrigin">
+                      <number>0.5</number>
+                      <number>0.5</number>
+                    </array>
                     <bool key="clipChildren">false</bool>
                     <string key="tooltip"/>
                     <string key="visibleBind"/>
                     <string key="shader"/>
+                    <bool key="vertexColorsEnabled">false</bool>
+                    <string key="userData"/>
                   </object>
                   <object key="properties">
                     <number key="spacing">8</number>
@@ -12604,10 +13675,17 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <number key="widthOverride">270</number>
@@ -12671,6 +13749,11 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
@@ -12712,6 +13795,8 @@
                               <number>0</number>
                               <number>0</number>
                             </array>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties"/>
                           <object key="slot">
@@ -12764,10 +13849,17 @@
                                   <number>1</number>
                                   <number>1</number>
                                 </array>
+                                <number key="rotation">0</number>
+                                <array key="transformOrigin">
+                                  <number>0.5</number>
+                                  <number>0.5</number>
+                                </array>
                                 <bool key="clipChildren">false</bool>
                                 <string key="tooltip"/>
                                 <string key="visibleBind"/>
                                 <string key="shader"/>
+                                <bool key="vertexColorsEnabled">false</bool>
+                                <string key="userData"/>
                               </object>
                               <object key="properties">
                                 <array key="background">
@@ -12855,10 +13947,17 @@
                                   <number>1</number>
                                   <number>1</number>
                                 </array>
+                                <number key="rotation">0</number>
+                                <array key="transformOrigin">
+                                  <number>0.5</number>
+                                  <number>0.5</number>
+                                </array>
                                 <bool key="clipChildren">false</bool>
                                 <string key="tooltip"/>
                                 <string key="visibleBind"/>
                                 <string key="shader"/>
+                                <bool key="vertexColorsEnabled">false</bool>
+                                <string key="userData"/>
                               </object>
                               <object key="properties">
                                 <number key="spacing">8</number>
@@ -12919,10 +14018,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -12996,10 +14102,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -13073,10 +14186,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -13150,10 +14270,17 @@
                                       <number>1</number>
                                       <number>1</number>
                                     </array>
+                                    <number key="rotation">0</number>
+                                    <array key="transformOrigin">
+                                      <number>0.5</number>
+                                      <number>0.5</number>
+                                    </array>
                                     <bool key="clipChildren">false</bool>
                                     <string key="tooltip"/>
                                     <string key="visibleBind"/>
                                     <string key="shader"/>
+                                    <bool key="vertexColorsEnabled">false</bool>
+                                    <string key="userData"/>
                                   </object>
                                   <object key="properties">
                                     <string key="texture"/>
@@ -13229,10 +14356,17 @@
                                   <number>1</number>
                                   <number>1</number>
                                 </array>
+                                <number key="rotation">0</number>
+                                <array key="transformOrigin">
+                                  <number>0.5</number>
+                                  <number>0.5</number>
+                                </array>
                                 <bool key="clipChildren">false</bool>
                                 <string key="tooltip"/>
                                 <string key="visibleBind"/>
                                 <string key="shader"/>
+                                <bool key="vertexColorsEnabled">false</bool>
+                                <string key="userData"/>
                               </object>
                               <object key="properties">
                                 <string key="text">Aqua</string>
@@ -13327,10 +14461,17 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <string key="text">ふちを暗く</string>
@@ -13421,10 +14562,17 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <string key="text">Vignette.uishader</string>
@@ -13521,10 +14669,17 @@
               <number>1</number>
               <number>1</number>
             </array>
+            <number key="rotation">0</number>
+            <array key="transformOrigin">
+              <number>0.5</number>
+              <number>0.5</number>
+            </array>
             <bool key="clipChildren">false</bool>
             <string key="tooltip"/>
             <string key="visibleBind"/>
             <string key="shader"/>
+            <bool key="vertexColorsEnabled">false</bool>
+            <string key="userData"/>
           </object>
           <object key="properties">
             <array key="background">
@@ -13611,10 +14766,17 @@
                   <number>1</number>
                   <number>1</number>
                 </array>
+                <number key="rotation">0</number>
+                <array key="transformOrigin">
+                  <number>0.5</number>
+                  <number>0.5</number>
+                </array>
                 <bool key="clipChildren">false</bool>
                 <string key="tooltip"/>
                 <string key="visibleBind"/>
                 <string key="shader"/>
+                <bool key="vertexColorsEnabled">false</bool>
+                <string key="userData"/>
               </object>
               <object key="properties">
                 <number key="widthOverride">360</number>
@@ -13678,10 +14840,17 @@
                       <number>1</number>
                       <number>1</number>
                     </array>
+                    <number key="rotation">0</number>
+                    <array key="transformOrigin">
+                      <number>0.5</number>
+                      <number>0.5</number>
+                    </array>
                     <bool key="clipChildren">false</bool>
                     <string key="tooltip"/>
                     <string key="visibleBind"/>
                     <string key="shader"/>
+                    <bool key="vertexColorsEnabled">false</bool>
+                    <string key="userData"/>
                   </object>
                   <object key="properties">
                     <number key="spacing">12</number>
@@ -13742,10 +14911,17 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <string key="text">自作のシェーダー: Caustics</string>
@@ -13836,10 +15012,17 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <number key="widthOverride">360</number>
@@ -13903,6 +15086,11 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
@@ -13944,6 +15132,8 @@
                               <number>0</number>
                               <number>0</number>
                             </array>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties">
                             <string key="texture"/>
@@ -14019,10 +15209,17 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <string key="text">Assets/Shaders/UI/Caustics.uishader を書き換えると、ゲームの実行中でもすぐ反映されます。</string>
@@ -14119,10 +15316,17 @@
               <number>1</number>
               <number>1</number>
             </array>
+            <number key="rotation">0</number>
+            <array key="transformOrigin">
+              <number>0.5</number>
+              <number>0.5</number>
+            </array>
             <bool key="clipChildren">false</bool>
             <string key="tooltip"/>
             <string key="visibleBind"/>
             <string key="shader"/>
+            <bool key="vertexColorsEnabled">false</bool>
+            <string key="userData"/>
           </object>
           <object key="properties">
             <array key="background">
@@ -14209,10 +15413,17 @@
                   <number>1</number>
                   <number>1</number>
                 </array>
+                <number key="rotation">0</number>
+                <array key="transformOrigin">
+                  <number>0.5</number>
+                  <number>0.5</number>
+                </array>
                 <bool key="clipChildren">false</bool>
                 <string key="tooltip"/>
                 <string key="visibleBind"/>
                 <string key="shader"/>
+                <bool key="vertexColorsEnabled">false</bool>
+                <string key="userData"/>
               </object>
               <object key="properties">
                 <number key="widthOverride">360</number>
@@ -14276,10 +15487,17 @@
                       <number>1</number>
                       <number>1</number>
                     </array>
+                    <number key="rotation">0</number>
+                    <array key="transformOrigin">
+                      <number>0.5</number>
+                      <number>0.5</number>
+                    </array>
                     <bool key="clipChildren">false</bool>
                     <string key="tooltip"/>
                     <string key="visibleBind"/>
                     <string key="shader"/>
+                    <bool key="vertexColorsEnabled">false</bool>
+                    <string key="userData"/>
                   </object>
                   <object key="properties">
                     <number key="spacing">12</number>
@@ -14340,10 +15558,17 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <string key="text">スクリプトで @param を動かす</string>
@@ -14434,10 +15659,17 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <number key="widthOverride">360</number>
@@ -14501,6 +15733,11 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
@@ -14542,6 +15779,8 @@
                               <number>0</number>
                               <number>0</number>
                             </array>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties">
                             <array key="background">
@@ -14628,10 +15867,17 @@
                                   <number>1</number>
                                   <number>1</number>
                                 </array>
+                                <number key="rotation">0</number>
+                                <array key="transformOrigin">
+                                  <number>0.5</number>
+                                  <number>0.5</number>
+                                </array>
                                 <bool key="clipChildren">false</bool>
                                 <string key="tooltip"/>
                                 <string key="visibleBind"/>
                                 <string key="shader"/>
+                                <bool key="vertexColorsEnabled">false</bool>
+                                <string key="userData"/>
                               </object>
                               <object key="properties">
                                 <string key="text">ディゾルブ</string>
@@ -14726,10 +15972,17 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <number key="value">0</number>
@@ -14811,10 +16064,17 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <string key="text">スライダー → 変数 dissolve → スクリプトが ui-&gt;SetShaderParam(&quot;DissolveControlled&quot;, &quot;progress&quot;, 値)</string>

@@ -16,6 +16,7 @@ using namespace Ruto::EditorUI;
 const char* WidgetIcon(std::string_view type) {
     if (type == "UICanvasPanel") return ICON_FA_VECTOR_SQUARE;
     if (type == "UINullPane") return ICON_FA_CROSSHAIRS;
+    if (type == "UIBoundingPane") return ICON_FA_BULLSEYE;
     if (type == "UIVerticalBox") return ICON_FA_BARS;
     if (type == "UIHorizontalBox") return ICON_FA_GRIP_LINES_VERTICAL;
     if (type == "UIOverlay") return ICON_FA_LAYER_GROUP;
@@ -41,6 +42,7 @@ ImVec4 WidgetIconColor(std::string_view type) {
     const WidgetTypeInfo* info = WidgetRegistry::Find(type);
     if (!info) return Theme::kTextDim;
     if (type == "UINullPane") return Theme::kTextDim; // 何も描かない
+    if (type == "UIBoundingPane") return Theme::kCoral;  // 当たりだけ
     if (info->category == "パネル") return {0.55f, 0.75f, 1.0f, 1.0f};
     if (info->category == "入力") return {0.55f, 0.9f, 0.6f, 1.0f};
     if (info->category == "部品") return {0.95f, 0.65f, 0.95f, 1.0f};
@@ -90,6 +92,9 @@ std::string PropertyLabelJa(std::string_view n) {
         {"timing", "撮るとき"}, {"area", "撮る範囲"}, {"blur", "ぼかし"}, {"blockInput", "マウスを受け止める"},
         {"previewTexture", "デザイン中の見本（ゲームでは使わない）"},
         {"shader", "シェーダー"}, {"shaderChildren", "子にも掛ける"},
+        {"rotation", "回転（度・時計回り）"}, {"transformOrigin", "拡大・回転の中心"},
+        {"vertexColorsEnabled", "頂点カラーを使う"}, {"vertexColorTopLeft", "左上の色"}, {"vertexColorTopRight", "右上の色"},
+        {"vertexColorBottomLeft", "左下の色"}, {"vertexColorBottomRight", "右下の色"}, {"userData", "ユーザーデータ"},
         {"effect", "動き"}, {"effectStrength", "動きの大きさ"}, {"effectSpeed", "動きの速さ"},
         {"reveal", "出し方"}, {"revealSpeed", "出す速さ"}, {"revealDelay", "待ち時間"},
         {"revealFade", "1 文字の時間"}, {"revealAuto", "自動で出す"}, {"revealProgress", "出した割合"},
@@ -253,6 +258,7 @@ Vec2 DefaultCanvasSize(std::string_view type) {
     if (type == "UIScrollBox") return {520, 420};
     if (type == "UICanvasPanel" || type == "UIOverlay") return {640, 420};
     if (type == "UINullPane") return {200, 200};
+    if (type == "UIBoundingPane") return {240, 120};
     return {200, 200};
 }
 

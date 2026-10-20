@@ -114,7 +114,10 @@ public:
         if (!Row(n)) return;
         const bool richText = n == "text" && target && std::string_view(target->GetTypeName()) == "UIText";
         if (n == "text") changed |= ImGui::InputTextMultiline(Id(n), &v, {-FLT_MIN, ImGui::GetTextLineHeight() * 2.6f});
+        else if (n == "userData") changed |= ImGui::InputTextMultiline(Id(n), &v, {-FLT_MIN, ImGui::GetTextLineHeight() * 3.6f});
         else changed |= ImGui::InputText(Id(n), &v);
+        if (n == "userData" && ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+            ImGui::SetTooltip("1 行に 1 つ「キー=値」。スクリプトから読める:\n  w->GetUserData(\"キー\") / w->GetUserDataFloat(\"キー\")");
         const ImGuiID field = ImGui::GetItemID();
         if (richText) RememberTextSelection(field);
         if (n == "text" && ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) ImGui::SetTooltip("{変数名} で変数の値を表示（{score:1} なら小数 1 桁）%s", richText ? "\n<wave>…</wave> などのタグで文字ごとに動かせる（下のボタンで選んだ所を囲む）" : "");
@@ -1211,6 +1214,20 @@ void App::DrawCanvas(Document& doc) {
 
     Widget* docRoot = doc.view ? doc.view->GetRoot() : nullptr;
     auto toScreen = [&](const UI::Rect& r) { return ImRect({spos.x + r.x, spos.y + r.y}, {spos.x + r.x + r.w, spos.y + r.y + r.h}); };
+    // キャンバス上の点を、ウィジェットの回転（祖先の分も含む）で回した位置にする
+    auto screenPoint = [&](const Widget& w, ImVec2 p) {
+        if (!w.HasScreenTransform()) return p;
+        const Vec4 q = w.GetScreenTransform() * Vec4{p.x - spos.x, p.y - spos.y, 0.0f, 1.0f};
+        return ImVec2{q.x + spos.x, q.y + spos.y};
+    };
+    // ウィジェットの枠（回っていれば回した四角形）
+    auto outline = [&](const Widget& w, const ImRect& r, ImU32 col, float thickness) {
+        if (!w.HasScreenTransform()) {
+            dl->AddRect(r.Min, r.Max, col, 0.0f, 0, thickness);
+            return;
+        }
+        dl->AddQuad(screenPoint(w, r.Min), screenPoint(w, {r.Max.x, r.Min.y}), screenPoint(w, r.Max), screenPoint(w, {r.Min.x, r.Max.y}), col, thickness);
+    };
     const ImVec2 mouse = io.MousePos;
     const Vec2 mousePx{mouse.x - spos.x, mouse.y - spos.y};
 
@@ -1407,27 +1424,34 @@ void App::DrawCanvas(Document& doc) {
 
     // ---- 重ねて描く（選択・ホバー・アンカー・吸い付きの線） ----
     if (!ui.preview) {
-        // Null ペインは何も描かないので、デザイン中だけ四隅のかぎと基準点（ピボット）の十字で場所を示す
+        // Null・Bounding ペインは何も描かないので、デザイン中だけ四隅のかぎと基準点（ピボット）の十字で場所を示す
+        // （Bounding ペインは当たりの範囲を薄く塗る）。回っていれば回した位置に描く
         if (docRoot) {
-            const ImU32 mark = Theme::U32(Theme::kTextDim, 0.75f);
             docRoot->ForEach([&](Widget& w) {
-                if (std::string_view(w.GetTypeName()) != "UINullPane" || !w.IsVisible()) return;
+                const std::string_view type = w.GetTypeName();
+                const bool bounding = type == "UIBoundingPane";
+                if ((type != "UINullPane" && !bounding) || !w.IsVisible()) return;
+                const ImU32 mark = bounding ? Theme::U32(Theme::kCoral, 0.9f) : Theme::U32(Theme::kTextDim, 0.75f);
                 const ImRect r = toScreen(w.GetScreenRect());
+                auto pt = [&](float x, float y) { return screenPoint(w, {x, y}); };
+                if (bounding) {
+                    dl->AddQuadFilled(pt(r.Min.x, r.Min.y), pt(r.Max.x, r.Min.y), pt(r.Max.x, r.Max.y), pt(r.Min.x, r.Max.y), Theme::U32(Theme::kCoral, 0.12f));
+                }
                 const float len = std::min({10.0f, r.GetWidth() * 0.5f, r.GetHeight() * 0.5f});
                 for (int i = 0; i < 4; ++i) {
-                    const ImVec2 c{i & 1 ? r.Max.x : r.Min.x, i & 2 ? r.Max.y : r.Min.y};
+                    const float cx = i & 1 ? r.Max.x : r.Min.x, cy = i & 2 ? r.Max.y : r.Min.y;
                     const float sx = i & 1 ? -1.0f : 1.0f, sy = i & 2 ? -1.0f : 1.0f;
-                    dl->AddLine(c, {c.x + len * sx, c.y}, mark, 1.0f);
-                    dl->AddLine(c, {c.x, c.y + len * sy}, mark, 1.0f);
+                    dl->AddLine(pt(cx, cy), pt(cx + len * sx, cy), mark, 1.0f);
+                    dl->AddLine(pt(cx, cy), pt(cx, cy + len * sy), mark, 1.0f);
                 }
-                const ImVec2 pv{r.Min.x + r.GetWidth() * w.slot.pivot.x, r.Min.y + r.GetHeight() * w.slot.pivot.y};
-                dl->AddLine({pv.x - 6.0f, pv.y}, {pv.x + 6.0f, pv.y}, mark, 1.0f);
-                dl->AddLine({pv.x, pv.y - 6.0f}, {pv.x, pv.y + 6.0f}, mark, 1.0f);
+                const float px = r.Min.x + r.GetWidth() * w.slot.pivot.x, py = r.Min.y + r.GetHeight() * w.slot.pivot.y;
+                dl->AddLine(pt(px - 6.0f, py), pt(px + 6.0f, py), mark, 1.0f);
+                dl->AddLine(pt(px, py - 6.0f), pt(px, py + 6.0f), mark, 1.0f);
             });
         }
         if (hoverDoc && hoverDoc != selDoc) {
             const ImRect r = toScreen(hoverDoc->GetScreenRect());
-            dl->AddRect(r.Min, r.Max, Theme::U32(Theme::kAccent, 0.55f), 0.0f, 0, 1.0f);
+            outline(*hoverDoc, r, Theme::U32(Theme::kAccent, 0.55f), 1.0f);
         }
         // 一緒に選んでいるもの（整列の対象）
         for (const std::string& name : ui.extraSelection) {
@@ -1435,8 +1459,8 @@ void App::DrawCanvas(Document& doc) {
             Widget* ew = ea && docRoot ? Resolve(docRoot, PathOf(ea)) : nullptr;
             if (!ew) continue;
             const ImRect r = toScreen(ew->GetScreenRect());
-            dl->AddRect(r.Min, r.Max, ToU32(Theme::kAccent), 0.0f, 0, 1.5f);
-            dl->AddRectFilled(r.Min, r.Max, Theme::U32(Theme::kAccent, 0.11f));
+            outline(*ew, r, ToU32(Theme::kAccent), 1.5f);
+            if (!ew->HasScreenTransform()) dl->AddRectFilled(r.Min, r.Max, Theme::U32(Theme::kAccent, 0.11f));
         }
         if (selDoc) {
             const ImRect r = toScreen(selDoc->GetScreenRect());
@@ -1446,7 +1470,13 @@ void App::DrawCanvas(Document& doc) {
                 const ImRect pr = toScreen(pd->GetScreenRect());
                 dl->AddRect(pr.Min, pr.Max, IM_COL32(255, 255, 255, 40), 0.0f, 0, 1.0f);
             }
-            dl->AddRect(r.Min, r.Max, accent, 0.0f, 0, 2.0f);
+            if (selDoc->HasScreenTransform()) {
+                // 回っているとき: 回った枠（太線）と、つまみ・アンカーの基準になる回る前の枠（薄く）
+                outline(*selDoc, r, accent, 2.0f);
+                dl->AddRect(r.Min, r.Max, Theme::U32(Theme::kAccent, 0.35f), 0.0f, 0, 1.0f);
+            } else {
+                dl->AddRect(r.Min, r.Max, accent, 0.0f, 0, 2.0f);
+            }
             // 名前の札
             const std::string tag = std::string(WidgetIcon(selDoc->GetTypeName())) + " " + selDoc->name;
             const ImVec2 ts = ImGui::CalcTextSize(tag.c_str());

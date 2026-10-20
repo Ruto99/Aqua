@@ -20,7 +20,7 @@ RutoEngine とは別のアプリで、**RutoEngine のプロジェクトが無�
 
 RutoEngine の SDK（ビルド済みのエンジン）をリンクして作る。先に RutoEngine の `Setup.bat` で SDK を作っておく。
 
-**エンジンのパッチ**: キャプチャー・テキストアニメーション・UI のシェーダー・Null ペインは RutoEngine 側の実装が要る。**`ApplyEnginePatches.bat` をダブルクリック**すると、`EnginePatches` のパッチを番号の順に RutoEngine へ `git am` で当て、`Setup.bat` で SDK を作り直す。
+**エンジンのパッチ**: キャプチャー・テキストアニメーション・UI のシェーダー・Null / Bounding ペイン・回転・頂点カラー・ユーザーデータは RutoEngine 側の実装が要る。**`ApplyEnginePatches.bat` をダブルクリック**すると、`EnginePatches` のパッチを番号の順に RutoEngine へ `git am` で当て、`Setup.bat` で SDK を作り直す。
 
 - 当て済みのパッチは飛ばすので、何度実行してもよい（パッチが増えたときもこれを実行する）。
 - RutoEngine にコミットしていない変更があると、パッチを当てる前に止まる（先にコミットするか stash する）。
@@ -31,7 +31,7 @@ RutoEngine の SDK（ビルド済みのエンジン）をリンクして作る�
 
 ```bat
 cd ..\RutoEngine
-git am -3 ..\Aqua\EnginePatches\0001-UICapture.patch ..\Aqua\EnginePatches\0002-TextAnimation-UIShader.patch ..\Aqua\EnginePatches\0003-Fix-duplicate-glGetIntegerv.patch ..\Aqua\EnginePatches\0004-NullPane.patch
+git am -3 ..\Aqua\EnginePatches\0001-UICapture.patch ..\Aqua\EnginePatches\0002-TextAnimation-UIShader.patch ..\Aqua\EnginePatches\0003-Fix-duplicate-glGetIntegerv.patch ..\Aqua\EnginePatches\0004-NullPane.patch ..\Aqua\EnginePatches\0005-Rotation-VertexColors-BoundingPane-UserData.patch
 Setup.bat
 ```
 
@@ -136,6 +136,19 @@ Aqua は 2 種類のフォルダ（ワークスペース）を開ける。
 子の置き方はキャンバスパネルと同じ（アンカーとピボット）。ゲームでは何も表示されず、キャンバスではデザイン中だけ四隅のかぎと基準点（ピボット）の十字で場所を示す。
 
 - 例: ウィンドウの中身を Null ペインに入れ、Null ペインの `translation`・`renderScale`・`opacity` にキーを打つと、中身がまとめて登場する。
+
+### 回転・頂点カラー・Bounding ペイン・ユーザーデータ
+
+LayoutEditor 風の機能。どれも詳細の共通の欄（Bounding ペインはパレットの「パネル」）にあり、アニメーションでもキーを打てる。
+
+| 機能 | 内容 |
+|---|---|
+| **回転** | `rotation`（度・時計回り）で描画を回す。子も一緒に回る。中心は `transformOrigin`（自分の中の割合。既定は中央 0.5, 0.5。描画の拡大の中心も同じ）。回したボタン・スライダーもそのまま操作でき、キャンバスでは回った枠を表示する。回した入れ物の「子を切り取る」は、回った四角形を囲む範囲で切り取る |
+| **頂点カラー** | 「頂点カラーを使う」を入れると、左上・右上・左下・右下の色を混ぜて自分の描画（画像・背景・文字）に掛ける。子には掛からない |
+| **Bounding ペイン** | 何も描かないクリックの範囲。押すと Click のイベント（クリック時のメッセージ。空なら名前）を出す。絵の一部をボタンにする・見えない当たり判定に。キャンバスでは薄いコーラル色で範囲を示す |
+| **ユーザーデータ** | ウィジェットごとの自由な値。1 行に 1 つ「キー=値」で書き、スクリプトから `w->GetUserData("キー")` / `GetUserDataFloat("キー")` / `HasUserData("キー")` で読む |
+
+UI のシェーダーの `LocalUV()` などは回っていない四角形を基準にするので、回したウィジェットでは模様が回らない。
 
 ### キャプチャー（パレットの「共通」）
 

@@ -12,6 +12,7 @@ Aqua で作った UI の見本を集めた RutoEngine のプロジェクト。�
 | 06 | レイアウト | `AquaUI/Layout.aqs` | Horizontal Box の Auto / Fill、Grid、Wrap Box、Scroll Box |
 | 07 | 変数と入力 | `AquaUI/Binding.aqs` | スライダー・トグル・入力欄の bind と、文字の `{変数}`・`{変数:2}`、visibleBind |
 | 08 | スタイルと部品 | `AquaUI/Styles.aqs`・`AquaUI/StatusCard.aqs` | ボタンのスタイル（Primary・Danger・Ghost）と、UI を部品として入れる UIUserWidget |
+| 09 | 変形と頂点カラー | `AquaUI/Transform.aqs` | Null ペインごと回す・時計の針（transformOrigin）・回したボタン、四隅の色、絵の一部だけを当たりにする Bounding ペイン、スクリプトが読むユーザーデータ |
 
 背景では 3D の立方体と球が回っている（キャプチャーのサンプルで、撮った画面に写る）。
 
@@ -36,6 +37,7 @@ UI の切り替えなどは `Source/AquaSampleHub.cpp`（シーンの「UI」オ
 | `pause` / `resume` | ポーズ画面 |
 | `snapshot` | UICapture「Snapshot」に今の画面を撮る |
 | `score-add` / `score-reset` | 変数 score を変える |
+| `bounding-hit` | Bounding ペイン・回したボタンが押された（変数 hits を増やす） |
 
 UI を切り替えたとき、ウィジェットは次に描くときに作り直される。切り替えた直後に `SetText` などをしても古い UI に入ってしまうので、作り直されてから（ルートのウィジェットが変わってから）初期化している。
 

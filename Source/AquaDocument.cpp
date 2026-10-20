@@ -853,9 +853,10 @@ std::string GenerateLayoutHeader(const WidgetAsset& layout, const std::string& t
         asset->root->ForEach([&](Widget& w) {
             if (w.generated || !w.GetParent() || w.name.empty()) return;
             if (std::find(widgets.begin(), widgets.end(), w.name) == widgets.end()) widgets.push_back(w.name);
-            if (auto* b = dynamic_cast<UIButton*>(&w); b && !b->clickMessage.empty() &&
-                std::find(messages.begin(), messages.end(), b->clickMessage) == messages.end())
-                messages.push_back(b->clickMessage);
+            std::string message;
+            if (auto* b = dynamic_cast<UIButton*>(&w)) message = b->clickMessage;
+            else if (auto* bp = dynamic_cast<UIBoundingPane*>(&w)) message = bp->clickMessage;
+            if (!message.empty() && std::find(messages.begin(), messages.end(), message) == messages.end()) messages.push_back(message);
         });
     }
     for (const WidgetAnimation& a : asset->animations) animations.push_back(a.name);

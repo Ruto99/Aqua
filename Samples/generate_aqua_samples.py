@@ -420,6 +420,7 @@ SAMPLES = [
     ("Layout", "レイアウト", "横・縦・グリッド・折り返し・スクロール"),
     ("Binding", "変数と入力", "スライダー・トグル・入力欄と {変数} の連動"),
     ("Styles", "スタイルと部品", "共通の見た目と、UI を部品として使い回す"),
+    ("Transform", "変形と頂点カラー", "回転・四隅の色・Bounding ペイン・ユーザーデータ"),
 ]
 
 
@@ -456,8 +457,8 @@ def make_menu():
     grid = widget(
         "UIGridPanel",
         "SampleGrid",
-        {"columns": 4, "spacing": [24, 24], "cellHeight": 200, "padding": [0, 0, 0, 0]},
-        at(0, 80, 1600, 424, anchor=(0.5, 0.5), pivot=(0.5, 0.5)),
+        {"columns": 4, "spacing": [20, 18], "cellHeight": 182, "padding": [0, 0, 0, 0]},
+        at(0, 120, 1600, 582, anchor=(0.5, 0.5), pivot=(0.5, 0.5)),
         children=cards,
     )
     title = text(
@@ -466,7 +467,7 @@ def make_menu():
         110,
         TEXT,
         align="Center",
-        slot=at(0, 150, 1400, 150, anchor=(0.5, 0), pivot=(0.5, 0)),
+        slot=at(0, 70, 1400, 150, anchor=(0.5, 0), pivot=(0.5, 0)),
         common=shader_common("Shine", shine=[0.75, 1, 0.98, 0.9], interval=2.0),
         effect="None",
     )
@@ -476,7 +477,7 @@ def make_menu():
         28,
         DIM,
         align="Center",
-        slot=at(0, 300, 1600, 50, anchor=(0.5, 0), pivot=(0.5, 0)),
+        slot=at(0, 218, 1600, 50, anchor=(0.5, 0), pivot=(0.5, 0)),
         reveal="Fade",
         revealSpeed=60,
         effectStrength=4,
@@ -500,7 +501,7 @@ def make_menu():
                 "cornerRadius": 18,
                 "borderColor": rgba(AQUA, 0.35),
                 "borderThickness": 1.5,
-                "contentPadding": [28, 22, 28, 22],
+                "contentPadding": [26, 16, 26, 16],
                 "hoverScale": 1.04,
             },
         }
@@ -1146,6 +1147,90 @@ def make_styles():
     return document(page("スタイルと部品", "見た目をスタイルにまとめる・UI を部品として入れる", [style_card, part_card]), styles=styles)
 
 
+# ---------------------------------------------------------------------------
+# 変形と頂点カラー（回転・四隅の色・Bounding ペイン・ユーザーデータ）
+# ---------------------------------------------------------------------------
+
+
+def corners(tl, tr, bl, br):
+    """頂点カラー（四隅の色）の common。"""
+    return {"vertexColorsEnabled": True, "vertexColorTopLeft": list(tl), "vertexColorTopRight": list(tr),
+            "vertexColorBottomLeft": list(bl), "vertexColorBottomRight": list(br)}
+
+
+def make_transform():
+    # 回転: Null ペインを回すと、子がまとめて回る
+    dots = []
+    for i, (x, y, c) in enumerate([(0, 0, AQUA), (110, 0, CORAL), (0, 110, GOLD), (110, 110, [0.6, 0.75, 1, 1])]):
+        dots.append(image(f"Dot{i}", c, (70, 70), radius=14, slot=at(x, y, 70, 70)))
+    spinner = widget("UINullPane", "Spinner", slot=at(0, 0, 180, 180, anchor=(0.5, 0.5), pivot=(0.5, 0.5)), children=dots)
+    spin_area = widget("UISizeBox", "SpinArea", {"widthOverride": 300, "heightOverride": 260}, children=[widget("UICanvasPanel", "SpinCanvas", children=[spinner])])
+    # 時計の針: transformOrigin を根元（下の真ん中）にして回す
+    dial = image("Dial", [0.08, 0.16, 0.2, 1], (200, 200), "@Circle", slot=at(0, 0, 200, 200, anchor=(0.5, 0.5), pivot=(0.5, 0.5)))
+    hand = image("Hand", CORAL, (10, 90), radius=5, slot=at(0, -45, 10, 90, anchor=(0.5, 0.5), pivot=(0.5, 0.5)),
+                 common={"transformOrigin": [0.5, 1.0]})
+    clock = widget("UISizeBox", "ClockArea", {"widthOverride": 260, "heightOverride": 260}, children=[widget("UICanvasPanel", "ClockCanvas", children=[dial, hand])])
+    rotate_card = card(
+        "RotateCard",
+        "回転（rotation・transformOrigin）",
+        [
+            hbox("RotateRow", [spin_area, clock], spacing=20),
+            button("TiltedButton", "回したボタン（押すと当たりが増える）", "bounding-hit", size=22, contentPadding=[20, 10, 20, 10],
+                   slot=box(h="Center", pad=(0, 10, 0, 10)), common={"rotation": -8}),
+            note("RotateNote", "左: Null ペインの rotation を回すと子がまとめて回る。右: 針の transformOrigin を根元（0.5, 1）にして回す。回したボタンもそのまま押せる"),
+        ],
+        slot=at(60, 190, 0, 0, auto=True),
+        width=560,
+    )
+
+    # 頂点カラー: 四隅の色を混ぜる（画像・背景・文字）
+    grad_box = image("GradBox", [1, 1, 1, 1], (240, 140), radius=18, common=corners(AQUA, [0.6, 0.75, 1, 1], CORAL, GOLD))
+    grad_text = text("GradText", "四隅の色", 64, [1, 1, 1, 1], common=corners([1, 0.95, 0.6, 1], [1, 0.95, 0.6, 1], CORAL, CORAL))
+    grad_panel = border("GradPanel", text("GradPanelText", "パネルにも", 30, INK, align="Center"), [1, 1, 1, 1], 16, (24, 18, 24, 18),
+                        shadow=False, common=corners(AQUA, AQUA, [0.1, 0.4, 0.5, 1], [0.1, 0.4, 0.5, 1]))
+    color_card = card(
+        "ColorCard",
+        "頂点カラー（四隅の色）",
+        [grad_box, grad_text, grad_panel,
+         note("ColorNote", "詳細の「頂点カラー」で左上・右上・左下・右下の色を決めると、自分の描画（画像・背景・文字）に混ぜて掛かる。色はアニメーションもできる")],
+        slot=at(0, 190, 0, 0, anchor=(0.5, 0), pivot=(0.5, 0), auto=True),
+        width=440,
+    )
+
+    # Bounding ペイン: 絵の一部だけを当たりにする
+    target = widget("UICanvasPanel", "TreasureCanvas", children=[
+        image("Treasure", [0.35, 0.22, 0.12, 1], (280, 180), radius=20, slot=at(0, 0, 280, 180)),
+        image("Lock", GOLD, (60, 60), "@Circle", slot=at(110, 60, 60, 60)),
+        text("TreasureLabel", "鍵だけが当たり", 22, TEXT, align="Center", slot=at(0, 190, 280, 30)),
+        widget("UIBoundingPane", "LockHit", {"clickMessage": "bounding-hit"}, at(100, 50, 80, 80)),
+    ])
+    treasure = widget("UISizeBox", "TreasureArea", {"widthOverride": 280, "heightOverride": 230}, children=[target])
+    shop = border(
+        "ShopItem",
+        vbox("ShopItemBody", [text("ShopItemName", "{itemName}", 30, TEXT), text("ShopItemPrice", "{itemPrice} G", 26, GOLD)], spacing=4),
+        PANEL_LIGHT, 14, (20, 14, 20, 14), shadow=False,
+        common={"userData": "item=ポーション\nprice=120\nrarity=common"},
+    )
+    hit_card = card(
+        "HitCard",
+        "Bounding ペイン・ユーザーデータ",
+        [
+            treasure,
+            text("HitCount", "当たった回数: {hits}", 28, CORAL),
+            shop,
+            note("HitNote", "鍵の上に何も描かない Bounding ペインを置き、押すと Click（bounding-hit）が届く。下の札は userData（item=… / price=…）をスクリプトが GetUserData で読んで表示している"),
+        ],
+        slot=at(-60, 190, 0, 0, anchor=(1, 0), pivot=(1, 0), auto=True),
+        width=520,
+    )
+    loop = anim("Loop", [
+        track("Spinner", "rotation", [key(0, 0, 1), key(4, 360, 1)]),
+        track("Hand", "rotation", [key(0, 0, 1), key(6, 360, 1)]),
+        track("GradBox", "vertexColorTopLeft.x", [key(0, 0.2), key(1.5, 1.0), key(3, 0.2)]),
+    ])
+    return document(page("変形と頂点カラー", "LayoutEditor 風の機能 その 1", [rotate_card, color_card, hit_card]), [loop])
+
+
 UIS = {
     "Menu": make_menu,
     "TextAnimation": make_text_animation,
@@ -1157,6 +1242,7 @@ UIS = {
     "Binding": make_binding,
     "StatusCard": make_status_card,
     "Styles": make_styles,
+    "Transform": make_transform,
 }
 
 
