@@ -1,0 +1,8 @@
+// ふちを暗く: まわりを暗く（色を付けて光らせることもできる）
+// @param strength float 0 1 0.7 濃さ
+// @param size float 0 1 0.35 明るい所の大きさ
+// @param tint color 0 0 0 1 ふちの色
+vec4 effect(vec4 color) {
+    float v = smoothstep(size * 0.7, size * 0.7 + 0.5, length(LocalUV() - 0.5));
+    return vec4(mix(color.rgb, tint.rgb, v * strength), color.a);
+}

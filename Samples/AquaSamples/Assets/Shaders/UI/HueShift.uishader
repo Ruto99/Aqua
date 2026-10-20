@@ -1,0 +1,6 @@
+// 色相を回す: 同じ見た目で色違いを作る
+// @param shift float 0 1 0.3 色相のずれ
+// @param speed float 0 2 0 回る速さ
+vec4 effect(vec4 color) {
+    return vec4(clamp(HueShift(color.rgb, shift + uTime * speed), 0.0, 1.0), color.a);
+}

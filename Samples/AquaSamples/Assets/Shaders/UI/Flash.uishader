@@ -1,0 +1,6 @@
+// 白く光らせる: アニメーションで amount を動かすと、ヒット・選択の演出に
+// @param amount float 0 1 0.5 光らせる量
+// @param flash color 1 1 1 1 色
+vec4 effect(vec4 color) {
+    return vec4(mix(color.rgb, flash.rgb, amount * flash.a), color.a);
+}

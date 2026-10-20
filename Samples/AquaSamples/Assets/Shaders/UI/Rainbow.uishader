@@ -1,0 +1,9 @@
+// 虹色: 虹色が流れる
+// @param strength float 0 1 1 強さ
+// @param speed float 0 3 0.5 速さ
+// @param scale float 0.1 4 1 縞の数
+vec4 effect(vec4 color) {
+    vec2 uv = LocalUV();
+    vec3 rainbow = clamp(HueShift(vec3(1.0, 0.15, 0.15), (uv.x + uv.y * 0.3) * scale - uTime * speed), 0.0, 1.0);
+    return vec4(mix(color.rgb, rainbow * (0.45 + 0.55 * Luma(color.rgb)), strength), color.a);
+}

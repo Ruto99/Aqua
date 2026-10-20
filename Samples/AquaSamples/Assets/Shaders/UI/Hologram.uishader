@@ -1,0 +1,12 @@
+// ホログラム: 青く透けた立体映像の風（SF の画面）
+// @param tint color 0.3 0.9 1 1 色
+// @param lines float 20 400 120 線の数
+// @param speed float 0 5 1.2 流れる速さ
+// @param glitch float 0 1 0.3 乱れ
+vec4 effect(vec4 color) {
+    vec2 uv = LocalUV();
+    float scan = 0.65 + 0.35 * sin(uv.y * lines - uTime * speed * 10.0);
+    float noise = Hash(vec2(floor(uv.y * 60.0), floor(uTime * 12.0)));
+    float a = color.a * scan * (1.0 - glitch * 0.6 * step(0.9, noise));
+    return vec4(tint.rgb * (0.4 + Luma(color.rgb)), a * tint.a);
+}

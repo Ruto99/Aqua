@@ -1,0 +1,9 @@
+// グラデーション: 文字に掛けると金色の見出しなどに
+// @param top color 1 0.9 0.4 1 始まりの色
+// @param bottom color 1 0.45 0.15 1 終わりの色
+// @param angle float 0 1 0 向き（0: 縦 / 1: 横）
+vec4 effect(vec4 color) {
+    vec2 uv = LocalUV();
+    vec4 g = mix(top, bottom, mix(uv.y, uv.x, angle));
+    return vec4(color.rgb * g.rgb, color.a * g.a);
+}

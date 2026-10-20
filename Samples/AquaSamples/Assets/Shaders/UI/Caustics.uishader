@@ -1,0 +1,15 @@
+// 水面の光（このサンプルのオリジナル）: 水の色を重ね、ゆらめく光の網目を流す
+// 自分でシェーダーを書くときの見本。@param の行がそのまま Aqua の詳細パネルに並ぶ
+// @param tint color 0.2 0.85 0.8 1 水の色
+// @param strength float 0 1 0.6 強さ
+// @param speed float 0 3 1 速さ
+// @param scale float 2 40 14 網目の細かさ
+vec4 effect(vec4 color) {
+    vec2 uv = LocalUV();
+    float t = uTime * speed;
+    float a = sin(uv.x * scale + t * 2.0 + sin(uv.y * scale * 0.7 + t));
+    float b = sin(uv.y * scale * 1.2 - t * 1.6 + sin(uv.x * scale * 0.5 - t));
+    float caustic = pow(1.0 - abs(a * b), 6.0);
+    vec3 water = mix(color.rgb, tint.rgb * (0.55 + Luma(color.rgb)), strength);
+    return vec4(water + caustic * 0.45 * strength, color.a);
+}

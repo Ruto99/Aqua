@@ -1,0 +1,5 @@
+// グレースケール: 色を抜いて白黒にする（使えないボタンなど）
+// @param strength float 0 1 1 強さ
+vec4 effect(vec4 color) {
+    return vec4(mix(color.rgb, vec3(Luma(color.rgb)), strength), color.a);
+}

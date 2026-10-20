@@ -1,0 +1,20 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "AquaSamplesEditor (Debug)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/debug/bin/AquaSamplesEditor.exe",
+      "cwd": "${workspaceFolder}/build/debug/bin"
+    },
+    {
+      "name": "AquaSamples (Debug)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/debug/bin/AquaSamples.exe",
+      "cwd": "${workspaceFolder}/build/debug/bin",
+      "console": "integratedTerminal"
+    }
+  ]
+}

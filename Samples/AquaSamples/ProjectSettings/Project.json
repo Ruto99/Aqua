@@ -1,0 +1,8 @@
+{
+  "name": "AquaSamples",
+  "startScene": "Scenes/Main.rscene",
+  "windowTitle": "Aqua サンプル集",
+  "windowWidth": 1600,
+  "windowHeight": 900,
+  "vsync": true
+}

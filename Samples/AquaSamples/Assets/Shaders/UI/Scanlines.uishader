@@ -1,0 +1,9 @@
+// 走査線: ブラウン管のような横線とちらつき（レトロな画面）
+// @param strength float 0 1 0.35 線の濃さ
+// @param density float 20 800 240 線の数
+// @param flicker float 0 0.3 0.04 ちらつき
+vec4 effect(vec4 color) {
+    float line = 0.5 + 0.5 * sin(LocalUV().y * density * 3.14159);
+    float f = 1.0 - flicker * (0.5 + 0.5 * sin(uTime * 60.0));
+    return vec4(color.rgb * (1.0 - strength * line) * f, color.a);
+}
