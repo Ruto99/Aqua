@@ -25,6 +25,7 @@ const char* WidgetIcon(std::string_view type) {
     if (type == "UIBorder") return ICON_FA_SQUARE;
     if (type == "UIText") return ICON_FA_FONT;
     if (type == "UIImage") return ICON_FA_IMAGE;
+    if (type == "UICapture") return ICON_FA_CAMERA;
     if (type == "UIButton") return ICON_FA_HAND_POINTER;
     if (type == "UIProgressBar") return ICON_FA_BATTERY_HALF;
     if (type == "UISpacer") return ICON_FA_ARROWS_LEFT_RIGHT;
@@ -84,11 +85,33 @@ std::string PropertyLabelJa(std::string_view n) {
         {"cellHeight", "マスの高さ（0 で自動）"}, {"showScrollbar", "スクロールバー"}, {"scrollbarColor", "スクロールバーの色"},
         {"widthOverride", "幅（0 で自動）"}, {"heightOverride", "高さ（0 で自動）"}, {"minSize", "最小の大きさ"}, {"maxSize", "最大の大きさ"},
         {"asset", "UI アセット"}, {"scrollOffset", "スクロール位置"},
+        {"timing", "撮るとき"}, {"area", "撮る範囲"}, {"blur", "ぼかし"}, {"blockInput", "マウスを受け止める"},
+        {"previewTexture", "デザイン中の見本（ゲームでは使わない）"},
     };
     for (const auto& [k, v] : kNames) {
         if (n == k) return v;
     }
     return PrettyName(n);
+}
+
+std::string EnumOptionLabelJa(std::string_view property, std::string_view option) {
+    struct Entry {
+        const char* property;
+        const char* option;
+        const char* label;
+    };
+    static const Entry kLabels[] = {
+        // キャプチャー
+        {"timing", "OnShow", "表示したときに撮る（止めた画面）"},
+        {"timing", "EveryFrame", "毎フレーム撮る（動く画面）"},
+        {"timing", "Script", "スクリプトの Capture() で撮る"},
+        {"area", "Screen", "画面全体"},
+        {"area", "Behind", "このウィジェットの後ろだけ"},
+    };
+    for (const Entry& e : kLabels) {
+        if (property == e.property && option == e.option) return e.label;
+    }
+    return std::string(option);
 }
 
 Widget* Resolve(Widget* root, const WidgetPath& path) {

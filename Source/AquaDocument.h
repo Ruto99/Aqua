@@ -153,19 +153,6 @@ struct DesignerState {
     bool focused = false;
 };
 
-// キャンバスの背景に敷く画像（ゲームのスクリーンショットなど。キャプチャーのパネルで設定する）
-// 見た目を合わせるための下絵なので編集用ファイル（.aqs）にだけ保存し、.aqua には書き出さない
-struct CaptureBackground {
-    std::string image;          // プロジェクトのフォルダからの相対パス（UTF-8・/ 区切り）。空なら無し
-    bool visible = true;
-    bool inPreview = true;      // プレビュー中も表示する
-    float opacity = 1.0f;
-    enum Fit { Stretch = 0, Contain = 1, Cover = 2, Original = 3 };
-    int fit = Stretch;          // 画面への合わせ方
-    float scale = 1.0f;         // 合わせた後の倍率
-    Vec2 offset{0.0f, 0.0f};    // ずらす量（基準解像度の単位）
-};
-
 // ---------------------------------------------------------------------------
 // 文書
 // ---------------------------------------------------------------------------
@@ -185,9 +172,6 @@ public:
     std::string output;       // Assets からの相対パス（.aqua）
     std::shared_ptr<WidgetAsset> asset;
     std::map<std::string, std::string> previewVariables; // プレビュー用の変数の値（.aqs に保存）
-    CaptureBackground background;                        // キャンバスの背景（.aqs に保存）
-    std::shared_ptr<Texture> backgroundTexture;          // background.image を読んだもの
-    std::string backgroundLoaded;                        // backgroundTexture の元のパス（変わったら読み直す）
     DesignerState ui;
     std::string clipboard;
 

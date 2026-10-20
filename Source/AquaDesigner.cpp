@@ -2,7 +2,7 @@
 //
 //   キャンバス: 選択（Shift + クリックで一緒に選ぶ）・移動（一緒に選んだものもまとめて）・8 方向のリサイズ・アンカー表示・
 //               吸い付き（親と兄弟の端・中央）・解像度の切り替え・ホイールで拡大・中ボタンで移動・
-//               プレビュー（実際に操作して確かめる）・背景（キャプチャーのパネルで撮ったゲームの画面）
+//               プレビュー（実際に操作して確かめる）
 //   アセットのドラッグ: 画像 → Image を作る / 画像・ボタン・枠に入れる、フォント → テキストに、音 → ボタンのクリック音、
 //                     UI（.aqua）→ 部品（ユーザーウィジェット）として入れる
 
@@ -66,10 +66,10 @@ public:
     void Color(std::string_view n, Vec4& v) override { if (Row(n)) changed |= ColorField(Id(n), &v.x, true); }
     void Enum(std::string_view n, int& v, std::span<const char* const> options) override {
         if (!Row(n)) return;
-        const char* preview = v >= 0 && v < static_cast<int>(options.size()) ? options[static_cast<size_t>(v)] : "?";
-        if (ImGui::BeginCombo(Id(n), preview)) {
+        const std::string preview = v >= 0 && v < static_cast<int>(options.size()) ? EnumOptionLabelJa(n, options[static_cast<size_t>(v)]) : "?";
+        if (ImGui::BeginCombo(Id(n), preview.c_str())) {
             for (size_t i = 0; i < options.size(); ++i) {
-                if (ImGui::Selectable(options[i], static_cast<int>(i) == v)) {
+                if (ImGui::Selectable(EnumOptionLabelJa(n, options[i]).c_str(), static_cast<int>(i) == v)) {
                     v = static_cast<int>(i);
                     changed = true;
                 }
@@ -179,6 +179,14 @@ Widget* App::AddWidget(Document& doc, const std::string& type, Widget* parent, i
         if (Widget* pd = doc.view ? Resolve(doc.view->GetRoot(), PathOf(parent)) : nullptr) pos = {pd->GetRect().w * 0.5f, pd->GetRect().h * 0.5f};
         if (canvasPos) pos = *canvasPos;
         w->slot.position = {std::round(pos.x), std::round(pos.y)};
+        if (type == "UICapture") {
+            // キャプチャー（ポーズなどの背景）: 親いっぱいに広げて、一番奥に置く
+            w->slot.anchorMin = {0.0f, 0.0f};
+            w->slot.anchorMax = {1.0f, 1.0f};
+            w->slot.size = {0.0f, 0.0f};
+            w->slot.position = {0.0f, 0.0f};
+            if (index < 0) index = 0;
+        }
     } else if (type == "UIText") {
         w->slot.hAlign = HAlign::Fill;
     }
@@ -496,10 +504,6 @@ void App::HandleDesignerKeys(Document& doc) {
         doc.ui.hasSelection = false;
         doc.ui.extraSelection.clear();
     }
-    if (!io.KeyCtrl && pressed(ImGuiKey_B) && !doc.background.image.empty()) {
-        doc.background.visible = !doc.background.visible;
-        doc.Save();
-    }
     if (doc.ui.keySelected && pressed(ImGuiKey_Delete)) {
         if (WidgetAnimation* a = doc.ui.animation >= 0 && doc.ui.animation < static_cast<int>(asset.animations.size()) ? &asset.animations[static_cast<size_t>(doc.ui.animation)] : nullptr) {
             if (doc.ui.keyTrack >= 0 && doc.ui.keyTrack < static_cast<int>(a->tracks.size())) {
@@ -570,26 +574,6 @@ void App::DrawToolbar(Document& doc) {
     if (IconButton(ICON_FA_BORDER_ALL, "グリッド（G）", doc.ui.showGrid)) doc.ui.showGrid = !doc.ui.showGrid;
     ImGui::SameLine();
     if (IconButton(ICON_FA_MAGNET, "吸い付き（親・兄弟の端と中央。Alt で一時的に無効）", doc.ui.snap)) doc.ui.snap = !doc.ui.snap;
-    ImGui::SameLine();
-    {
-        // 背景（キャプチャーのパネルで撮ったゲームの画面など）
-        const bool hasBg = !doc.background.image.empty();
-        if (IconButton(ICON_FA_IMAGE, hasBg ? "背景を表示する / しない（B）。右クリックで不透明度" : "背景なし（キャプチャーのパネルでゲームの画面を撮って敷けます）",
-                       hasBg && doc.background.visible)) {
-            if (hasBg) {
-                doc.background.visible = !doc.background.visible;
-                doc.Save();
-            } else if (ImGuiWindow* w = ImGui::FindWindowByName("###Capture")) {
-                if (w->DockNode && w->DockNode->TabBar) w->DockNode->TabBar->NextSelectedTabId = w->TabId;
-                ImGui::FocusWindow(w);
-            }
-        }
-        if (hasBg && ImGui::BeginPopupContextItem("bg-quick")) {
-            ImGui::SetNextItemWidth(160.0f * m_Scale);
-            if (ImGui::SliderFloat("不透明度", &doc.background.opacity, 0.0f, 1.0f, "%.2f")) doc.Save();
-            ImGui::EndPopup();
-        }
-    }
     ImGui::SameLine();
     ImGui::BeginDisabled(!doc.CanUndo());
     if (IconButton(ICON_FA_ROTATE_LEFT, "元に戻す（Ctrl+Z）")) doc.Undo();
@@ -1550,6 +1534,15 @@ void App::DrawDetails(Document& doc) {
     if (auto* uw = dynamic_cast<UIUserWidget*>(w); uw && !uw->asset.empty()) {
         ImGui::Spacing();
         if (ImGui::Button(ICON_FA_PUZZLE_PIECE "  この部品の UI を開く", {-FLT_MIN, 0.0f})) OpenDocument(Assets::GetPath(uw->asset));
+    }    if (std::string_view(w->GetTypeName()) == "UICapture") {
+        // キャプチャー: 撮った画面はゲームのメモリ（テクスチャ）に持つだけで、ファイルには保存しない
+        ImGui::Spacing();
+        ImGui::PushTextWrapPos(0.0f);
+        ImGui::TextDisabled(ICON_FA_CAMERA "  ゲームでは、このウィジェットより先に描かれた画面（ゲーム・後ろの UI）を撮ってここに貼ります。"
+                            "撮った画面はメモリに持つだけで、ファイルには保存しません。キャンバスでは見本を表示し、プレビュー（P）で実際に撮れます。");
+        ImGui::TextDisabled("スクリプトで撮り直す: if (auto* c = dynamic_cast<UICapture*>(ui->Find(AquaUI::%s::Widgets::%s))) c->Capture();",
+                            ToIdentifier(doc.GetTitle()).c_str(), ToIdentifier(w->name).c_str());
+        ImGui::PopTextWrapPos();
     }
 }
 
@@ -1589,9 +1582,7 @@ void App::RenderDocument(Document& doc) {
     const auto presets = ResolutionPresets();
     const int preset = std::clamp(ui.resolution, 0, static_cast<int>(presets.size()) - 1);
     const Vec2 res = preset == 0 ? doc.asset->referenceResolution : Vec2{presets[static_cast<size_t>(preset)].w, presets[static_cast<size_t>(preset)].h};
-    const float uiScale = ui.screenZoom * CanvasScale(*doc.asset, res);
-    PaintBackground(doc, w, h, uiScale); // ゲームの画面などの下絵（UI の後ろ）
-    doc.view->Update({0.0f, 0.0f, static_cast<float>(w), static_cast<float>(h)}, ImGui::GetIO().DeltaTime, uiScale);
+    doc.view->Update({0.0f, 0.0f, static_cast<float>(w), static_cast<float>(h)}, ImGui::GetIO().DeltaTime, ui.screenZoom * CanvasScale(*doc.asset, res));
     doc.view->RefreshUserWidgets(); // 部品の UI がほかのタブで書き出されたら作り直す
     doc.view->Paint();
     for (const UIEvent& e : doc.view->TakeEvents()) {

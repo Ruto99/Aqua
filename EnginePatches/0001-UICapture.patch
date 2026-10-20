@@ -1,0 +1,376 @@
+From 84e70cea0917b4b20c981b06bcc50aecc7e76e6a Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Tue, 20 Oct 2026 01:02:27 +0000
+Subject: [PATCH] Add UICapture widget: capture the game screen into memory for
+ UI backgrounds
+
+UICapture copies what has been drawn so far (the game and the UI behind
+it) into a GPU texture and draws it in its rect, for pause and menu
+backgrounds. Nothing is written to disk.
+
+- timing: OnShow (once when shown, a frozen frame) / EveryFrame / Script
+  (Capture())
+- area: Screen (whole screen) / Behind (only the area behind the widget)
+- color tint, blur (repeated half-size downsampling, no shader),
+  blockInput, previewTexture for designers
+- GetCapturedTexture() / ReleaseCapture() for scripts
+
+RenderCommand gets CopyFramebufferToTexture (via glBlitFramebuffer, so
+MSAA screens work) and BlitTexture.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01EvWZpBe1ubkYBLjPh6xAoG
+---
+ Modules/Engine/include/Ruto/Engine/Widgets.h  |  41 ++++++
+ Modules/Engine/src/WidgetCapture.cpp          | 136 ++++++++++++++++++
+ Modules/Engine/src/Widgets.cpp                |   1 +
+ .../include/Ruto/Graphics/RenderCommand.h     |  11 ++
+ Modules/Graphics/src/GL.h                     |  10 +-
+ Modules/Graphics/src/RenderCommand.cpp        |  60 ++++++++
+ 6 files changed, 258 insertions(+), 1 deletion(-)
+ create mode 100644 Modules/Engine/src/WidgetCapture.cpp
+
+diff --git a/Modules/Engine/include/Ruto/Engine/Widgets.h b/Modules/Engine/include/Ruto/Engine/Widgets.h
+index 749edd4..e70c236 100644
+--- a/Modules/Engine/include/Ruto/Engine/Widgets.h
++++ b/Modules/Engine/include/Ruto/Engine/Widgets.h
+@@ -361,6 +361,47 @@ class UIImage : public Widget {
+     void Paint(WidgetContext& ctx) override;
+ };
+ 
++// ゲームの画面を撮って、その場に貼る（ポーズ・メニューの背景など）
++//   撮った画面はテクスチャ（GPU のメモリ）に持つだけで、ファイルには書かない。
++//   このウィジェットより先に描かれたもの（ゲームの画面・後ろの UI）が写る。
++//   デザイナーでは previewTexture（なければ見本の模様）を表示する。
++enum class CaptureTiming { OnShow, EveryFrame, Script };
++enum class CaptureArea { Screen, Behind };
++
++class UICapture : public Widget {
++    RUTO_WIDGET(UICapture)
++    CaptureTiming timing = CaptureTiming::OnShow; // OnShow: 表示したときに 1 回（止まった画面）/ EveryFrame: 毎フレーム / Script: Capture() を呼んだとき
++    CaptureArea area = CaptureArea::Screen;       // Screen: 画面全体を撮って広げる / Behind: このウィジェットの後ろだけ（すりガラス風）
++    Vec4 color{1.0f, 1.0f, 1.0f, 1.0f};           // 掛ける色（0.5 の灰色で暗くするなど）
++    float blur = 0.0f;                            // ぼかし（0〜1）
++    std::string previewTexture;                   // デザイン中だけ代わりに表示する画像（ゲームでは使わない）
++    bool blockInput = true;                       // マウスを受け止めて、後ろの UI・ゲームに通さない
++    Vec2 size{1920.0f, 1080.0f};                  // 中身として必要な大きさ（Box の中で使う）
++
++    // 次に描くときに撮り直す（timing が Script のときはこれで撮る）
++    void Capture() { m_Request = true; }
++    // 撮った画面（まだ撮っていなければ nullptr）。ほかの画像・スクリプトでも使える
++    const std::shared_ptr<Texture>& GetCapturedTexture() const { return m_Captured; }
++    // 撮った画面を手放す（timing が Script なら、次に Capture() するまで何も表示しない）
++    void ReleaseCapture();
++
++    bool HasHitArea() const override { return blockInput; }
++    void Reflect(PropertyVisitor& v) override;
++    Vec2 ComputeDesiredSize(WidgetContext& ctx, float maxWidth) override;
++    void Paint(WidgetContext& ctx) override;
++
++private:
++    void Grab(const UI::Rect& screenRect);
++    void UpdateBlur();
++
++    std::shared_ptr<Texture> m_Captured;            // 撮ったそのまま
++    std::vector<std::shared_ptr<Texture>> m_Blur;   // ぼかし用に半分ずつ縮めたもの
++    std::shared_ptr<Texture> m_Display;             // 表示するもの（m_Captured か m_Blur の最後）
++    int m_BlurSteps = -1;                           // m_Blur を作ったときのぼかしの段数
++    bool m_Request = false;
++    double m_LastPaint = -100.0;
++};
++
+ enum class ButtonTransition { ColorTint, None };
+ 
+ // ボタン。文字だけでも、中に好きなウィジェットを 1 つ入れてもよい（Unreal 式）
+diff --git a/Modules/Engine/src/WidgetCapture.cpp b/Modules/Engine/src/WidgetCapture.cpp
+new file mode 100644
+index 0000000..0d722c5
+--- /dev/null
++++ b/Modules/Engine/src/WidgetCapture.cpp
+@@ -0,0 +1,136 @@
++// ウィジェット UI: キャプチャー（ゲームの画面を撮って、その場に貼る）
++//
++//   ポーズ画面・メニューの背景に、止めたゲームの画面を出すためのもの。
++//   撮った画面は GPU のテクスチャに持つだけで、ファイルには書かない（UI を閉じる・作り直すと消える）。
++//   描くときに、それまでに描かれたもの（ゲームの画面・このウィジェットより後ろの UI）をテクスチャへ写す。
++//   ぼかしは半分ずつ縮めたテクスチャをなめらかに引き伸ばして作る（シェーダーを使わない）。
++
++#include "Ruto/Engine/Widgets.h"
++
++#include "Ruto/Engine/Assets.h"
++#include "Ruto/Graphics/RenderCommand.h"
++#include "Ruto/Graphics/Renderer2D.h"
++#include "Ruto/Graphics/Texture.h"
++#include "Ruto/Platform/Platform.h"
++
++#include <algorithm>
++#include <cmath>
++
++namespace Ruto {
++
++namespace {
++
++constexpr const char* const kCaptureTiming[] = {"OnShow", "EveryFrame", "Script"};
++constexpr const char* const kCaptureArea[] = {"Screen", "Behind"};
++constexpr int kMaxBlurSteps = 6;       // 1 / 64 まで縮める
++constexpr double kShownAgainAfter = 0.25; // これより長く描かれなかったら「表示し直した」とみなして撮り直す
++
++std::shared_ptr<Texture> MakeTarget(int w, int h) {
++    return std::make_shared<Texture>(std::max(w, 1), std::max(h, 1), nullptr, TextureFilter::Linear, TextureWrap::Clamp);
++}
++
++} // namespace
++
++void UICapture::Reflect(PropertyVisitor& v) {
++    v.EnumField("timing", timing, kCaptureTiming);
++    v.EnumField("area", area, kCaptureArea);
++    v.Color("color", color);
++    v.Range("blur", blur, 0.0f, 1.0f);
++    v.Property("blockInput", blockInput);
++    v.Property("size", size);
++    v.Header("デザイン");
++    v.Asset("previewTexture", previewTexture, AssetType::Texture);
++}
++
++Vec2 UICapture::ComputeDesiredSize(WidgetContext&, float) { return size; }
++
++void UICapture::ReleaseCapture() {
++    m_Captured.reset();
++    m_Blur.clear();
++    m_Display.reset();
++    m_BlurSteps = -1;
++}
++
++void UICapture::Grab(const UI::Rect& screenRect) {
++    // ここまでに積んだ四角形（後ろの UI）を描いてから写す
++    Renderer2D::Flush();
++    const Vec2 screen = UI::GetScreenSize();
++    const int sw = static_cast<int>(std::lround(screen.x)), sh = static_cast<int>(std::lround(screen.y));
++    if (sw <= 0 || sh <= 0) return;
++    int x0 = 0, y0 = 0, x1 = sw, y1 = sh; // UI の座標（左上が原点）
++    if (area == CaptureArea::Behind) {
++        x0 = std::clamp(static_cast<int>(std::floor(screenRect.x)), 0, sw);
++        y0 = std::clamp(static_cast<int>(std::floor(screenRect.y)), 0, sh);
++        x1 = std::clamp(static_cast<int>(std::ceil(screenRect.Right())), 0, sw);
++        y1 = std::clamp(static_cast<int>(std::ceil(screenRect.Bottom())), 0, sh);
++    }
++    const int w = x1 - x0, h = y1 - y0;
++    if (w <= 0 || h <= 0) return;
++    if (!m_Captured) m_Captured = MakeTarget(w, h);
++    // 描画先は左下が原点なので上下を返す
++    if (!RenderCommand::CopyFramebufferToTexture(*m_Captured, x0, sh - y1, w, h)) return;
++    m_BlurSteps = -1; // ぼかしを作り直す
++}
++
++void UICapture::UpdateBlur() {
++    // ぼかし: 半分ずつ縮める（線形補間で 2×2 の平均になる）。blur が変わったら撮り直さずに作り直す
++    const int steps = std::clamp(static_cast<int>(std::lround(blur * kMaxBlurSteps)), 0, kMaxBlurSteps);
++    if (!m_Captured || steps == m_BlurSteps) return;
++    m_BlurSteps = steps;
++    m_Display = m_Captured;
++    int bw = m_Captured->GetWidth(), bh = m_Captured->GetHeight();
++    for (int i = 0; i < steps && bw > 1 && bh > 1; ++i) {
++        bw = std::max(1, bw / 2);
++        bh = std::max(1, bh / 2);
++        if (static_cast<int>(m_Blur.size()) <= i) m_Blur.push_back(MakeTarget(bw, bh));
++        Texture& level = *m_Blur[static_cast<size_t>(i)];
++        if (level.GetWidth() != bw || level.GetHeight() != bh) level.SetData(bw, bh, nullptr);
++        RenderCommand::BlitTexture(*m_Display, level);
++        m_Display = m_Blur[static_cast<size_t>(i)];
++    }
++}
++
++void UICapture::Paint(WidgetContext& ctx) {
++    const UI::Rect& R = m_ScreenRect;
++    if (R.w <= 0.0f || R.h <= 0.0f) return;
++    if (ctx.designMode) {
++        // デザイン中: ゲームの画面は無いので、見本の画像か模様を出す
++        if (auto tex = previewTexture.empty() ? nullptr : Assets::GetTexture(previewTexture)) {
++            ctx.DrawImage(R, tex, ctx.Fade(color));
++        } else {
++            ctx.FillRect(R, ctx.Fade({0.22f * color.x, 0.26f * color.y, 0.34f * color.z, color.w}));
++            const float s = std::max(m_ScreenScale.y, 0.01f);
++            const float px = std::clamp(R.h * 0.06f, 12.0f * s, 40.0f * s);
++            ctx.DrawText(R, "キャプチャー（ゲームの画面がここに入ります）", "", px, ctx.Fade({1.0f, 1.0f, 1.0f, 0.55f}), TextAlign::Center,
++                         TextVAlign::Center, true);
++        }
++        if (blockInput && visibility == WidgetVisibility::Visible) UI::HoverRect(R);
++        return;
++    }
++
++    const double now = Platform::GetTime();
++    const bool shownAgain = now - m_LastPaint > kShownAgainAfter;
++    m_LastPaint = now;
++    bool grab = m_Request;
++    if (timing == CaptureTiming::EveryFrame) grab = true;
++    if (timing == CaptureTiming::OnShow && (shownAgain || !m_Captured)) grab = true;
++    if (grab) {
++        m_Request = false;
++        Grab(R);
++    }
++    UpdateBlur();
++    if (m_Display) {
++        UI::Rect dst = R;
++        if (area == CaptureArea::Behind) {
++            // 画面の外にはみ出した分は撮れていないので、撮れた範囲に描く
++            const Vec2 screen = UI::GetScreenSize();
++            const float x0 = std::clamp(std::floor(R.x), 0.0f, screen.x), y0 = std::clamp(std::floor(R.y), 0.0f, screen.y);
++            const float x1 = std::clamp(std::ceil(R.Right()), 0.0f, screen.x), y1 = std::clamp(std::ceil(R.Bottom()), 0.0f, screen.y);
++            dst = {x0, y0, x1 - x0, y1 - y0};
++        }
++        ctx.DrawImage(dst, m_Display, ctx.Fade(color));
++    }
++    if (blockInput && visibility == WidgetVisibility::Visible && opacity > 0.01f) UI::HoverRect(R);
++}
++
++} // namespace Ruto
+diff --git a/Modules/Engine/src/Widgets.cpp b/Modules/Engine/src/Widgets.cpp
+index 38d46aa..99811df 100644
+--- a/Modules/Engine/src/Widgets.cpp
++++ b/Modules/Engine/src/Widgets.cpp
+@@ -90,6 +90,7 @@ void EnsureBuiltins() {
+     Reg<UIImage>("UIImage", "画像", "共通", "画像または色の四角（9 スライス対応）");
+     Reg<UIButton>("UIButton", "ボタン", "共通", "クリックできるボタン（中にウィジェットも入れられる）");
+     Reg<UIProgressBar>("UIProgressBar", "プログレスバー", "共通", "HP バー・読み込みの進み具合など");
++    Reg<UICapture>("UICapture", "キャプチャー", "共通", "ゲームの画面を撮って貼る（ポーズ・メニューの背景。ぼかし・暗くもできる）");
+     Reg<UISpacer>("UISpacer", "スペーサー", "共通", "何も描かずに場所だけ空ける");
+     Reg<UISlider>("UISlider", "スライダー", "入力", "左右にドラッグして値を選ぶ");
+     Reg<UIToggle>("UIToggle", "トグル", "入力", "オン / オフの切り替え（スイッチ・チェックボックス）");
+diff --git a/Modules/Graphics/include/Ruto/Graphics/RenderCommand.h b/Modules/Graphics/include/Ruto/Graphics/RenderCommand.h
+index 6753322..7022e57 100644
+--- a/Modules/Graphics/include/Ruto/Graphics/RenderCommand.h
++++ b/Modules/Graphics/include/Ruto/Graphics/RenderCommand.h
+@@ -2,8 +2,12 @@
+ 
+ #include "Ruto/Math/Math.h"
+ 
++#include <memory>
++
+ namespace Ruto {
+ 
++class Texture;
++
+ // グラフィックス API への直接的な命令をまとめたもの
+ class RenderCommand {
+ public:
+@@ -11,6 +15,13 @@ public:
+     static void Clear(const Vec4& color);
+     // 一部の範囲だけ消す（複数のカメラで画面を分けるとき）
+     static void ClearRect(int x, int y, int width, int height, const Vec4& color, bool clearColor, bool clearDepth);
++
++    // 今の描画先（画面・フレームバッファ）の範囲をテクスチャに写す（画面のキャプチャー。ファイルには書かない）
++    //   x, y は描画先のピクセル（左下が原点）。dst は width × height に作り直される。MSAA の画面からも写せる
++    //   写す前に Renderer2D::Flush() しておくと、それまでに積んだ四角形も写る
++    static bool CopyFramebufferToTexture(Texture& dst, int x, int y, int width, int height);
++    // テクスチャを別のテクスチャへ拡大縮小して写す（なめらかに。dst の大きさはそのまま）
++    static void BlitTexture(const Texture& src, Texture& dst);
+ };
+ 
+ } // namespace Ruto
+diff --git a/Modules/Graphics/src/GL.h b/Modules/Graphics/src/GL.h
+index 75b1062..2cd3fdc 100644
+--- a/Modules/Graphics/src/GL.h
++++ b/Modules/Graphics/src/GL.h
+@@ -77,6 +77,10 @@ constexpr GLenum GL_FRAMEBUFFER_COMPLETE = 0x8CD5;
+ constexpr GLenum GL_COLOR_ATTACHMENT0 = 0x8CE0;
+ constexpr GLenum GL_FRAMEBUFFER = 0x8D40;
+ constexpr GLenum GL_RENDERBUFFER = 0x8D41;
++constexpr GLenum GL_DRAW_FRAMEBUFFER_BINDING = 0x8CA6;
++constexpr GLenum GL_READ_FRAMEBUFFER = 0x8CA8;
++constexpr GLenum GL_DRAW_FRAMEBUFFER = 0x8CA9;
++constexpr GLenum GL_READ_FRAMEBUFFER_BINDING = 0x8CAA;
+ 
+ #define RUTO_GL_FUNCTIONS(X)                                                                                   \
+     X(void, glViewport, (GLint x, GLint y, GLsizei width, GLsizei height))                                    \
+@@ -149,7 +153,11 @@ constexpr GLenum GL_RENDERBUFFER = 0x8D41;
+     X(void, glBindRenderbuffer, (GLenum target, GLuint renderbuffer))                                          \
+     X(void, glRenderbufferStorage, (GLenum target, GLenum internalformat, GLsizei width, GLsizei height))     \
+     X(void, glFramebufferRenderbuffer, (GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer)) \
+-    X(GLenum, glCheckFramebufferStatus, (GLenum target))
++    X(GLenum, glCheckFramebufferStatus, (GLenum target))                                                       \
++    X(void, glGetIntegerv, (GLenum pname, GLint* data))                                                        \
++    X(void, glBlitFramebuffer,                                                                                 \
++      (GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, \
++       GLbitfield mask, GLenum filter))
+ 
+ #define RUTO_GL_DECLARE(ret, name, params)  \
+     using PFN_##name = ret(RUTO_GLAPI*) params; \
+diff --git a/Modules/Graphics/src/RenderCommand.cpp b/Modules/Graphics/src/RenderCommand.cpp
+index 53ce86b..7abbe78 100644
+--- a/Modules/Graphics/src/RenderCommand.cpp
++++ b/Modules/Graphics/src/RenderCommand.cpp
+@@ -1,6 +1,7 @@
+ #include "Ruto/Graphics/RenderCommand.h"
+ 
+ #include "GL.h"
++#include "Ruto/Graphics/Texture.h"
+ 
+ namespace Ruto {
+ 
+@@ -24,4 +25,63 @@ void RenderCommand::ClearRect(int x, int y, int width, int height, const Vec4& c
+     glDisable(GL_SCISSOR_TEST);
+ }
+ 
++namespace {
++
++// 写すときだけ使うフレームバッファ（読む側・書く側。最初に使うときに作る）
++GLuint s_CopyRead = 0;
++GLuint s_CopyDraw = 0;
++
++void EnsureCopyFramebuffers() {
++    if (!s_CopyRead) glGenFramebuffers(1, &s_CopyRead);
++    if (!s_CopyDraw) glGenFramebuffers(1, &s_CopyDraw);
++}
++
++// 今の読み書きの描画先・シザーを覚えておいて戻す
++struct FramebufferState {
++    GLint read = 0, draw = 0, scissor = 0;
++    FramebufferState() {
++        glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &read);
++        glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &draw);
++        glGetIntegerv(GL_SCISSOR_TEST, &scissor);
++        if (scissor) glDisable(GL_SCISSOR_TEST); // 写すときにシザーで切られないように
++    }
++    ~FramebufferState() {
++        glBindFramebuffer(GL_READ_FRAMEBUFFER, static_cast<GLuint>(read));
++        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, static_cast<GLuint>(draw));
++        if (scissor) glEnable(GL_SCISSOR_TEST);
++    }
++};
++
++} // namespace
++
++bool RenderCommand::CopyFramebufferToTexture(Texture& dst, int x, int y, int width, int height) {
++    if (width <= 0 || height <= 0) return false;
++    if (dst.GetWidth() != width || dst.GetHeight() != height) dst.SetData(width, height, nullptr);
++    EnsureCopyFramebuffers();
++    FramebufferState state;
++    // 読む側は今の描画先のまま、書く側だけ dst を付けたフレームバッファにする
++    glBindFramebuffer(GL_READ_FRAMEBUFFER, static_cast<GLuint>(state.draw));
++    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, s_CopyDraw);
++    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, dst.GetId(), 0);
++    const bool ok = glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
++    // 同じ大きさで写す（MSAA の画面からはこのとき 1 サンプルにまとめられる）
++    if (ok) glBlitFramebuffer(x, y, x + width, y + height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
++    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 0, 0);
++    return ok;
++}
++
++void RenderCommand::BlitTexture(const Texture& src, Texture& dst) {
++    if (src.GetWidth() <= 0 || dst.GetWidth() <= 0) return;
++    EnsureCopyFramebuffers();
++    FramebufferState state;
++    glBindFramebuffer(GL_READ_FRAMEBUFFER, s_CopyRead);
++    glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, src.GetId(), 0);
++    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, s_CopyDraw);
++    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, dst.GetId(), 0);
++    if (glCheckFramebufferStatus(GL_READ_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE && glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
++        glBlitFramebuffer(0, 0, src.GetWidth(), src.GetHeight(), 0, 0, dst.GetWidth(), dst.GetHeight(), GL_COLOR_BUFFER_BIT, GL_LINEAR);
++    glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 0, 0);
++    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 0, 0);
++}
++
+ } // namespace Ruto
+-- 
+2.43.0
+

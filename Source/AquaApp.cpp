@@ -323,7 +323,6 @@ void App::Notify(std::string text, bool error) {
 void App::OnUpdate(float /*dt*/) {
     const double now = Platform::GetTime();
     HandleLinkRequests();
-    UpdateCapture(now);
     if (m_Link && now - m_LastSession > 2.0) WriteSession();
     if (m_Project.IsOpen() && now - m_LastEditorCheck > 1.0) {
         m_LastEditorCheck = now;
@@ -395,12 +394,6 @@ void App::DrawUI() {
     auto dockWith = [](const char* existing) {
         if (ImGuiWindow* w = ImGui::FindWindowByName(existing); w && w->DockId) ImGui::SetNextWindowDockID(w->DockId, ImGuiCond_FirstUseEver);
     };
-    dockWith("###Assets");
-    if (ImGui::Begin(ICON_FA_CAMERA "  キャプチャー###Capture")) {
-        if (Document* doc = ActiveDocument()) DrawCapturePanel(*doc);
-        else ImGui::TextDisabled("UI を開くと、ゲームの画面を撮ってキャンバスの背景に敷けます");
-    }
-    ImGui::End();
     dockWith("###Details");
     if (ImGui::Begin(ICON_FA_TABLE_CELLS "  整列###Arrange")) {
         if (Document* doc = ActiveDocument()) {
@@ -503,10 +496,6 @@ void App::DrawMenuBar() {
             ImGui::MenuItem(ICON_FA_MAGNET "  吸い付き（スナップ）", nullptr, &doc->ui.snap);
             if (ImGui::MenuItem(ICON_FA_EXPAND "  全体を表示", "F")) doc->ui.zoom = 0.0f;
             if (ImGui::MenuItem(ICON_FA_CIRCLE_PLAY "  プレビュー", "P", doc->ui.preview)) doc->ui.preview = !doc->ui.preview;
-            if (ImGui::MenuItem(ICON_FA_IMAGE "  背景（キャプチャー）", "B", doc->background.visible && !doc->background.image.empty(), !doc->background.image.empty())) {
-                doc->background.visible = !doc->background.visible;
-                doc->Save();
-            }
             ImGui::Separator();
         }
         if (ImGui::MenuItem(ICON_FA_TABLE_COLUMNS "  レイアウトを元に戻す")) m_ResetLayout = true;
@@ -615,7 +604,6 @@ void App::BuildDefaultLayout(ImGuiID id) {
     ImGui::DockBuilderDockWindow("###Arrange", right);
     ImGui::DockBuilderDockWindow("###Animation", bottom);
     ImGui::DockBuilderDockWindow("###Assets", bottom);
-    ImGui::DockBuilderDockWindow("###Capture", bottom);
     ImGui::DockBuilderDockWindow("###Log", bottom);
     ImGui::DockBuilderFinish(id);
     m_DefaultTabsFrames = 4; // 窓とタブができてから、最初に見せるタブを選ぶ

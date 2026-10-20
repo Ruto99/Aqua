@@ -23,6 +23,8 @@ const char* WidgetIcon(std::string_view type);
 ImVec4 WidgetIconColor(std::string_view type);
 const char* TypeLabel(std::string_view type);
 std::string PropertyLabelJa(std::string_view property);
+// 選択肢（enum）の日本語の表示名（知らないものはそのまま）
+std::string EnumOptionLabelJa(std::string_view property, std::string_view option);
 
 // ツリーの中の位置（子の番号の並び）
 using WidgetPath = std::vector<int>;

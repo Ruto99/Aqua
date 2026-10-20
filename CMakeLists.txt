@@ -24,11 +24,7 @@ include("${RUTO_ENGINE_DIR}/cmake/RutoProject.cmake")
 
 file(GLOB AQUA_SOURCES CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/Source/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/Source/*.h)
 add_executable(Aqua ${AQUA_SOURCES})
-target_link_libraries(Aqua PRIVATE Ruto::Engine Ruto::EditorUI)
-if(WIN32)
-    # shell32（ファイル操作）・user32 / gdi32 / dwmapi（キャプチャーのパネルで画面を撮る）
-    target_link_libraries(Aqua PRIVATE shell32 user32 gdi32 dwmapi)
-endif()
+target_link_libraries(Aqua PRIVATE Ruto::Engine Ruto::EditorUI $<$<PLATFORM_ID:Windows>:shell32>)
 target_compile_definitions(Aqua PRIVATE AQUA_VERSION="${PROJECT_VERSION}")
 ruto_set_exe_icon(Aqua "${CMAKE_CURRENT_SOURCE_DIR}/Resources/Aqua.ico") # RutoGame.cmake（SDK）の関数
 

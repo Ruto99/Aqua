@@ -235,16 +235,6 @@ std::unique_ptr<Document> Document::Open(Project& project, const fs::path& file,
         if (doc->output.empty()) doc->output = project.DefaultOutputFor(file);
         doc->asset->FromJson((*json)["document"]);
         for (const auto& [k, v] : (*json)["preview"]["variables"].Items()) doc->previewVariables[k] = v.AsString();
-        if (const Json& bg = (*json)["preview"]["background"]; bg.IsObject()) {
-            CaptureBackground& b = doc->background;
-            b.image = bg["image"].AsString();
-            b.visible = bg["visible"].AsBool(true);
-            b.inPreview = bg["inPreview"].AsBool(true);
-            b.opacity = std::clamp(static_cast<float>(bg["opacity"].AsNumber(1.0)), 0.0f, 1.0f);
-            b.fit = std::clamp(bg["fit"].AsInt(CaptureBackground::Stretch), 0, 3);
-            b.scale = std::max(static_cast<float>(bg["scale"].AsNumber(1.0)), 0.01f);
-            b.offset = {static_cast<float>(bg["offset"].At(0).AsNumber()), static_cast<float>(bg["offset"].At(1).AsNumber())};
-        }
     } else if (ext == Ruto::Aqua::kExtension) {
         // バイナリだけがあるとき（ほかの人が書き出した・編集用ファイルを消した）は、そこから編集用ファイルを作り直す
         auto bin = Ruto::Aqua::ReadFile(file, error);
@@ -358,20 +348,6 @@ bool Document::Save() {
     Json vars = Json::MakeObject();
     for (const auto& [k, v] : previewVariables) vars[k] = v;
     j["preview"]["variables"] = std::move(vars);
-    if (!background.image.empty()) {
-        Json bg = Json::MakeObject();
-        bg["image"] = background.image;
-        bg["visible"] = background.visible;
-        bg["inPreview"] = background.inPreview;
-        bg["opacity"] = background.opacity;
-        bg["fit"] = background.fit;
-        bg["scale"] = background.scale;
-        Json off = Json::MakeArray();
-        off.Push(background.offset.x);
-        off.Push(background.offset.y);
-        bg["offset"] = std::move(off);
-        j["preview"]["background"] = std::move(bg);
-    }
     std::error_code ec;
     fs::create_directories(sourcePath.parent_path(), ec);
     if (!FileSystem::WriteTextFile(sourcePath, j.Dump(2) + "\n")) {

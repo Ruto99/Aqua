@@ -5,17 +5,15 @@
 //   左:   プロジェクト（UI の一覧）・アセット（画像・フォント・音・UI）・パレット・階層
 //   中央: 文書のタブ + 見たままのキャンバス、下にアニメーションのタイムライン
 //   右:   詳細（スロット・プロパティ・スタイル）・スタイル・変数（プレビュー用の値）・整列
-//   下:   アニメーション・アセット・キャプチャー（ゲームの画面を背景に敷く）・ログ
+//   下:   アニメーション・アセット・ログ
 //
 // 編集すると Assets/**/*.aqua がすぐ書き出され、RutoEditor・実行中のゲームに反映される。
 
-#include "AquaCapture.h"
 #include "AquaDocument.h"
 
 #include <Ruto/Aqua/AquaLink.h>
 
 #include <deque>
-#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -100,18 +98,6 @@ private:
     // ---- アニメーション（AquaAnimation.cpp） ----
     void DrawAnimations(Document& doc);
 
-    // ---- キャプチャー（AquaCapturePanel.cpp）: ゲームの画面を撮ってキャンバスの背景に敷く ----
-    void DrawCapturePanel(Document& doc);
-    void DrawBackgroundSettings(Document& doc);
-    void StartCapture(Document& doc);
-    void UpdateCapture(double now);  // 待ち時間が過ぎたら撮る（毎フレーム）
-    bool UseCapturedImage(Document& doc, const Ruto::Image& image);
-    bool UseImageFile(Document& doc, const fs::path& file);
-    void SetBackground(Document& doc, const fs::path& file);
-    void EnsureBackgroundTexture(Document& doc);
-    void PaintBackground(Document& doc, int width, int height, float uiScale);
-    fs::path CaptureDir() const;
-
     // ---- 整列（AquaArrange.cpp）: 選んだウィジェットを揃える・等間隔にする・格子に並べる ----
     void DrawArrangePanel(Document& doc);
     std::vector<Widget*> ArrangeTargets(Document& doc, bool* children = nullptr);
@@ -147,22 +133,6 @@ private:
     std::deque<LogLine> m_Log;
     int m_LogSink = -1;
     bool m_LogScroll = false;
-
-    // キャプチャー
-    enum class CaptureSource { Window = 0, Screen = 1 };
-    CaptureSource m_CaptureSource = CaptureSource::Window;
-    std::vector<Capture::WindowInfo> m_CaptureWindows;
-    uintptr_t m_CaptureWindow = 0;
-    std::string m_CaptureWindowTitle;
-    int m_CaptureDelay = 0;            // 秒
-    bool m_CaptureHideAqua = true;     // 画面全体を撮るときに Aqua を隠す
-    bool m_CaptureShrink = true;       // 基準解像度より大きければ縮めて保存する
-    double m_CaptureAt = -1.0;         // 撮る時刻（< 0 なら撮らない）
-    bool m_CaptureHidden = false;
-    fs::path m_CaptureDoc;             // 撮った画像を敷く文書（編集用ファイル）
-    std::vector<fs::path> m_CaptureFiles;
-    double m_CaptureFilesTime = -100.0;
-    std::map<std::string, std::shared_ptr<Texture>> m_CaptureThumbs;
 
     // 整列
     int m_ArrangeRelative = 0;         // 0: 選んだものの範囲 / 1: 親 / 2: 最初に選んだもの
