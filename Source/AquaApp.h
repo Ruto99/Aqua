@@ -117,6 +117,9 @@ private:
     std::string CreateShader(const std::string& name, const std::string& source);
     void ApplyShaderToSelection(const std::string& assetPath);
 
+    // ---- グループ（AquaArrange.cpp）: 階層とは別にウィジェットを名前でまとめる（アニメーション・スクリプト用） ----
+    void DrawGroupsPanel(Document& doc);
+
     // ---- 整列（AquaArrange.cpp）: 選んだウィジェットを揃える・等間隔にする・格子に並べる ----
     void DrawArrangePanel(Document& doc);
     std::vector<Widget*> ArrangeTargets(Document& doc, bool* children = nullptr);
@@ -172,6 +175,9 @@ private:
 
     // パーツの上書きで編集している中のウィジェット（名前）
     std::string m_OverrideTarget;
+    // グループ
+    std::string m_GroupRename;   // 名前を変えているグループ
+    std::string m_GroupRenameBuffer;
 
     // 整列
     int m_ArrangeRelative = 0;         // 0: 選んだものの範囲 / 1: 親 / 2: 最初に選んだもの

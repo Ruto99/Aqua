@@ -91,7 +91,26 @@ public:
         if (deps && std::find(deps->begin(), deps->end(), v) == deps->end()) deps->push_back(v);
         v = prefix + v;
     }
-    void Property(std::string_view, std::string&) override {}
+    void Property(std::string_view n, std::string& v) override {
+        if (n != "frames") return;
+        // コマ送りの画像（1 行に 1 つ）
+        std::string out;
+        size_t start = 0;
+        while (start <= v.size()) {
+            size_t end = v.find('\n', start);
+            if (end == std::string::npos) end = v.size();
+            std::string line = v.substr(start, end - start);
+            if (!line.empty() && line.back() == '\r') line.pop_back();
+            if (!line.empty() && line.front() != '@') {
+                if (deps && std::find(deps->begin(), deps->end(), line) == deps->end()) deps->push_back(line);
+                line = prefix + line;
+            }
+            out += line;
+            if (end < v.size()) out += '\n';
+            start = end + 1;
+        }
+        v = out;
+    }
     void Property(std::string_view, bool&) override {}
     void Property(std::string_view, int&) override {}
     void Property(std::string_view, float&) override {}
@@ -859,9 +878,17 @@ std::string GenerateLayoutHeader(const WidgetAsset& layout, const std::string& t
             if (!message.empty() && std::find(messages.begin(), messages.end(), message) == messages.end()) messages.push_back(message);
         });
     }
-    for (const WidgetAnimation& a : asset->animations) animations.push_back(a.name);
+    for (const WidgetAnimation& a : asset->animations) {
+        animations.push_back(a.name);
+        for (const WidgetAnimSection& sec : a.sections) {
+            if (std::find(animations.begin(), animations.end(), sec.name) == animations.end()) animations.push_back(sec.name);
+        }
+    }
+    std::vector<std::string> groups;
+    for (const WidgetGroup& g : asset->groups) groups.push_back(g.name);
     emit("Widgets", "ウィジェットの名前（Find・OnClick・SetText・SetVisible）", widgets);
-    emit("Animations", "アニメーションの名前（PlayAnimation）", animations);
+    emit("Animations", "アニメーションと区間の名前（PlayAnimation）", animations);
+    emit("Groups", "グループの名前（FindGroup・SetGroupVisible）", groups);
     emit("Variables", "変数の名前（SetVariable）", CollectLayoutVariables(layout));
     emit("Messages", "ボタンのクリック時のメッセージ（OnUIEvent の e.message）", messages);
     h += std::format("\n}} // namespace AquaUI::{}\n", ns);

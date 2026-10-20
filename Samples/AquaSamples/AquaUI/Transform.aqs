@@ -118,6 +118,9 @@
               <number>0</number>
             </array>
             <number key="cornerRadius">0</number>
+            <string key="frames"/>
+            <number key="frame">0</number>
+            <number key="framesPerSecond">0</number>
           </object>
           <object key="slot">
             <array key="anchorMin">
@@ -1317,6 +1320,9 @@
                                           <number>0</number>
                                         </array>
                                         <number key="cornerRadius">14</number>
+                                        <string key="frames"/>
+                                        <number key="frame">0</number>
+                                        <number key="framesPerSecond">0</number>
                                       </object>
                                       <object key="slot">
                                         <array key="anchorMin">
@@ -1401,6 +1407,9 @@
                                           <number>0</number>
                                         </array>
                                         <number key="cornerRadius">14</number>
+                                        <string key="frames"/>
+                                        <number key="frame">0</number>
+                                        <number key="framesPerSecond">0</number>
                                       </object>
                                       <object key="slot">
                                         <array key="anchorMin">
@@ -1485,6 +1494,9 @@
                                           <number>0</number>
                                         </array>
                                         <number key="cornerRadius">14</number>
+                                        <string key="frames"/>
+                                        <number key="frame">0</number>
+                                        <number key="framesPerSecond">0</number>
                                       </object>
                                       <object key="slot">
                                         <array key="anchorMin">
@@ -1569,6 +1581,9 @@
                                           <number>0</number>
                                         </array>
                                         <number key="cornerRadius">14</number>
+                                        <string key="frames"/>
+                                        <number key="frame">0</number>
+                                        <number key="framesPerSecond">0</number>
                                       </object>
                                       <object key="slot">
                                         <array key="anchorMin">
@@ -1796,6 +1811,9 @@
                                       <number>0</number>
                                     </array>
                                     <number key="cornerRadius">0</number>
+                                    <string key="frames"/>
+                                    <number key="frame">0</number>
+                                    <number key="framesPerSecond">0</number>
                                   </object>
                                   <object key="slot">
                                     <array key="anchorMin">
@@ -1880,6 +1898,9 @@
                                       <number>0</number>
                                     </array>
                                     <number key="cornerRadius">5</number>
+                                    <string key="frames"/>
+                                    <number key="frame">0</number>
+                                    <number key="framesPerSecond">0</number>
                                   </object>
                                   <object key="slot">
                                     <array key="anchorMin">
@@ -2560,6 +2581,9 @@
                           <number>0</number>
                         </array>
                         <number key="cornerRadius">18</number>
+                        <string key="frames"/>
+                        <number key="frame">0</number>
+                        <number key="framesPerSecond">0</number>
                       </object>
                       <object key="slot">
                         <array key="anchorMin">
@@ -3580,6 +3604,9 @@
                                   <number>0</number>
                                 </array>
                                 <number key="cornerRadius">20</number>
+                                <string key="frames"/>
+                                <number key="frame">0</number>
+                                <number key="framesPerSecond">0</number>
                               </object>
                               <object key="slot">
                                 <array key="anchorMin">
@@ -3664,6 +3691,9 @@
                                   <number>0</number>
                                 </array>
                                 <number key="cornerRadius">0</number>
+                                <string key="frames"/>
+                                <number key="frame">0</number>
+                                <number key="framesPerSecond">0</number>
                               </object>
                               <object key="slot">
                                 <array key="anchorMin">

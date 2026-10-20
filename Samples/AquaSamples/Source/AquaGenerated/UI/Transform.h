@@ -66,7 +66,7 @@ inline constexpr const char* ShopItemPrice = "ShopItemPrice";
 inline constexpr const char* HitNote = "HitNote";
 } // namespace Widgets
 
-// アニメーションの名前（PlayAnimation）
+// アニメーションと区間の名前（PlayAnimation）
 namespace Animations {
 inline constexpr const char* Loop = "Loop";
 } // namespace Animations

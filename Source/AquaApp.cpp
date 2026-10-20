@@ -481,6 +481,12 @@ void App::DrawUI() {
     if (ImGui::Begin(ICON_FA_FILL_DRIP "  シェーダー###Shader")) DrawShaderPanel();
     ImGui::End();
     dockWith("###Details");
+    dockWith("###Details");
+    if (ImGui::Begin(ICON_FA_OBJECT_GROUP "  グループ###Groups")) {
+        if (Document* doc = ActiveDocument()) DrawGroupsPanel(*doc);
+        else ImGui::TextDisabled("UI を開くと、ウィジェットをグループにまとめられます");
+    }
+    ImGui::End();
     if (ImGui::Begin(ICON_FA_TABLE_CELLS "  整列###Arrange")) {
         if (Document* doc = ActiveDocument()) {
             DrawArrangePanel(*doc);

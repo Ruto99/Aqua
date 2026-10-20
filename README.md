@@ -20,7 +20,7 @@ RutoEngine とは別のアプリで、**RutoEngine のプロジェクトが無�
 
 RutoEngine の SDK（ビルド済みのエンジン）をリンクして作る。先に RutoEngine の `Setup.bat` で SDK を作っておく。
 
-**エンジンのパッチ**: キャプチャー・テキストアニメーション・UI のシェーダー・Null / Bounding ペイン・回転・頂点カラー・ユーザーデータ・パーツの上書きは RutoEngine 側の実装が要る。**`ApplyEnginePatches.bat` をダブルクリック**すると、`EnginePatches` のパッチを番号の順に RutoEngine へ `git am` で当て、`Setup.bat` で SDK を作り直す。
+**エンジンのパッチ**: キャプチャー・テキストアニメーション・UI のシェーダー・Null / Bounding ペイン・回転・頂点カラー・ユーザーデータ・パーツの上書き・アニメーションの区間・グループ・コマ送りは RutoEngine 側の実装が要る。**`ApplyEnginePatches.bat` をダブルクリック**すると、`EnginePatches` のパッチを番号の順に RutoEngine へ `git am` で当て、`Setup.bat` で SDK を作り直す。
 
 - 当て済みのパッチは飛ばすので、何度実行してもよい（パッチが増えたときもこれを実行する）。
 - RutoEngine にコミットしていない変更があると、パッチを当てる前に止まる（先にコミットするか stash する）。
@@ -31,7 +31,7 @@ RutoEngine の SDK（ビルド済みのエンジン）をリンクして作る�
 
 ```bat
 cd ..\RutoEngine
-git am -3 ..\Aqua\EnginePatches\0001-UICapture.patch ..\Aqua\EnginePatches\0002-TextAnimation-UIShader.patch ..\Aqua\EnginePatches\0003-Fix-duplicate-glGetIntegerv.patch ..\Aqua\EnginePatches\0004-NullPane.patch ..\Aqua\EnginePatches\0005-Rotation-VertexColors-BoundingPane-UserData.patch ..\Aqua\EnginePatches\0006-PartOverrides.patch
+git am -3 ..\Aqua\EnginePatches\0001-UICapture.patch ..\Aqua\EnginePatches\0002-TextAnimation-UIShader.patch ..\Aqua\EnginePatches\0003-Fix-duplicate-glGetIntegerv.patch ..\Aqua\EnginePatches\0004-NullPane.patch ..\Aqua\EnginePatches\0005-Rotation-VertexColors-BoundingPane-UserData.patch ..\Aqua\EnginePatches\0006-PartOverrides.patch ..\Aqua\EnginePatches\0007-AnimSections-Groups-TextureFrames.patch
 Setup.bat
 ```
 
@@ -151,6 +151,16 @@ LayoutEditor 風の機能。どれも詳細の共通の欄（Bounding ペイン�
 | **ユーザーデータ** | ウィジェットごとの自由な値。1 行に 1 つ「キー=値」で書き、スクリプトから `w->GetUserData("キー")` / `GetUserDataFloat("キー")` / `HasUserData("キー")` で読む |
 
 UI のシェーダーの `LocalUV()` などは回っていない四角形を基準にするので、回したウィジェットでは模様が回らない。
+
+### アニメーションの区間・グループ・コマ送り
+
+| 機能 | 内容 |
+|---|---|
+| **区間** | アニメーションパネルの「区間」で、1 本のタイムラインに名前付きの範囲（In・Idle・Out など。繰り返しの設定つき）を付ける。目盛りに帯で表示する。スクリプトの `PlayAnimation("In")` は区間の名前でも再生でき、その範囲だけ動く |
+| **グループ** | 「グループ」パネルで、選んだウィジェットをグループにまとめる（右クリックでメンバーを選ぶ・足す・外す・名前の変更）。アニメーションの「+ トラック」でグループを選ぶと、トラック `@グループ名` 1 本で全員が同じように動く。スクリプトからは `FindGroup("名前")`・`SetGroupVisible("名前", 表示)` |
+| **コマ送り** | 画像の「コマの画像」に画像を 1 行に 1 つ書くと（「+ 画像をコマに足す」でも）、その中の「今のコマ」番目を描く。「今のコマ」にコンスタントのキーを打つとパラパラ漫画、「自動で送る速さ」を入れると自動で繰り返す |
+
+区間・グループの名前もスクリプト用のヘッダー（`Animations`・`Groups`）に出る。
 
 ### キャプチャー（パレットの「共通」）
 

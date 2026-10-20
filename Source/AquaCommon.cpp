@@ -95,6 +95,7 @@ std::string PropertyLabelJa(std::string_view n) {
         {"rotation", "回転（度・時計回り）"}, {"transformOrigin", "拡大・回転の中心"},
         {"vertexColorsEnabled", "頂点カラーを使う"}, {"vertexColorTopLeft", "左上の色"}, {"vertexColorTopRight", "右上の色"},
         {"vertexColorBottomLeft", "左下の色"}, {"vertexColorBottomRight", "右下の色"}, {"userData", "ユーザーデータ"}, {"overrides", "パーツの上書き"},
+        {"frames", "コマの画像（1 行に 1 つ）"}, {"frame", "今のコマ"}, {"framesPerSecond", "自動で送る速さ（コマ/秒）"},
         {"effect", "動き"}, {"effectStrength", "動きの大きさ"}, {"effectSpeed", "動きの速さ"},
         {"reveal", "出し方"}, {"revealSpeed", "出す速さ"}, {"revealDelay", "待ち時間"},
         {"revealFade", "1 文字の時間"}, {"revealAuto", "自動で出す"}, {"revealProgress", "出した割合"},

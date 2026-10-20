@@ -334,8 +334,11 @@ def track(widget_name, prop, keys):
     return {"widget": widget_name, "property": prop, "keys": keys}
 
 
-def anim(name, tracks):
-    return {"name": name, "tracks": tracks}
+def anim(name, tracks, sections=None):
+    a = {"name": name, "tracks": tracks}
+    if sections:
+        a["sections"] = [{"name": n, "start": st, "end": en, "loop": lp} for n, st, en, lp in sections]
+    return a
 
 
 def apply_styles(w, styles):
@@ -349,7 +352,7 @@ def apply_styles(w, styles):
         apply_styles(c, styles)
 
 
-def document(root_children, animations=None, styles=None, kind="body", resolution=(1920, 1080)):
+def document(root_children, animations=None, styles=None, kind="body", resolution=(1920, 1080), groups=None):
     """kind: "body"（画面のいちばん親）か "part"（部品として入れるパーツ）。"""
     root = widget("UICanvasPanel", "Root", children=root_children)
     apply_styles(root, styles or [])
@@ -361,6 +364,7 @@ def document(root_children, animations=None, styles=None, kind="body", resolutio
         "root": root,
         "animations": animations or [],
         "styles": styles or [],
+        "groups": [{"name": n, "members": m} for n, m in (groups or [])],
     }
 
 
@@ -422,6 +426,7 @@ SAMPLES = [
     ("Styles", "スタイルと部品", "共通の見た目と、UI を部品として使い回す"),
     ("Transform", "変形と頂点カラー", "回転・四隅の色・Bounding ペイン・ユーザーデータ"),
     ("Overrides", "パーツの上書き", "同じパーツを置いた先ごとに、名前・ゲージ・色を変える"),
+    ("AnimExtras", "区間・グループ・コマ送り", "In / Idle / Out の区間、まとめて動かすグループ、パラパラ漫画"),
 ]
 
 
@@ -1272,6 +1277,91 @@ def make_overrides():
     return document(page("パーツの上書き", "LayoutEditor 風の機能 その 2", [party_card]))
 
 
+# ---------------------------------------------------------------------------
+# 区間・グループ・コマ送り
+# ---------------------------------------------------------------------------
+
+
+def make_anim_extras():
+    # 区間: 1 本のアニメーション Show を In / Idle / Out に分けて、名前で再生する
+    banner = border("Banner", text("BannerText", "セール中！", 48, INK, align="Center"), GOLD, 22, (40, 20, 40, 20), shadow=True,
+                    slot=box("Center"), common={"opacity": 0})
+    banner_area = widget("UISizeBox", "BannerArea", {"widthOverride": 480, "heightOverride": 150}, children=[
+        widget("UIOverlay", "BannerHolder", children=[banner])])
+    section_card = card(
+        "SectionCard",
+        "区間（1 本のタイムラインを名前で分けて再生）",
+        [
+            banner_area,
+            hbox("SectionButtons", [
+                button("PlayIn", "In", "anim:In", size=24, contentPadding=[26, 10, 26, 10]),
+                button("PlayIdle", "Idle（繰り返し）", "anim:Idle", size=24, contentPadding=[26, 10, 26, 10]),
+                button("PlayOut", "Out", "anim:Out", size=24, color=CORAL, text_color=INK, contentPadding=[26, 10, 26, 10]),
+            ], spacing=14),
+            note("SectionNote", "アニメーション Show（3 秒）に区間 In（0〜0.6 秒）・Idle（0.6〜2.2 秒・繰り返し）・Out（2.2〜2.8 秒）を付け、PlayAnimation(\"In\") のように区間の名前で再生している"),
+        ],
+        slot=at(60, 190, 0, 0, auto=True),
+        width=520,
+    )
+
+    # グループ: 階層はばらばらでも、グループ Stars のトラックで全員が同じように動く
+    stars = [text(f"Star{i}", "★", 56, [GOLD, AQUA, CORAL][i % 3], align="Center", slot=at(40 + i * 72, 40 + (i % 2) * 50, 64, 64)) for i in range(6)]
+    star_area = widget("UISizeBox", "StarArea", {"widthOverride": 520, "heightOverride": 170}, children=[widget("UICanvasPanel", "StarCanvas", children=stars)])
+    group_card = card(
+        "GroupCard",
+        "グループ（まとめて動かす・隠す）",
+        [
+            star_area,
+            hbox("GroupButtons", [
+                button("HideStars", "グループを隠す", "group-hide", size=24, color=PANEL_LIGHT, contentPadding=[22, 10, 22, 10]),
+                button("ShowStars", "グループを出す", "group-show", size=24, contentPadding=[22, 10, 22, 10]),
+            ], spacing=14),
+            note("GroupNote", "6 つの星をグループ Stars にまとめ、トラック @Stars（拡大）1 本で全員を瞬かせている。ボタンはスクリプトの SetGroupVisible(\"Stars\", …)"),
+        ],
+        slot=at(0, 190, 0, 0, anchor=(0.5, 0), pivot=(0.5, 0), auto=True),
+        width=520,
+    )
+
+    # コマ送り: 画像を 1 行に 1 つ並べ、自動で送る / 今のコマにキーを打つ
+    frames = "@Circle\n@SoftCircle\n@White\n@Checker"
+    flip_auto = widget("UIImage", "FlipAuto", {"color": list(AQUA), "size": [140, 140], "frames": frames, "framesPerSecond": 3}, slot=box(v="Center"))
+    flip_keys = widget("UIImage", "FlipKeys", {"color": list(CORAL), "size": [140, 140], "frames": frames, "frame": 0}, slot=box(v="Center"))
+    flip_card = card(
+        "FlipCard",
+        "コマ送り（パラパラ漫画）",
+        [
+            hbox("FlipRow", [
+                vbox("FlipAutoCol", [flip_auto, text("FlipAutoLabel", "自動（3 コマ/秒）", 22, DIM)], spacing=8),
+                vbox("FlipKeysCol", [flip_keys, text("FlipKeysLabel", "キーで送る", 22, DIM)], spacing=8),
+            ], spacing=40),
+            note("FlipNote", "画像の「コマの画像」に 1 行に 1 つ画像を書くと、そのコマを描く。左は「自動で送る速さ」、右は Loop のアニメーションで「今のコマ」にコンスタントのキーを打っている"),
+        ],
+        slot=at(-60, 190, 0, 0, anchor=(1, 0), pivot=(1, 0), auto=True),
+        width=440,
+    )
+
+    show = anim(
+        "Show",
+        [
+            track("Banner", "opacity", [key(0, 0), key(0.6, 1), key(2.2, 1), key(2.8, 0)]),
+            track("Banner", "translation.y", [key(0, 60), key(0.6, 0), key(2.2, 0), key(2.8, -40)]),
+            track("Banner", "renderScale.x", [key(0.6, 1), key(1.0, 1.08), key(1.4, 1), key(1.8, 1.08), key(2.2, 1)]),
+            track("Banner", "renderScale.y", [key(0.6, 1), key(1.0, 1.08), key(1.4, 1), key(1.8, 1.08), key(2.2, 1)]),
+        ],
+        sections=[("In", 0.0, 0.6, False), ("Idle", 0.6, 2.2, True), ("Out", 2.2, 2.8, False)],
+    )
+    loop = anim("Loop", [
+        track("@Stars", "renderScale.x", [key(0, 1), key(0.4, 1.35), key(0.8, 1), key(1.6, 1)]),
+        track("@Stars", "renderScale.y", [key(0, 1), key(0.4, 1.35), key(0.8, 1), key(1.6, 1)]),
+        track("FlipKeys", "frame", [key(0, 0, 2), key(0.25, 1, 2), key(0.5, 2, 2), key(0.75, 3, 2), key(1.0, 0, 2), key(1.6, 0, 2)]),
+    ])
+    return document(
+        page("区間・グループ・コマ送り", "LayoutEditor 風の機能 その 3", [section_card, group_card, flip_card]),
+        [show, loop],
+        groups=[("Stars", [f"Star{i}" for i in range(6)])],
+    )
+
+
 UIS = {
     "Menu": make_menu,
     "TextAnimation": make_text_animation,
@@ -1285,6 +1375,7 @@ UIS = {
     "Styles": make_styles,
     "Transform": make_transform,
     "Overrides": make_overrides,
+    "AnimExtras": make_anim_extras,
 }
 
 

@@ -19,6 +19,7 @@ using namespace Ruto;
 //     score-add / score-reset … 変数 score を変える
 //     bounding-hit      … Bounding ペインが押された（変数 hits を増やす）
 //     override-rename / override-reset … パーツの上書きをスクリプトで変える / 消す
+//     group-hide / group-show … グループ Stars を隠す / 出す
 class AquaSampleHub : public Component {
     RUTO_COMPONENT(AquaSampleHub)
 
@@ -69,6 +70,8 @@ class AquaSampleHub : public Component {
                     part->SetOverride("StatusHp", "percent", 1.0);
                 }
             }
+        } else if (msg == "group-hide" || msg == "group-show") {
+            UI()->SetGroupVisible("Stars", msg == "group-show");
         } else if (msg == "override-reset") {
             for (const char* m : {"MemberAqua", "MemberRuto", "MemberCoral"}) {
                 if (auto* part = UI()->Find<UIUserWidget>(m)) part->ClearOverrides();

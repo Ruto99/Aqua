@@ -116,6 +116,21 @@ public:
         const bool richText = n == "text" && target && std::string_view(target->GetTypeName()) == "UIText";
         if (n == "text") changed |= ImGui::InputTextMultiline(Id(n), &v, {-FLT_MIN, ImGui::GetTextLineHeight() * 2.6f});
         else if (n == "userData") changed |= ImGui::InputTextMultiline(Id(n), &v, {-FLT_MIN, ImGui::GetTextLineHeight() * 3.6f});
+        else if (n == "frames") {
+            changed |= ImGui::InputTextMultiline(Id(n), &v, {-FLT_MIN, ImGui::GetTextLineHeight() * 4.6f});
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) ImGui::SetTooltip("コマの画像（1 行に 1 つ）。「今のコマ」にコンスタントのキーを打つとパラパラ漫画に");
+            ImGui::SetNextItemWidth(-FLT_MIN);
+            if (ImGui::BeginCombo("##add-frame", ICON_FA_PLUS " 画像をコマに足す", ImGuiComboFlags_HeightLarge)) {
+                for (const std::string& item : m_Project.GetAssets(AssetType::Texture)) {
+                    if (ImGui::Selectable(item.c_str())) {
+                        if (!v.empty() && v.back() != '\n') v += '\n';
+                        v += item;
+                        changed = true;
+                    }
+                }
+                ImGui::EndCombo();
+            }
+        }
         else changed |= ImGui::InputText(Id(n), &v);
         if (n == "userData" && ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
             ImGui::SetTooltip("1 行に 1 つ「キー=値」。スクリプトから読める:\n  w->GetUserData(\"キー\") / w->GetUserDataFloat(\"キー\")");
@@ -467,6 +482,11 @@ void App::RenameWidget(Document& doc, Widget& w, std::string name) {
     WidgetAsset& asset = *doc.asset;
     if (name.empty() || name == w.name) return;
     if (asset.root->Find(name)) name = UniqueWidgetName(asset.root.get(), name);
+    for (WidgetGroup& g : asset.groups) {
+        for (std::string& m : g.members) {
+            if (m == w.name) m = name;
+        }
+    }
     for (WidgetAnimation& a : asset.animations) {
         for (WidgetAnimTrack& t : a.tracks) {
             if (t.widget == w.name) t.widget = name;

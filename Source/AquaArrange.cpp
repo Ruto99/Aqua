@@ -474,4 +474,127 @@ void App::DrawArrangePanel(Document& doc) {
     }
 }
 
+// ---------------------------------------------------------------------------
+// グループ
+// ---------------------------------------------------------------------------
+
+void App::DrawGroupsPanel(Document& doc) {
+    WidgetAsset& asset = *doc.asset;
+    DesignerState& ui = doc.ui;
+    // 選んでいるウィジェットの名前（主の選択 + 一緒に選んでいるもの）
+    std::vector<std::string> selected;
+    if (Widget* w = ui.hasSelection ? Resolve(asset.root.get(), ui.selection) : nullptr; w && w->GetParent() && !w->name.empty()) selected.push_back(w->name);
+    for (const std::string& n : ui.extraSelection) {
+        if (std::find(selected.begin(), selected.end(), n) == selected.end()) selected.push_back(n);
+    }
+
+    ImGui::PushTextWrapPos(0.0f);
+    ImGui::TextDisabled("階層とは別に、ウィジェットを名前でまとめます。アニメーションの「+ トラック」でグループを選ぶと全員が同じように動き、"
+                        "スクリプトからは FindGroup・SetGroupVisible で使えます。");
+    ImGui::PopTextWrapPos();
+    ImGui::BeginDisabled(selected.empty());
+    if (ImGui::Button(std::format(ICON_FA_PLUS "  選んだ {} 個でグループを作る", selected.size()).c_str(), {-FLT_MIN, 0.0f})) {
+        WidgetGroup g;
+        g.name = "Group";
+        for (int n = 1; asset.FindGroup(g.name); ++n) g.name = std::format("Group{}", n);
+        g.members = selected;
+        asset.groups.push_back(std::move(g));
+        doc.Changed();
+    }
+    ImGui::EndDisabled();
+    if (selected.empty() && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) ImGui::SetTooltip("キャンバスで Shift + クリック・階層で Ctrl + クリックで、いくつも選べます");
+    ImGui::Spacing();
+
+    int removeGroup = -1;
+    for (size_t gi = 0; gi < asset.groups.size(); ++gi) {
+        WidgetGroup& g = asset.groups[gi];
+        ImGui::PushID(static_cast<int>(gi));
+        if (m_GroupRename == g.name) {
+            ImGui::SetNextItemWidth(-FLT_MIN);
+            if (!ImGui::IsAnyItemActive()) ImGui::SetKeyboardFocusHere();
+            if (ImGui::InputText("##rename", &m_GroupRenameBuffer, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll) || ImGui::IsItemDeactivated()) {
+                if (!m_GroupRenameBuffer.empty() && m_GroupRenameBuffer != g.name && !asset.FindGroup(m_GroupRenameBuffer)) {
+                    // トラックの "@名前" も合わせる
+                    for (WidgetAnimation& a : asset.animations) {
+                        for (WidgetAnimTrack& t : a.tracks) {
+                            if (t.widget == "@" + g.name) t.widget = "@" + m_GroupRenameBuffer;
+                        }
+                    }
+                    g.name = m_GroupRenameBuffer;
+                    doc.Changed();
+                }
+                m_GroupRename.clear();
+            }
+        } else {
+            const bool open = ImGui::TreeNodeEx("##group", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth, ICON_FA_OBJECT_GROUP "  %s（%d）",
+                                                g.name.c_str(), static_cast<int>(g.members.size()));
+            if (ImGui::BeginPopupContextItem("group-menu")) {
+                if (ImGui::MenuItem(ICON_FA_ARROW_POINTER "  メンバーを選ぶ")) {
+                    ui.extraSelection.clear();
+                    bool first = true;
+                    for (const std::string& m : g.members) {
+                        Widget* w = asset.root->Find(m);
+                        if (!w) continue;
+                        if (first) {
+                            ui.selection = PathOf(w);
+                            ui.hasSelection = true;
+                            first = false;
+                        } else {
+                            ui.extraSelection.push_back(m);
+                        }
+                    }
+                }
+                if (ImGui::MenuItem(ICON_FA_PLUS "  選んでいるものを足す", nullptr, false, !selected.empty())) {
+                    for (const std::string& n : selected) {
+                        if (std::find(g.members.begin(), g.members.end(), n) == g.members.end()) g.members.push_back(n);
+                    }
+                    doc.Changed();
+                }
+                if (ImGui::MenuItem(ICON_FA_MINUS "  選んでいるものを外す", nullptr, false, !selected.empty())) {
+                    std::erase_if(g.members, [&](const std::string& m) { return std::find(selected.begin(), selected.end(), m) != selected.end(); });
+                    doc.Changed();
+                }
+                if (ImGui::MenuItem(ICON_FA_PEN "  名前を変更")) {
+                    m_GroupRename = g.name;
+                    m_GroupRenameBuffer = g.name;
+                }
+                ImGui::Separator();
+                if (ImGui::MenuItem(ICON_FA_TRASH "  グループを削除（ウィジェットは消えない）")) removeGroup = static_cast<int>(gi);
+                ImGui::EndPopup();
+            }
+            if (open) {
+                std::string removeMember;
+                for (const std::string& m : g.members) {
+                    ImGui::PushID(m.c_str());
+                    Widget* w = asset.root->Find(m);
+                    if (IconButton(ICON_FA_XMARK, "グループから外す")) removeMember = m;
+                    ImGui::SameLine();
+                    ImGui::AlignTextToFramePadding();
+                    if (w) {
+                        if (ImGui::Selectable(std::format("{}  {}", WidgetIcon(w->GetTypeName()), m).c_str(), false)) {
+                            ui.selection = PathOf(w);
+                            ui.hasSelection = true;
+                            ui.extraSelection.clear();
+                        }
+                    } else {
+                        ImGui::TextColored(Theme::kWarning, "%s（見つかりません）", m.c_str());
+                    }
+                    ImGui::PopID();
+                }
+                if (!removeMember.empty()) {
+                    std::erase(g.members, removeMember);
+                    doc.Changed();
+                }
+                ImGui::TreePop();
+            }
+        }
+        ImGui::PopID();
+    }
+    if (removeGroup >= 0) {
+        asset.groups.erase(asset.groups.begin() + removeGroup);
+        doc.Changed();
+    }
+    if (asset.groups.empty()) ImGui::TextDisabled("グループはまだありません（右クリックでメンバーを選ぶ・足す・外す・名前の変更）");
+}
+
 } // namespace AquaTool

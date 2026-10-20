@@ -14,6 +14,7 @@ Aqua で作った UI の見本を集めた RutoEngine のプロジェクト。�
 | 08 | スタイルと部品 | `AquaUI/Styles.aqs`・`AquaUI/StatusCard.aqs` | ボタンのスタイル（Primary・Danger・Ghost）と、UI を部品として入れる UIUserWidget |
 | 09 | 変形と頂点カラー | `AquaUI/Transform.aqs` | Null ペインごと回す・時計の針（transformOrigin）・回したボタン、四隅の色、絵の一部だけを当たりにする Bounding ペイン、スクリプトが読むユーザーデータ |
 | 10 | パーツの上書き | `AquaUI/Overrides.aqs` | 同じ StatusCard を 3 つ置き、名前・職業・ゲージ・アイコンの色をそれぞれ上書き。スクリプトの SetOverride / ClearOverrides |
+| 11 | 区間・グループ・コマ送り | `AquaUI/AnimExtras.aqs` | アニメーション Show の区間 In / Idle / Out を名前で再生、グループ Stars を @Stars のトラックでまとめて動かす・SetGroupVisible で隠す、組み込みの画像でパラパラ漫画 |
 
 背景では 3D の立方体と球が回っている（キャプチャーのサンプルで、撮った画面に写る）。
 
@@ -40,6 +41,7 @@ UI の切り替えなどは `Source/AquaSampleHub.cpp`（シーンの「UI」オ
 | `score-add` / `score-reset` | 変数 score を変える |
 | `bounding-hit` | Bounding ペイン・回したボタンが押された（変数 hits を増やす） |
 | `override-rename` / `override-reset` | パーツの上書きをスクリプトで変える（SetOverride）/ 消す（ClearOverrides） |
+| `group-hide` / `group-show` | グループ Stars を隠す / 出す（SetGroupVisible） |
 
 UI を切り替えたとき、ウィジェットは次に描くときに作り直される。切り替えた直後に `SetText` などをしても古い UI に入ってしまうので、作り直されてから（ルートのウィジェットが変わってから）初期化している。
 
