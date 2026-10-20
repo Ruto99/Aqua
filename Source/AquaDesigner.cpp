@@ -9,6 +9,8 @@
 #include "AquaApp.h"
 
 #include <Ruto/Aqua/AquaFormat.h>
+#include <Ruto/Core/Utf8.h>
+#include <Ruto/Engine/ShionText.h>
 
 #include <Ruto/EditorUI/EditorUI.h>
 #include <Ruto/EditorUI/Widgets.h>
@@ -126,6 +128,10 @@ public:
                 ImGui::SetTooltip("アニメーションのパネルの「文字アニメーション」で、1 文字の動きをキーフレームで作る\n%s", n == "customReveal" ? "出し方を「自作」にすると使われる" : "動きを「自作」にするか、テキストの中の <custom>…</custom> で使われる");
             return;
         }
+        if (n == "messageLabel") {
+            MessageLabelRow(n, v);
+            return;
+        }
         if (!Row(n)) return;
         const bool richText = n == "text" && target && std::string_view(target->GetTypeName()) == "UIText";
         if (n == "text") changed |= ImGui::InputTextMultiline(Id(n), &v, {-FLT_MIN, ImGui::GetTextLineHeight() * 2.6f});
@@ -150,7 +156,7 @@ public:
             ImGui::SetTooltip("1 行に 1 つ「キー=値」。スクリプトから読める:\n  w->GetUserData(\"キー\") / w->GetUserDataFloat(\"キー\")");
         const ImGuiID field = ImGui::GetItemID();
         if (richText) RememberTextSelection(field);
-        if (n == "text" && ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) ImGui::SetTooltip("{変数名} で変数の値を表示（{score:1} なら小数 1 桁）%s", richText ? "\n<wave>…</wave> などのタグで文字ごとに動かせる（下のボタンで選んだ所を囲む）" : "");
+        if (n == "text" && ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) ImGui::SetTooltip("{変数名} で変数の値を表示（{score:1} なら小数 1 桁）%s", richText ? "\n<wave>…</wave> などのタグで文字ごとに動かせる（下のボタンで選んだ所を囲む）\nShion のラベルを設定すると、その文字が代わりに表示される" : "");
         if (richText) {
             // タグを入れる（選んだ所を囲む / カーソルの所に入れる）
             struct TagButton {
@@ -210,7 +216,10 @@ public:
             ImGui::SameLine(0.0f, 4.0f);
             ImGui::SetNextItemWidth(-FLT_MIN);
         }
-        const char* empty = type == AssetType::Font ? "(システムのフォント)" : type == AssetType::UIShader ? "(なし: ふつうに描く)" : "(なし)";
+        const char* empty = type == AssetType::Font       ? "(システムのフォント)"
+                            : type == AssetType::UIShader ? "(なし: ふつうに描く)"
+                            : type == AssetType::Message  ? "(使わない: テキストを表示)"
+                                                          : "(なし)";
         const std::string before = path;
         if (type == AssetType::UIShader) ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::GetFrameHeight() - 4.0f);
         if (ImGui::BeginCombo(Id(n), path.empty() ? empty : path.c_str(), ImGuiComboFlags_HeightLarge)) {
@@ -226,7 +235,12 @@ public:
             }
             ImGui::EndCombo();
         }
-        if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) ImGui::SetTooltip("アセットのパネルからドラッグしても入れられます");
+        if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+            if (type == AssetType::Message)
+                ImGui::SetTooltip("Shion がビルドで書き出した .sobt（Output/<言語名>/ のフォルダを Assets の中に置く）\nアセットのパネルからドラッグしても入れられます");
+            else
+                ImGui::SetTooltip("アセットのパネルからドラッグしても入れられます");
+        }
         if (ImGui::BeginDragDropTarget()) {
             if (const ImGuiPayload* p = ImGui::AcceptDragDropPayload(kAssetPayload)) {
                 const std::string dropped(static_cast<const char*>(p->Data), static_cast<size_t>(p->DataSize));
@@ -283,6 +297,8 @@ private:
             {"richText", "<wave> <shake> <rainbow> <pulse> <swing> <glitch> <custom> <color=#RRGGBB> <alpha=0.5> <pause=0.5> <speed=2> を使う"},
             {"customReveal", "出し方が「自作」のときの動き（文字アニメーションのパネルで作る）"},
             {"customEffect", "動きが「自作」のとき・<custom> で囲んだ所の動き（文字アニメーションのパネルで作る）"},
+            {"messageFile", "Shion のテキストのファイル（.sobt）。Shion の Output/<言語名>/ のフォルダを Assets の中に置いて選ぶ"},
+            {"messageLabel", "Shion のラベル。設定するとそのテキストを表示する（見つからなければ「テキスト」を表示）\nゲームでは ShionText::SetLanguage で言語を切り替え、ui->SetMessage(\"名前\", \"ラベル\") で変えられる"},
             {"shader", "UI のシェーダー（.uishader）。シェーダーのパネルで作る・編集する"},
             {"shaderChildren", "子のウィジェットにも同じシェーダーを掛ける"},
         };
@@ -338,11 +354,107 @@ private:
         return m_IdBuffer.c_str();
     }
 
+    // Shion のラベル: ファイルのラベルから選ぶ（かざすと本文）・表示される文字・プレビューの言語
+    void MessageLabelRow(std::string_view n, std::string& v) {
+        const auto* text = dynamic_cast<const UIText*>(target);
+        const std::string file = text ? text->messageFile : std::string();
+        if (!Row(n)) return;
+        const std::vector<std::string> labels = file.empty() ? std::vector<std::string>() : ShionText::GetLabels(file);
+        const char* none = "(使わない: テキストを表示)";
+        ImGui::SetNextItemWidth(-FLT_MIN);
+        if (ImGui::BeginCombo(Id(n), v.empty() ? none : v.c_str(), ImGuiComboFlags_HeightLarge)) {
+            if (ImGui::IsWindowAppearing()) {
+                m_LabelFilter.clear();
+                ImGui::SetKeyboardFocusHere();
+            }
+            ImGui::SetNextItemWidth(-FLT_MIN);
+            ImGui::InputTextWithHint("##label-filter", ICON_FA_MAGNIFYING_GLASS " ラベル・本文で絞り込む", &m_LabelFilter);
+            if (ImGui::Selectable(none, v.empty())) {
+                v.clear();
+                changed = true;
+            }
+            if (file.empty()) ImGui::TextDisabled("先に「Shion のファイル」を選んでください");
+            else if (labels.empty()) ImGui::TextDisabled("ラベルがありません %s", ShionText::GetError(file).c_str());
+            for (const std::string& label : labels) {
+                const std::string body = ShionText::GetText(file, label).value_or("");
+                if (!m_LabelFilter.empty() && !ContainsText(label, m_LabelFilter) && !ContainsText(body, m_LabelFilter)) continue;
+                const std::string item = std::format("{}   {}##{}", label, OneLine(body, 28), label);
+                if (ImGui::Selectable(item.c_str(), label == v)) {
+                    v = label;
+                    changed = true;
+                }
+                if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) ImGui::SetTooltip("%s", body.c_str());
+            }
+            ImGui::EndCombo();
+        }
+        if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) ImGui::SetTooltip("右クリックでラベルを直接書けます（まだファイルに無いラベルも）");
+        // 直接書く（見つからない間は「テキスト」を表示）
+        if (ImGui::BeginPopupContextItem("##label-menu")) {
+            ImGui::TextDisabled("ラベルを書く");
+            ImGui::SetNextItemWidth(240.0f);
+            if (ImGui::IsWindowAppearing()) ImGui::SetKeyboardFocusHere();
+            changed |= ImGui::InputText("##label-edit", &v);
+            ImGui::EndPopup();
+        }
+        if (!v.empty()) {
+            ImGui::PushTextWrapPos(0.0f);
+            if (file.empty()) {
+                ImGui::TextColored(Theme::kWarning, ICON_FA_TRIANGLE_EXCLAMATION " Shion のファイルを選んでください");
+            } else if (auto body = ShionText::GetText(file, v)) {
+                ImGui::TextDisabled("%s", OneLine(*body, 60).c_str());
+                if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) ImGui::SetTooltip("%s", body->c_str());
+            } else {
+                const std::string error = ShionText::GetError(file);
+                ImGui::TextColored(Theme::kWarning, ICON_FA_TRIANGLE_EXCLAMATION " %s",
+                                   error.empty() ? "このラベルはファイルにありません（「テキスト」を表示）" : error.c_str());
+            }
+            ImGui::PopTextWrapPos();
+        }
+
+        // プレビューの言語（Output/<言語名>/ が 2 つ以上あるとき。ゲームでは ShionText::SetLanguage）
+        const std::vector<std::string> languages = file.empty() ? std::vector<std::string>() : ShionText::GetLanguages(file);
+        if (languages.size() < 2) return;
+        if (!RowLabel("プレビューの言語", "Aqua で表示する言語（保存されない。すべてのテキストで同じ）\nゲームでは ShionText::SetLanguage(\"言語名\") で切り替える")) return;
+        const std::string current = ShionText::GetLanguage();
+        ImGui::SetNextItemWidth(-FLT_MIN);
+        if (ImGui::BeginCombo("##shion-language", current.empty() ? "(ファイルのまま)" : current.c_str())) {
+            if (ImGui::Selectable("(ファイルのまま)", current.empty())) ShionText::SetLanguage("");
+            for (const std::string& lang : languages) {
+                if (ImGui::Selectable(lang.c_str(), lang == current)) ShionText::SetLanguage(lang);
+            }
+            ImGui::EndCombo();
+        }
+    }
+    // 改行を ⏎ にして、長ければ切る（一覧に 1 行で出す）
+    static std::string OneLine(const std::string& s, size_t maxChars) {
+        std::string out;
+        size_t chars = 0;
+        for (size_t i = 0; i < s.size();) {
+            if (chars >= maxChars) {
+                out += "…";
+                break;
+            }
+            const size_t from = i;
+            if (Ruto::Utf8::Next(s, i) == '\n') out += " ⏎ ";
+            else out.append(s, from, i - from);
+            ++chars;
+        }
+        return out;
+    }
+    static bool ContainsText(const std::string& text, const std::string& query) {
+        auto lower = [](std::string x) {
+            std::transform(x.begin(), x.end(), x.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+            return x;
+        };
+        return lower(text).find(lower(query)) != std::string::npos;
+    }
+
     Project& m_Project;
     std::string m_Id;
     std::string m_IdBuffer;
     int m_Index = 0;
     bool m_Table = false;
+    std::string m_LabelFilter; // ラベルの一覧の絞り込み
 };
 
 } // namespace

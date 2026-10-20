@@ -1,0 +1,773 @@
+From fea1168020beec8ade9234b9904b52ead0b033f5 Mon Sep 17 00:00:00 2001
+From: Shiruba <koko0909e@gmail.com>
+Date: Wed, 21 Oct 2026 06:15:42 +0900
+Subject: [PATCH] Custom text animations; pause and reverse for widget
+ animations and text
+
+- TextCharAnimation: per-character keyframe animation (offset, scale,
+  rotation, alpha, color) made in Aqua. UIText reveal/effect "Custom"
+  use customReveal / customEffect (JSON), and the <custom> tag applies
+  the custom effect to part of the text.
+- UIText PauseReveal, HideReveal (reverse the reveal so the characters
+  disappear from the last one; emits UIEventType::TextHidden) and
+  ShowReveal. UIDocument PauseText / HideText / ShowText.
+- WidgetDocument PauseAnimation / ResumeAnimation / IsAnimationPaused,
+  ReverseAnimation (flip the direction, or play backwards from the end),
+  PlayAnimationReverse, SetAnimationSpeed / SetAnimationTime /
+  GetAnimationTime, and the same on UIDocument.
+- RUTO_UI_CHAR_ANIMATION marks an SDK with these features.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ Modules/Engine/include/Ruto/Engine/Widgets.h |  89 ++++++-
+ Modules/Engine/src/UIDocument.cpp            |  73 ++++++
+ Modules/Engine/src/WidgetText.cpp            | 238 ++++++++++++++++---
+ Modules/Engine/src/Widgets.cpp               |   6 +-
+ Tests/EngineTests.cpp                        |  67 +++++-
+ 5 files changed, 437 insertions(+), 36 deletions(-)
+
+diff --git a/Modules/Engine/include/Ruto/Engine/Widgets.h b/Modules/Engine/include/Ruto/Engine/Widgets.h
+index 397eee9..6ef268f 100644
+--- a/Modules/Engine/include/Ruto/Engine/Widgets.h
++++ b/Modules/Engine/include/Ruto/Engine/Widgets.h
+@@ -55,9 +55,11 @@ enum class HAlign { Fill, Left, Center, Right };
+ enum class VAlign { Fill, Top, Center, Bottom };
+ enum class SizeRule { Auto, Fill };
+ enum class TextAlign { Left, Center, Right };
+-// テキストアニメーション: ずっと続く動き / 文字の出し方
+-enum class TextEffect { None, Wave, Shake, Rainbow, Pulse, Swing, Glitch };
+-enum class TextReveal { None, Typewriter, Fade, Pop, Rise, Drop, Spin };
++// テキストアニメーション: ずっと続く動き / 文字の出し方（Custom は自作の文字アニメーション。UIText の customEffect・customReveal）
++enum class TextEffect { None, Wave, Shake, Rainbow, Pulse, Swing, Glitch, Custom };
++enum class TextReveal { None, Typewriter, Fade, Pop, Rise, Drop, Spin, Custom };
++// この SDK に自作の文字アニメーションと、アニメーション・テキストの一時停止 / 逆再生がある（Aqua が確かめる）
++#define RUTO_UI_CHAR_ANIMATION 1
+ enum class TextVAlign { Top, Center, Bottom };
+ 
+ // 親の中での置き方。親の種類によって使う値が変わる
+@@ -79,7 +81,7 @@ struct WidgetSlot {
+ };
+ 
+ // UI のイベント（スクリプトの Component::OnUIEvent と UIDocument::onEvent に届く）
+-enum class UIEventType { Click, ValueChanged, Submit, HoverEnter, HoverExit, TextRevealed /* テキストを出し終えた */ };
++enum class UIEventType { Click, ValueChanged, Submit, HoverEnter, HoverExit, TextRevealed /* テキストを出し終えた */, TextHidden /* HideText で消し終えた */ };
+ 
+ class Widget;
+ 
+@@ -390,6 +392,37 @@ class UIBorder : public Widget {
+ // 共通のウィジェット
+ // ---------------------------------------------------------------------------
+ 
++// 自作の文字アニメーション（Aqua の「文字アニメーション」パネルで作る）。1 文字に掛ける動きをキーフレームで書く。
++//   UIText の customReveal（出し方）・customEffect（ずっと続く動き）に JSON の文字列で入る。
++//   時刻は 1 文字が動き出してからの秒。キーの無いものは元のまま。
++struct TextCharAnimation {
++    // property:
++    //   "offset.x"・"offset.y" … ずれ（文字の大きさに対する割合。1 で 1 文字分。下が +）
++    //   "scale"・"scale.x"・"scale.y" … 大きさ（1 が元。scale と scale.x / y は掛け合わせる）
++    //   "rotation" … 回転（度・時計回り）
++    //   "alpha" … 不透明度（掛ける）
++    //   "color.r"・"color.g"・"color.b" … 色（掛ける）
++    std::vector<TimelineCurve> curves;
++    float pivot = 0.5f;      // 回転・拡大の中心の高さ（0: 文字の上・0.5: 中央・1: 下）
++    float charDelay = 0.08f; // ずっと続く動き: 隣の文字とずらす秒（0 なら全部の文字が同時に動く）
++
++    struct Sample {
++        Vec2 offset{0.0f, 0.0f};
++        Vec2 scale{1.0f, 1.0f};
++        float rotation = 0.0f; // 度
++        Vec4 color{1.0f, 1.0f, 1.0f, 1.0f};
++    };
++    Sample Evaluate(float time) const;
++    float GetDuration() const; // いちばん後ろのキーの時刻
++    bool IsEmpty() const;
++    TimelineCurve* Find(std::string_view property);
++    const TimelineCurve* Find(std::string_view property) const;
++    // その値のキーが無いときの値（ずれ・回転は 0、ほかは 1）
++    static float DefaultValue(std::string_view property);
++    std::string ToString() const;
++    static TextCharAnimation Parse(std::string_view json);
++};
++
+ class UIText : public Widget {
+     RUTO_WIDGET(UIText)
+     std::string text = "テキスト"; // {変数名} で変数の値に置き換わる（{score:1} なら小数 1 桁）
+@@ -428,12 +461,22 @@ class UIText : public Widget {
+     bool revealOnShow = true;               // 表示し直すたびに最初から出す
+     std::string revealSound;                // 文字を出すときの音（会話の「ピピピ」）
+     int revealSoundEvery = 2;               // 何文字ごとに鳴らすか
+-    bool richText = true;                   // <wave> などのタグを使う
++    bool richText = true;                   // <wave> などのタグを使う（<custom> で自作の動き）
++    std::string customReveal;               // reveal が Custom のときの出し方（TextCharAnimation の JSON）
++    std::string customEffect;               // effect が Custom のとき・<custom> の動き（TextCharAnimation の JSON）
+ 
+     // スクリプトから: 最初から出し直す / すぐ全部出す / 出している途中か
+     void RestartReveal();
+     void SkipReveal();
+     bool IsRevealing() const { return m_Revealing; }
++    // 出すのを一時停止する / 続ける（文字の動きも止まる）
++    void PauseReveal(bool paused = true) { m_RevealPaused = paused; }
++    bool IsRevealPaused() const { return m_RevealPaused; }
++    // 逆再生: 出した文字を後ろから、出し方を逆にたどって消す（消し終えると UIEventType::TextHidden）。
++    // ShowReveal で今の所からまた出す（逆再生の途中でも向きを変えられる）
++    void HideReveal();
++    void ShowReveal();
++    bool IsHiding() const { return m_RevealDir < 0.0f; }
+     // タグを除いた文字（{変数} は置き換え済み）
+     static std::string StripTags(std::string_view text);
+ 
+@@ -448,6 +491,14 @@ private:
+     bool m_SkipReveal = false;
+     int m_SoundCount = 0;        // 音を鳴らした文字の数
+     double m_LastPaint = -100.0;
++    bool m_RevealPaused = false;
++    float m_RevealDir = 1.0f;     // 1: 出す / -1: 逆再生（消す）
++    float m_RevealEnd = 0.0f;     // 全部の文字が出きる時刻（前のフレーム）
++    bool m_HideDoneSent = true;
++    bool m_HideRequested = false; // 次に描くときに逆再生を始める（m_RevealEnd がまだ分からないとき）
++    // 自作の文字アニメーション（文字列が変わったときだけ読み直す）
++    std::string m_CustomRevealSource, m_CustomEffectSource;
++    TextCharAnimation m_CustomRevealAnim, m_CustomEffectAnim;
+ };
+ 
+ class UIImage : public Widget {
+@@ -881,8 +932,21 @@ public:
+     // ---- アニメーション ----
+     // name はアニメーションか区間の名前（区間ならその範囲だけ。区間の loop が入っていれば繰り返す）
+     void PlayAnimation(std::string_view name, bool loop = false, float speed = 1.0f, bool reverse = false);
++    // 最後から最初へ逆に再生する
++    void PlayAnimationReverse(std::string_view name, bool loop = false, float speed = 1.0f) { PlayAnimation(name, loop, speed, true); }
+     void StopAnimation(std::string_view name);
+     bool IsAnimationPlaying(std::string_view name) const;
++    // 一時停止 / 続ける（name が空なら再生中のすべて）。止めている間もその時刻の状態のまま
++    void PauseAnimation(std::string_view name = {});
++    void ResumeAnimation(std::string_view name = {});
++    bool IsAnimationPaused(std::string_view name) const;
++    // 再生の向きを変える（今の時刻から戻っていく）。再生していなければ最後から逆に再生する（In を逆にして閉じるなど）
++    void ReverseAnimation(std::string_view name);
++    bool IsAnimationReversed(std::string_view name) const;
++    // 再生中のアニメーションの速さ・時刻（区間なら区間の始まりからの秒）
++    void SetAnimationSpeed(std::string_view name, float speed);
++    void SetAnimationTime(std::string_view name, float time);
++    float GetAnimationTime(std::string_view name) const;
+     // デザイナー用: アニメーション（か区間）の time の状態にする（区間なら区間の始まりからの秒）
+     void EvaluateAnimation(std::string_view name, float time);
+ 
+@@ -922,6 +986,7 @@ private:
+         float speed = 1.0f;
+         bool loop = false;
+         bool reverse = false;
++        bool paused = false;
+     };
+ 
+     std::shared_ptr<WidgetAsset> m_Asset;
+@@ -967,7 +1032,15 @@ class UIDocument : public Component {
+     void SetVariable(const std::string& name, double value) { GetDocument().SetVariable(name, value); }
+     void SetVariable(const std::string& name, const std::string& value) { GetDocument().SetVariable(name, value); }
+     void SetVariable(const std::string& name, const char* value) { GetDocument().SetVariable(name, std::string(value)); }
+-    void PlayAnimation(std::string_view name, bool loop = false) { GetDocument().PlayAnimation(name, loop); }
++    void PlayAnimation(std::string_view name, bool loop = false, float speed = 1.0f) { GetDocument().PlayAnimation(name, loop, speed); }
++    // 逆再生・一時停止（name が空なら再生中のすべて）・向きを変える・止める
++    void PlayAnimationReverse(std::string_view name, bool loop = false, float speed = 1.0f) { GetDocument().PlayAnimationReverse(name, loop, speed); }
++    void PauseAnimation(std::string_view name = {}) { GetDocument().PauseAnimation(name); }
++    void ResumeAnimation(std::string_view name = {}) { GetDocument().ResumeAnimation(name); }
++    bool IsAnimationPaused(std::string_view name) const { return m_Document.IsAnimationPaused(name); }
++    void ReverseAnimation(std::string_view name) { GetDocument().ReverseAnimation(name); }
++    void StopAnimation(std::string_view name) { GetDocument().StopAnimation(name); }
++    bool IsAnimationPlaying(std::string_view name) const { return m_Document.IsAnimationPlaying(name); }
+     void SetVisible(std::string_view widgetName, bool visible);
+     // グループの全員の表示・非表示
+     void SetGroupVisible(std::string_view group, bool visible) { GetDocument().SetGroupVisible(group, visible); }
+@@ -975,6 +1048,10 @@ class UIDocument : public Component {
+     void RestartText(std::string_view widgetName);
+     void SkipText(std::string_view widgetName);
+     bool IsTextRevealing(std::string_view widgetName);
++    // テキストの一時停止 / 続ける・逆再生で消す（消し終えると TextHidden のイベント）/ また出す
++    void PauseText(std::string_view widgetName, bool paused = true);
++    void HideText(std::string_view widgetName);
++    void ShowText(std::string_view widgetName);
+     // UI のシェーダーの @param を名前で変える（例: SetShaderParam("Logo", "progress", 0.5f)）
+     bool SetShaderParam(std::string_view widgetName, std::string_view param, float value);
+     bool SetShaderParam(std::string_view widgetName, std::string_view param, const Vec4& value);
+diff --git a/Modules/Engine/src/UIDocument.cpp b/Modules/Engine/src/UIDocument.cpp
+index dbfadbe..c85fce0 100644
+--- a/Modules/Engine/src/UIDocument.cpp
++++ b/Modules/Engine/src/UIDocument.cpp
+@@ -170,6 +170,12 @@ void WidgetDocument::Update(const UI::Rect& screen, float deltaTime, float scale
+             continue;
+         }
+         const float duration = end - start;
++        if (p.paused) {
++            // 一時停止中はその時刻の状態のまま
++            EvaluateAnimation(p.name, p.time);
++            ++i;
++            continue;
++        }
+         p.time += deltaTime * p.speed * (p.reverse ? -1.0f : 1.0f);
+         bool finished = p.reverse ? p.time <= 0.0f : p.time >= duration;
+         if (finished && p.loop && duration > 1e-4f) {
+@@ -602,6 +608,61 @@ bool WidgetDocument::IsAnimationPlaying(std::string_view name) const {
+     return std::any_of(m_Playing.begin(), m_Playing.end(), [&](const PlayingAnim& p) { return p.name == name; });
+ }
+ 
++void WidgetDocument::PauseAnimation(std::string_view name) {
++    for (PlayingAnim& p : m_Playing) {
++        if (name.empty() || p.name == name) p.paused = true;
++    }
++}
++
++void WidgetDocument::ResumeAnimation(std::string_view name) {
++    for (PlayingAnim& p : m_Playing) {
++        if (name.empty() || p.name == name) p.paused = false;
++    }
++}
++
++bool WidgetDocument::IsAnimationPaused(std::string_view name) const {
++    return std::any_of(m_Playing.begin(), m_Playing.end(), [&](const PlayingAnim& p) { return p.name == name && p.paused; });
++}
++
++void WidgetDocument::ReverseAnimation(std::string_view name) {
++    for (PlayingAnim& p : m_Playing) {
++        if (p.name == name) {
++            p.reverse = !p.reverse;
++            return;
++        }
++    }
++    PlayAnimation(name, false, 1.0f, true); // 再生していなければ最後から逆に
++}
++
++bool WidgetDocument::IsAnimationReversed(std::string_view name) const {
++    return std::any_of(m_Playing.begin(), m_Playing.end(), [&](const PlayingAnim& p) { return p.name == name && p.reverse; });
++}
++
++void WidgetDocument::SetAnimationSpeed(std::string_view name, float speed) {
++    for (PlayingAnim& p : m_Playing) {
++        if (p.name == name) p.speed = std::max(speed, 0.0f);
++    }
++}
++
++void WidgetDocument::SetAnimationTime(std::string_view name, float time) {
++    const WidgetAnimation* anim = nullptr;
++    float start = 0.0f, end = 0.0f;
++    bool sectionLoop = false;
++    if (!m_Asset || !m_Asset->ResolvePlayable(name, anim, start, end, sectionLoop)) return;
++    time = std::clamp(time, 0.0f, end - start);
++    for (PlayingAnim& p : m_Playing) {
++        if (p.name == name) p.time = time;
++    }
++    if (m_Root) EvaluateAnimation(name, time);
++}
++
++float WidgetDocument::GetAnimationTime(std::string_view name) const {
++    for (const PlayingAnim& p : m_Playing) {
++        if (p.name == name) return p.time;
++    }
++    return 0.0f;
++}
++
+ void WidgetDocument::EvaluateAnimation(std::string_view name, float time) {
+     if (!m_Asset || !m_Root) return;
+     const WidgetAnimation* anim = nullptr;
+@@ -687,6 +748,18 @@ bool UIDocument::IsTextRevealing(std::string_view widgetName) {
+     return t && t->IsRevealing();
+ }
+ 
++void UIDocument::PauseText(std::string_view widgetName, bool paused) {
++    if (auto* t = dynamic_cast<UIText*>(Find(widgetName))) t->PauseReveal(paused);
++}
++
++void UIDocument::HideText(std::string_view widgetName) {
++    if (auto* t = dynamic_cast<UIText*>(Find(widgetName))) t->HideReveal();
++}
++
++void UIDocument::ShowText(std::string_view widgetName) {
++    if (auto* t = dynamic_cast<UIText*>(Find(widgetName))) t->ShowReveal();
++}
++
+ bool UIDocument::SetShaderParam(std::string_view widgetName, std::string_view param, float value) {
+     Widget* w = Find(widgetName);
+     return w && w->SetShaderParam(param, value);
+diff --git a/Modules/Engine/src/WidgetText.cpp b/Modules/Engine/src/WidgetText.cpp
+index fd34d74..d291c33 100644
+--- a/Modules/Engine/src/WidgetText.cpp
++++ b/Modules/Engine/src/WidgetText.cpp
+@@ -4,7 +4,9 @@
+ //   ・ずっと続く動き（effect）: 波・震え・虹色・脈打つ・揺れる・グリッチ
+ //   ・タグ: <wave> <shake> <rainbow> <pulse> <swing> <glitch> <color=#RRGGBB(AA)> <alpha=0.5> <pause=0.5> <speed=2>
+ //           閉じるときは </wave> など（</> で直前のタグを閉じる）。知らないタグはそのまま文字として出す
++//   ・自作の文字アニメーション（TextCharAnimation。Aqua の「文字アニメーション」で作る）: reveal / effect が Custom、タグ <custom>
+ //   ・1 文字ずつの音・出し終えたら UIEventType::TextRevealed
++//   ・一時停止（PauseReveal）・逆再生で消す（HideReveal。消し終えたら UIEventType::TextHidden）
+ //   文字は 1 つずつ四角形で描く（位置・回転・大きさ・色を文字ごとに変えられる）。
+ 
+ #include "Ruto/Engine/Widgets.h"
+@@ -35,6 +37,7 @@ enum EffectBit : uint32_t {
+     kPulse = 1u << 3,
+     kSwing = 1u << 4,
+     kGlitch = 1u << 5,
++    kCustom = 1u << 6,
+ };
+ 
+ uint32_t EffectBitOf(TextEffect e) {
+@@ -45,6 +48,7 @@ uint32_t EffectBitOf(TextEffect e) {
+     case TextEffect::Pulse: return kPulse;
+     case TextEffect::Swing: return kSwing;
+     case TextEffect::Glitch: return kGlitch;
++    case TextEffect::Custom: return kCustom;
+     default: return 0;
+     }
+ }
+@@ -56,6 +60,7 @@ uint32_t EffectBitOf(std::string_view tag) {
+     if (tag == "pulse") return kPulse;
+     if (tag == "swing") return kSwing;
+     if (tag == "glitch") return kGlitch;
++    if (tag == "custom") return kCustom;
+     return 0;
+ }
+ 
+@@ -250,8 +255,114 @@ bool HasKnownTag(std::string_view text) {
+     return text.find('<') != std::string_view::npos && text.find('>') != std::string_view::npos;
+ }
+ 
++constexpr float kDegToRad = 3.14159265358979f / 180.0f;
++
+ } // namespace
+ 
++// ---------------------------------------------------------------------------
++// 自作の文字アニメーション
++// ---------------------------------------------------------------------------
++
++float TextCharAnimation::DefaultValue(std::string_view property) {
++    return property.starts_with("offset") || property == "rotation" ? 0.0f : 1.0f;
++}
++
++TimelineCurve* TextCharAnimation::Find(std::string_view property) {
++    for (TimelineCurve& c : curves) {
++        if (c.property == property) return &c;
++    }
++    return nullptr;
++}
++
++const TimelineCurve* TextCharAnimation::Find(std::string_view property) const {
++    for (const TimelineCurve& c : curves) {
++        if (c.property == property) return &c;
++    }
++    return nullptr;
++}
++
++bool TextCharAnimation::IsEmpty() const {
++    return std::all_of(curves.begin(), curves.end(), [](const TimelineCurve& c) { return c.keys.empty(); });
++}
++
++float TextCharAnimation::GetDuration() const {
++    float d = 0.0f;
++    for (const TimelineCurve& c : curves) d = std::max(d, c.GetEndTime());
++    return d;
++}
++
++TextCharAnimation::Sample TextCharAnimation::Evaluate(float time) const {
++    Sample s;
++    float scale = 1.0f;
++    for (const TimelineCurve& c : curves) {
++        if (c.keys.empty()) continue;
++        const float v = c.Evaluate(time);
++        const std::string& p = c.property;
++        if (p == "offset.x") s.offset.x = v;
++        else if (p == "offset.y") s.offset.y = v;
++        else if (p == "scale") scale = v;
++        else if (p == "scale.x") s.scale.x = v;
++        else if (p == "scale.y") s.scale.y = v;
++        else if (p == "rotation") s.rotation = v;
++        else if (p == "alpha") s.color.w = v;
++        else if (p == "color.r") s.color.x = v;
++        else if (p == "color.g") s.color.y = v;
++        else if (p == "color.b") s.color.z = v;
++    }
++    s.scale = {s.scale.x * scale, s.scale.y * scale};
++    return s;
++}
++
++std::string TextCharAnimation::ToString() const {
++    Json j = Json::MakeObject();
++    j["pivot"] = pivot;
++    j["charDelay"] = charDelay;
++    Json cj = Json::MakeObject();
++    for (const TimelineCurve& c : curves) {
++        if (c.keys.empty()) continue;
++        Json keys = Json::MakeArray();
++        for (const TimelineKey& k : c.keys) {
++            Json kj = Json::MakeArray();
++            kj.Push(std::round(k.time * 10000.0) / 10000.0);
++            kj.Push(std::round(k.value * 10000.0) / 10000.0);
++            kj.Push(static_cast<int>(k.interpolation));
++            keys.Push(std::move(kj));
++        }
++        cj[c.property] = std::move(keys);
++    }
++    j["curves"] = std::move(cj);
++    return j.Dump(0);
++}
++
++TextCharAnimation TextCharAnimation::Parse(std::string_view json) {
++    TextCharAnimation a;
++    if (json.empty()) return a;
++    const std::optional<Json> parsed = Json::Parse(json);
++    if (!parsed || !parsed->IsObject()) return a;
++    const Json& j = *parsed;
++    a.pivot = static_cast<float>(j["pivot"].AsNumber(0.5));
++    a.charDelay = static_cast<float>(j["charDelay"].AsNumber(0.08));
++    for (const auto& [property, keys] : j["curves"].Items()) {
++        TimelineCurve c;
++        c.property = property;
++        for (const Json& kj : keys.Elements()) {
++            TimelineKey k;
++            k.time = std::max(static_cast<float>(kj.At(0).AsNumber()), 0.0f);
++            k.value = static_cast<float>(kj.At(1).AsNumber());
++            const int interp = kj.At(2).AsInt(0);
++            k.interpolation = interp >= 0 && interp <= 2 ? static_cast<KeyInterpolation>(interp) : KeyInterpolation::Smooth;
++            c.keys.push_back(k);
++        }
++        c.Sort();
++        a.curves.push_back(std::move(c));
++    }
++    return a;
++}
++
++// ---------------------------------------------------------------------------
++// UIText
++// ---------------------------------------------------------------------------
++
+ std::string UIText::StripTags(std::string_view text) {
+     if (!HasKnownTag(text)) return std::string(text);
+     std::string out;
+@@ -267,27 +378,48 @@ void UIText::RestartReveal() {
+     m_RevealTime = 0.0f;
+     m_SoundCount = 0;
+     m_RevealDoneSent = false;
++    m_RevealDir = 1.0f;
++    m_HideRequested = false;
++    m_HideDoneSent = true;
+     m_Revealing = reveal != TextReveal::None;
+ }
+ 
+ void UIText::SkipReveal() { m_SkipReveal = true; }
+ 
++void UIText::HideReveal() {
++    m_HideRequested = true; // 全部の文字が出きる時刻が分かる（描く）ときに始める
++}
++
++void UIText::ShowReveal() {
++    m_HideRequested = false;
++    if (m_RevealDir > 0.0f) return;
++    m_RevealDir = 1.0f;
++    m_RevealDoneSent = false;
++    m_HideDoneSent = true;
++}
++
+ void UIText::PaintAnimated(WidgetContext& ctx, const std::string& resolved, float px) {
+     // ---- 時間・出し直し ----
+     const double now = Platform::GetTime();
+     const bool shownAgain = now - m_LastPaint > kShownAgainAfter;
+     m_LastPaint = now;
+     if (resolved != m_RevealText || (shownAgain && revealOnShow)) {
++        const bool hide = m_HideRequested;
+         m_RevealText = resolved;
+         RestartReveal();
++        m_HideRequested = hide;
+     }
+-    const float dt = std::clamp(ctx.deltaTime, 0.0f, 0.25f);
+-    m_EffectTime += dt;
+-    if (revealAuto) m_RevealTime += dt;
+-    if (m_SkipReveal) {
+-        m_RevealTime = 1e6f;
+-        m_SkipReveal = false;
++    // 自作の文字アニメーション（文字列が変わったときだけ読み直す）
++    if (customReveal != m_CustomRevealSource) {
++        m_CustomRevealSource = customReveal;
++        m_CustomRevealAnim = TextCharAnimation::Parse(customReveal);
++    }
++    if (customEffect != m_CustomEffectSource) {
++        m_CustomEffectSource = customEffect;
++        m_CustomEffectAnim = TextCharAnimation::Parse(customEffect);
+     }
++    const float dt = m_RevealPaused ? 0.0f : std::clamp(ctx.deltaTime, 0.0f, 0.25f);
++    m_EffectTime += dt;
+ 
+     const std::vector<Char> chars = Parse(resolved, richText);
+     auto f = ctx.GetFont(font, px);
+@@ -308,20 +440,37 @@ void UIText::PaintAnimated(WidgetContext& ctx, const std::string& resolved, floa
+             if (chars[static_cast<size_t>(i)].cp != '\n') t += step / chars[static_cast<size_t>(i)].speed;
+         }
+     }
+-    const bool revealing = reveal != TextReveal::None && !(ctx.designMode && revealAuto);
+-    const float fade = std::max(revealFade, 0.0f);
++    // 逆再生（消す）は出し方が「すぐ全部出す」でも 1 文字ずつ消す
++    const TextReveal mode = reveal == TextReveal::None && m_RevealDir < 0.0f ? TextReveal::Typewriter : reveal;
++    const TextCharAnimation& revealAnim = m_CustomRevealAnim;
++    const bool revealing = mode != TextReveal::None && !(ctx.designMode && revealAuto);
++    const float fade = mode == TextReveal::Custom ? revealAnim.GetDuration() : std::max(revealFade, 0.0f);
++    // 全部の文字が出きる時刻・逆再生を始める・時間を進める
++    m_RevealEnd = start.back() + fade;
++    if (m_HideRequested && revealing && revealAuto) {
++        m_HideRequested = false;
++        m_RevealTime = std::min(m_RevealTime, m_RevealEnd);
++        m_RevealDir = -1.0f;
++        m_HideDoneSent = false;
++    }
++    if (revealAuto) m_RevealTime += dt * m_RevealDir;
++    if (m_SkipReveal) {
++        m_RevealTime = m_RevealDir < 0.0f ? -1.0f : 1e6f;
++        m_SkipReveal = false;
++    }
++    // 文字 i が動き出してからの秒（出さないときは出きった後）
++    auto localTimeOf = [&](int i) {
++        if (!revealing) return 1e6f;
++        if (revealAuto) return m_RevealTime - start[static_cast<size_t>(i)];
++        // revealProgress（0〜1）で何文字目まで出すか（タイムラインで動かす）
++        return (std::clamp(revealProgress, 0.0f, 1.0f) * static_cast<float>(n) - static_cast<float>(i)) * std::max(fade, 1e-3f);
++    };
+     // 文字 i の出かた（0: まだ / 1: 出きった）
+     auto progressOf = [&](int i) {
+         if (!revealing) return 1.0f;
+-        float t;
+-        if (revealAuto) {
+-            t = m_RevealTime - start[static_cast<size_t>(i)];
+-        } else {
+-            // revealProgress（0〜1）で何文字目まで出すか（タイムラインで動かす）
+-            t = (std::clamp(revealProgress, 0.0f, 1.0f) * static_cast<float>(n) - static_cast<float>(i)) * std::max(fade, 1e-3f);
+-        }
+-        if (t < 0.0f) return 0.0f;
+-        if (reveal == TextReveal::Typewriter || fade <= 0.0f) return 1.0f;
++        const float t = localTimeOf(i);
++        if (t < 0.0f || (t <= 0.0f && m_RevealDir < 0.0f)) return 0.0f;
++        if (mode == TextReveal::Typewriter || fade <= 0.0f) return 1.0f;
+         return std::clamp(t / fade, 0.0f, 1.0f);
+     };
+ 
+@@ -331,8 +480,15 @@ void UIText::PaintAnimated(WidgetContext& ctx, const std::string& resolved, floa
+         if (progressOf(i) > 0.0f) shown = i + 1;
+     }
+     const bool done = !revealing || (shown >= n && progressOf(n - 1) >= 1.0f);
+-    m_Revealing = revealing && !done;
+-    if (revealing && !ctx.designMode) {
++    const bool hiding = revealing && m_RevealDir < 0.0f;
++    m_Revealing = revealing && !done && !hiding;
++    if (hiding && shown == 0) {
++        // 消し終えた（また出すときに待たないよう、最初の文字が出る時刻で止める）
++        m_RevealTime = std::max(m_RevealTime, std::min(start.front(), m_RevealEnd));
++        if (!m_HideDoneSent && !ctx.designMode) ctx.Emit({UIEventType::TextHidden, name, name, 0.0f, StripTags(resolved), this});
++        m_HideDoneSent = true;
++    }
++    if (revealing && !hiding && !ctx.designMode) {
+         if (!revealSound.empty() && shown > m_SoundCount) {
+             // 1 フレームに 1 回まで鳴らす（空白・改行では鳴らさない）
+             bool play = false;
+@@ -348,7 +504,7 @@ void UIText::PaintAnimated(WidgetContext& ctx, const std::string& resolved, floa
+         if (done && !m_RevealDoneSent) ctx.Emit({UIEventType::TextRevealed, name, name, 1.0f, StripTags(resolved), this});
+     }
+     m_SoundCount = std::max(m_SoundCount, shown);
+-    if (done) m_RevealDoneSent = true;
++    if (done && !hiding) m_RevealDoneSent = true;
+ 
+     // ---- 並べる ----
+     const UI::Rect& R = m_ScreenRect;
+@@ -373,7 +529,7 @@ void UIText::PaintAnimated(WidgetContext& ctx, const std::string& resolved, floa
+         Vec2 center;
+         Vec2 size;
+         float rotation;
+-        float scale;
++        Vec2 scale;
+         Vec4 color;
+         Glyph glyph;
+     };
+@@ -393,13 +549,28 @@ void UIText::PaintAnimated(WidgetContext& ctx, const std::string& resolved, floa
+             const Glyph& g = f->GetGlyph(c.cp);
+             const float p = progressOf(i);
+             if (g.size.x > 0.0f && g.size.y > 0.0f && p > 0.0f) {
+-                Placed pl{i, {x + g.offset.x + g.size.x * 0.5f, baseline + g.offset.y + g.size.y * 0.5f}, g.size, 0.0f, 1.0f, c.hasColor ? c.color : color, g};
++                Placed pl{i, {x + g.offset.x + g.size.x * 0.5f, baseline + g.offset.y + g.size.y * 0.5f}, g.size, 0.0f, {1.0f, 1.0f}, c.hasColor ? c.color : color, g};
+                 pl.color.w *= c.alpha;
++                // 自作の文字アニメーションを当てる（回転・拡大の中心は、文字の行の高さの pivot の所）
++                const float lineTop = baseline - f->GetAscent();
++                auto applyCustom = [&](const TextCharAnimation& a, float t) {
++                    const TextCharAnimation::Sample cs = a.Evaluate(t);
++                    const Vec2 pivotPt{pl.center.x, lineTop + std::clamp(a.pivot, -1.0f, 2.0f) * f->GetLineHeight()};
++                    Vec2 d{(pl.center.x - pivotPt.x) * cs.scale.x, (pl.center.y - pivotPt.y) * cs.scale.y};
++                    const float r = cs.rotation * kDegToRad;
++                    const float cr = std::cos(r), sr = std::sin(r);
++                    d = {d.x * cr - d.y * sr, d.x * sr + d.y * cr};
++                    pl.center = {pivotPt.x + d.x + cs.offset.x * px, pivotPt.y + d.y + cs.offset.y * px};
++                    pl.rotation += r;
++                    pl.scale = {pl.scale.x * cs.scale.x, pl.scale.y * cs.scale.y};
++                    pl.color = {pl.color.x * cs.color.x, pl.color.y * cs.color.y, pl.color.z * cs.color.z, pl.color.w * std::max(cs.color.w, 0.0f)};
++                };
+                 // 出かた
+-                switch (reveal) {
++                switch (mode) {
++                case TextReveal::Custom: applyCustom(revealAnim, std::clamp(localTimeOf(i), 0.0f, fade)); break;
+                 case TextReveal::Fade: pl.color.w *= p; break;
+                 case TextReveal::Pop:
+-                    pl.scale = EaseOutBack(p);
++                    pl.scale = {EaseOutBack(p), EaseOutBack(p)};
+                     pl.color.w *= std::min(1.0f, p * 3.0f);
+                     break;
+                 case TextReveal::Rise:
+@@ -412,7 +583,7 @@ void UIText::PaintAnimated(WidgetContext& ctx, const std::string& resolved, floa
+                     break;
+                 case TextReveal::Spin:
+                     pl.rotation = (1.0f - EaseOutCubic(p)) * kPi;
+-                    pl.scale = EaseOutCubic(p);
++                    pl.scale = {EaseOutCubic(p), EaseOutCubic(p)};
+                     pl.color.w *= p;
+                     break;
+                 default: break;
+@@ -426,7 +597,20 @@ void UIText::PaintAnimated(WidgetContext& ctx, const std::string& resolved, floa
+                     pl.center.x += (Hash(fi, tick) - 0.5f) * strength;
+                     pl.center.y += (Hash(fi + 31.0f, tick) - 0.5f) * strength;
+                 }
+-                if (fx & kPulse) pl.scale *= 1.0f + 0.15f * std::sin(time * 5.0f - fi * 0.3f) * (effectStrength / 6.0f);
++                if (fx & kPulse) {
++                    const float k = 1.0f + 0.15f * std::sin(time * 5.0f - fi * 0.3f) * (effectStrength / 6.0f);
++                    pl.scale = {pl.scale.x * k, pl.scale.y * k};
++                }
++                if (fx & kCustom) {
++                    // 自作の動き: 長さで繰り返す。文字ごとに charDelay ずつ遅らせる
++                    const TextCharAnimation& a = m_CustomEffectAnim;
++                    const float len = a.GetDuration();
++                    if (len > 1e-4f) {
++                        float t = std::fmod(time - fi * a.charDelay, len);
++                        if (t < 0.0f) t += len;
++                        applyCustom(a, t);
++                    }
++                }
+                 if (fx & kSwing) pl.rotation += std::sin(time * 4.0f - fi * 0.5f) * 0.25f * (effectStrength / 6.0f);
+                 if (fx & kRainbow) {
+                     const Vec3 rgb = HueToRgb(time * 0.4f + fi * 0.07f);
+@@ -462,7 +646,7 @@ void UIText::PaintAnimated(WidgetContext& ctx, const std::string& resolved, floa
+             tint = ctx.Fade(tint);
+             if (tint.w <= 0.001f) continue;
+             const Mat4 m = Mat4::Translate({pl.center.x + offset.x, pl.center.y + offset.y, 0.0f}) * Mat4::RotateZ(pl.rotation) *
+-                           Mat4::Scale({pl.size.x * pl.scale, pl.size.y * pl.scale, 1.0f});
++                           Mat4::Scale({pl.size.x * pl.scale.x, pl.size.y * pl.scale.y, 1.0f});
+             Renderer2D::DrawTransformedQuad(m, tint, f->GetAtlas(g.page), g.uvMin, g.uvMax);
+         }
+     };
+diff --git a/Modules/Engine/src/Widgets.cpp b/Modules/Engine/src/Widgets.cpp
+index c9c89c7..f2a279c 100644
+--- a/Modules/Engine/src/Widgets.cpp
++++ b/Modules/Engine/src/Widgets.cpp
+@@ -23,8 +23,8 @@ const char* const kVAlign[] = {"Fill", "Top", "Center", "Bottom"};
+ const char* const kSizeRule[] = {"Auto", "Fill"};
+ const char* const kTextAlign[] = {"Left", "Center", "Right"};
+ const char* const kTextVAlign[] = {"Top", "Center", "Bottom"};
+-const char* const kTextEffect[] = {"None", "Wave", "Shake", "Rainbow", "Pulse", "Swing", "Glitch"};
+-const char* const kTextReveal[] = {"None", "Typewriter", "Fade", "Pop", "Rise", "Drop", "Spin"};
++const char* const kTextEffect[] = {"None", "Wave", "Shake", "Rainbow", "Pulse", "Swing", "Glitch", "Custom"};
++const char* const kTextReveal[] = {"None", "Typewriter", "Fade", "Pop", "Rise", "Drop", "Spin", "Custom"};
+ const char* const kProgressDir[] = {"LeftToRight", "RightToLeft", "BottomToTop", "TopToBottom"};
+ const char* const kToggleStyle[] = {"Switch", "Checkbox"};
+ 
+@@ -641,6 +641,8 @@ void UIText::Reflect(PropertyVisitor& v) {
+     v.Asset("revealSound", revealSound, AssetType::Audio);
+     v.Property("revealSoundEvery", revealSoundEvery);
+     v.Property("richText", richText);
++    v.Property("customReveal", customReveal);
++    v.Property("customEffect", customEffect);
+     v.Header("影");
+     v.Property("shadow", shadow);
+     v.Color("shadowColor", shadowColor);
+diff --git a/Tests/EngineTests.cpp b/Tests/EngineTests.cpp
+index 9bf5de1..8f68b01 100644
+--- a/Tests/EngineTests.cpp
++++ b/Tests/EngineTests.cpp
+@@ -1190,6 +1190,23 @@ void TestWidgetAssetFeatures() {
+     CHECK(Near(doc.Find("List")->opacity, 0.5f, 0.02f) && Near(doc.Find("List")->translation.y, 25.0f, 1.0f), "anim mid %f", doc.Find("List")->opacity);
+     doc.Update({0.0f, 0.0f, 1280.0f, 720.0f}, 1.0f);
+     CHECK(Near(doc.Find("List")->opacity, 1.0f) && !doc.IsAnimationPlaying("FadeIn"), "anim end");
++    // 逆再生・一時停止・向きを変える
++    doc.ReverseAnimation("FadeIn"); // 再生していなければ最後から逆に
++    CHECK(doc.IsAnimationPlaying("FadeIn") && doc.IsAnimationReversed("FadeIn"), "reverse starts from the end");
++    doc.Update({0.0f, 0.0f, 1280.0f, 720.0f}, 0.5f);
++    CHECK(Near(doc.Find("List")->opacity, 0.5f, 0.02f), "reverse mid %f", doc.Find("List")->opacity);
++    doc.PauseAnimation("FadeIn");
++    doc.Update({0.0f, 0.0f, 1280.0f, 720.0f}, 0.3f);
++    CHECK(doc.IsAnimationPaused("FadeIn") && Near(doc.Find("List")->opacity, 0.5f, 0.02f), "paused holds %f", doc.Find("List")->opacity);
++    doc.ResumeAnimation(); // 空ならすべて
++    doc.ReverseAnimation("FadeIn"); // 今の時刻から前へ
++    doc.Update({0.0f, 0.0f, 1280.0f, 720.0f}, 0.25f);
++    CHECK(!doc.IsAnimationPaused("FadeIn") && Near(doc.Find("List")->opacity, 0.75f, 0.02f), "reverse flips direction %f", doc.Find("List")->opacity);
++    doc.Update({0.0f, 0.0f, 1280.0f, 720.0f}, 1.0f);
++    CHECK(Near(doc.Find("List")->opacity, 1.0f) && !doc.IsAnimationPlaying("FadeIn"), "end after flip");
++    doc.PlayAnimationReverse("FadeIn");
++    doc.Update({0.0f, 0.0f, 1280.0f, 720.0f}, 2.0f);
++    CHECK(Near(doc.Find("List")->opacity, 0.0f) && !doc.IsAnimationPlaying("FadeIn"), "reverse to the start");
+     // アセットを変えると表示中の UI も作り直される（エディターで編集したとき）
+     loaded->root->Find<UIProgressBar>("HP")->percent = 0.9f;
+     loaded->MarkChanged();
+@@ -1203,6 +1220,54 @@ void TestWidgetAssetFeatures() {
+     std::filesystem::remove_all(dir);
+ }
+ 
++void TestTextCharAnimation() {
++    std::printf("UI: 自作の文字アニメーション（TextCharAnimation）\n");
++    TextCharAnimation a;
++    a.pivot = 1.0f;
++    a.charDelay = 0.05f;
++    a.curves.push_back({"offset.y", {}});
++    a.curves.back().SetKey(0.0f, 1.0f, KeyInterpolation::Linear);
++    a.curves.back().SetKey(0.5f, 0.0f, KeyInterpolation::Linear);
++    a.curves.push_back({"scale", {}});
++    a.curves.back().SetKey(0.0f, 2.0f, KeyInterpolation::Linear);
++    a.curves.back().SetKey(0.25f, 1.0f, KeyInterpolation::Linear);
++    a.curves.push_back({"scale.x", {}});
++    a.curves.back().SetKey(0.0f, 0.5f);
++    a.curves.push_back({"rotation", {}});
++    a.curves.back().SetKey(0.2f, 90.0f, KeyInterpolation::Constant);
++    CHECK(Near(a.GetDuration(), 0.5f) && !a.IsEmpty(), "duration");
++    const TextCharAnimation::Sample s0 = a.Evaluate(0.25f);
++    CHECK(Near(s0.offset.y, 0.5f) && Near(s0.scale.x, 0.5f) && Near(s0.scale.y, 1.0f) && Near(s0.rotation, 90.0f) && Near(s0.color.w, 1.0f), "evaluate");
++    CHECK(Near(TextCharAnimation::DefaultValue("offset.x"), 0.0f) && Near(TextCharAnimation::DefaultValue("alpha"), 1.0f), "defaults");
++    const TextCharAnimation b = TextCharAnimation::Parse(a.ToString());
++    CHECK(Near(b.pivot, 1.0f) && Near(b.charDelay, 0.05f) && b.curves.size() == 4, "round trip %s", a.ToString().c_str());
++    const TextCharAnimation::Sample s1 = b.Evaluate(0.1f);
++    const TextCharAnimation::Sample s2 = a.Evaluate(0.1f);
++    CHECK(Near(s1.offset.y, s2.offset.y) && Near(s1.scale.y, s2.scale.y) && b.Find("rotation") && b.Find("rotation")->keys[0].interpolation == KeyInterpolation::Constant, "same after parse");
++    CHECK(TextCharAnimation::Parse("not json").IsEmpty() && TextCharAnimation::Parse("").IsEmpty(), "bad json is empty");
++
++    // テキストに入れて保存し直しても残る（出し方・動きの Custom）
++    UIText t;
++    t.reveal = TextReveal::Custom;
++    t.effect = TextEffect::Custom;
++    t.customReveal = a.ToString();
++    t.customEffect = "{}";
++    const Json j = WidgetAsset::SerializeWidget(t);
++    auto asset = std::make_unique<WidgetAsset>();
++    Json doc = Json::MakeObject();
++    Json root = Json::MakeObject();
++    root["type"] = "UICanvasPanel";
++    Json children = Json::MakeArray();
++    Json child = j;
++    child["name"] = "Msg";
++    children.Push(child);
++    root["children"] = std::move(children);
++    doc["root"] = std::move(root);
++    asset->FromJson(doc);
++    auto* loaded = asset->root ? asset->root->Find<UIText>("Msg") : nullptr;
++    CHECK(loaded && loaded->reveal == TextReveal::Custom && loaded->effect == TextEffect::Custom && loaded->customReveal == t.customReveal, "text keeps custom animation");
++}
++
+ void TestUIDocumentComponent() {
+     std::printf("UI: UIDocument コンポーネントの保存と OnUIEvent\n");
+     Scene scene;
+@@ -3291,7 +3356,7 @@ int main() {
+         TestHierarchyTransforms, TestHierarchyDestroyAndActive, TestChildColliderFollowsParent, TestSerializeHierarchy,
+         TestInstantiate, TestPrefab, TestLifecycleAndInvoke, TestProjectSettingsAndInput, TestLegacyScene, TestAppIcon,
+         TestTimelineCurve, TestTimelineAssetRoundTrip, TestTimelineDirector, TestTimelineBlendAndProperties,
+-        TestTimelineControlAndPrefabBinding, TestWidgetLayout, TestAquaFormat, TestWidgetAssetFeatures, TestUIDocumentComponent,
++        TestTimelineControlAndPrefabBinding, TestWidgetLayout, TestAquaFormat, TestWidgetAssetFeatures, TestTextCharAnimation, TestUIDocumentComponent,
+         TestAnimatorStateMachine, TestAnimatorBlendTreesAndLayers, TestInputActionAsset, TestInputActionValues, TestInputTriggers,
+         TestInputMapsAndPlayers, TestNavMeshBakeAndQueries, TestNavMeshAgentWalksAroundWall, TestNavMeshSaveLoadAndModifiers,
+         TestNavMeshLinkAndRuntimeRebuild, TestNavMeshAgentWithCharacterController, TestNavMeshObstacle,
+-- 
+2.53.0.windows.1
+

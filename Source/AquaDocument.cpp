@@ -516,7 +516,8 @@ void Project::Refresh(bool force) {
         if (!FindSourceInfo(f) && KindOf(f, LayoutKind::Part) == LayoutKind::Part) widgets.push_back(std::move(f));
     }
     m_AssetLists[AssetType::UIShader] = Assets::FindFiles({".uishader"});
-    m_AllAssets = Assets::FindFiles({".png", ".jpg", ".jpeg", ".bmp", ".tga", ".ttf", ".otf", ".ttc", ".bdf", ".fnt", ".rfont", ".wav", ".ogg", ".aqua", ".rui", ".uishader"});
+    m_AssetLists[AssetType::Message] = Assets::FindFiles({".sobt"}); // Shion のテキスト（テキストのラベルで使う）
+    m_AllAssets = Assets::FindFiles({".png", ".jpg", ".jpeg", ".bmp", ".tga", ".ttf", ".otf", ".ttc", ".bdf", ".fnt", ".rfont", ".wav", ".ogg", ".aqua", ".rui", ".uishader", ".sobt"});
 }
 
 const std::vector<std::string>& Project::GetAssets(AssetType type) {

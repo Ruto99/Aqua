@@ -42,6 +42,7 @@ const char* AssetIcon(const std::string& ext) {
     if (ext == ".aqua") return ICON_FA_DROPLET;
     if (ext == ".uishader") return ICON_FA_FILL_DRIP;
     if (ext == ".rui") return ICON_FA_OBJECT_GROUP;
+    if (ext == ".sobt") return ICON_FA_COMMENT_DOTS; // Shion のテキスト
     return ICON_FA_FILE;
 }
 

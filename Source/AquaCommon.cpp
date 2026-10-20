@@ -75,7 +75,7 @@ std::string PropertyLabelJa(std::string_view n) {
     static const std::pair<const char*, const char*> kNames[] = {
         {"visibility", "表示状態"}, {"enabled", "有効"}, {"opacity", "不透明度"}, {"translation", "描画のずれ"},
         {"renderScale", "描画の拡大"}, {"clipChildren", "子を切り取る"}, {"tooltip", "ツールチップ"}, {"visibleBind", "表示の条件（変数）"},
-        {"text", "テキスト"}, {"font", "フォント"}, {"fontSize", "文字の大きさ"}, {"color", "色"}, {"align", "横の揃え"},
+        {"text", "テキスト"}, {"messageFile", "Shion のファイル"}, {"messageLabel", "Shion のラベル"}, {"font", "フォント"}, {"fontSize", "文字の大きさ"}, {"color", "色"}, {"align", "横の揃え"},
         {"verticalAlign", "縦の揃え"}, {"wrap", "折り返す"}, {"shadow", "影"}, {"shadowColor", "影の色"}, {"shadowOffset", "影のずれ"},
         {"shadowSize", "影の大きさ"}, {"texture", "画像"}, {"size", "大きさ"}, {"preserveAspect", "縦横比を保つ"},
         {"sliceBorder", "9 スライス（左上右下）"}, {"cornerRadius", "角丸"}, {"background", "背景色"}, {"borderColor", "枠線の色"},
