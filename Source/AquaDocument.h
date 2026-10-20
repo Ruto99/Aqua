@@ -95,6 +95,9 @@ struct SnapGuide {
 struct DesignerState {
     WidgetPath selection;
     bool hasSelection = false;
+    // 一緒に選んでいるウィジェットの名前（Shift / Ctrl + クリックで足す。整列パネルで使う）
+    // 名前は文書の中で重ならないので、編集で木の形が変わっても指す先がずれない
+    std::vector<std::string> extraSelection;
     WidgetPath hover;
     bool hasHover = false;
 
@@ -113,6 +116,13 @@ struct DesignerState {
     WidgetSlot dragSlot;
     UI::Rect dragRect;
     std::vector<SnapGuide> guides;
+    struct GroupDrag {
+        std::string name;
+        WidgetSlot slot;  // ドラッグを始めたときのスロット
+        UI::Rect rect;    // ドラッグを始めたときの矩形
+        UI::Rect parent;  // 親の矩形
+    };
+    std::vector<GroupDrag> dragGroup; // 一緒に選んでいるもの（まとめて動かす）
 
     WidgetPath renaming;
     bool isRenaming = false;
@@ -143,6 +153,19 @@ struct DesignerState {
     bool focused = false;
 };
 
+// キャンバスの背景に敷く画像（ゲームのスクリーンショットなど。キャプチャーのパネルで設定する）
+// 見た目を合わせるための下絵なので編集用ファイル（.aqs）にだけ保存し、.aqua には書き出さない
+struct CaptureBackground {
+    std::string image;          // プロジェクトのフォルダからの相対パス（UTF-8・/ 区切り）。空なら無し
+    bool visible = true;
+    bool inPreview = true;      // プレビュー中も表示する
+    float opacity = 1.0f;
+    enum Fit { Stretch = 0, Contain = 1, Cover = 2, Original = 3 };
+    int fit = Stretch;          // 画面への合わせ方
+    float scale = 1.0f;         // 合わせた後の倍率
+    Vec2 offset{0.0f, 0.0f};    // ずらす量（基準解像度の単位）
+};
+
 // ---------------------------------------------------------------------------
 // 文書
 // ---------------------------------------------------------------------------
@@ -162,6 +185,9 @@ public:
     std::string output;       // Assets からの相対パス（.aqua）
     std::shared_ptr<WidgetAsset> asset;
     std::map<std::string, std::string> previewVariables; // プレビュー用の変数の値（.aqs に保存）
+    CaptureBackground background;                        // キャンバスの背景（.aqs に保存）
+    std::shared_ptr<Texture> backgroundTexture;          // background.image を読んだもの
+    std::string backgroundLoaded;                        // backgroundTexture の元のパス（変わったら読み直す）
     DesignerState ui;
     std::string clipboard;
 

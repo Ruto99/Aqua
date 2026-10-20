@@ -1,7 +1,8 @@
 // デザイナー: パレット・階層・キャンバス・詳細（スロット・プロパティ・スタイル）
 //
-//   キャンバス: 選択・移動・8 方向のリサイズ・アンカー表示・吸い付き（親と兄弟の端・中央）・解像度の切り替え・
-//               ホイールで拡大・中ボタンで移動・プレビュー（実際に操作して確かめる）
+//   キャンバス: 選択（Shift + クリックで一緒に選ぶ）・移動（一緒に選んだものもまとめて）・8 方向のリサイズ・アンカー表示・
+//               吸い付き（親と兄弟の端・中央）・解像度の切り替え・ホイールで拡大・中ボタンで移動・
+//               プレビュー（実際に操作して確かめる）・背景（キャプチャーのパネルで撮ったゲームの画面）
 //   アセットのドラッグ: 画像 → Image を作る / 画像・ボタン・枠に入れる、フォント → テキストに、音 → ボタンのクリック音、
 //                     UI（.aqua）→ 部品（ユーザーウィジェット）として入れる
 
@@ -185,6 +186,7 @@ Widget* App::AddWidget(Document& doc, const std::string& type, Widget* parent, i
     Widget* raw = parent->AddChild(std::move(w), index);
     doc.ui.selection = PathOf(raw);
     doc.ui.hasSelection = true;
+    doc.ui.extraSelection.clear();
     doc.Changed();
     return raw;
 }
@@ -214,6 +216,7 @@ void App::DuplicateWidget(Document& doc, const WidgetPath& path) {
     Widget* parent = w->GetParent();
     Widget* raw = parent->AddChild(std::move(copy), parent->IndexOf(w) + 1);
     doc.ui.selection = PathOf(raw);
+    doc.ui.extraSelection.clear();
     doc.Changed();
 }
 
@@ -284,6 +287,7 @@ void App::PasteWidget(Document& doc) {
     Widget* raw = target->AddChild(std::move(w), index);
     doc.ui.selection = PathOf(raw);
     doc.ui.hasSelection = true;
+    doc.ui.extraSelection.clear();
     doc.Changed();
 }
 
@@ -432,6 +436,15 @@ void App::DrawDocumentArea() {
         doc->ui.focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
         if (doc->ui.focused) HandleDesignerKeys(*doc);
         if (doc->ui.hasSelection && !Resolve(doc->asset->root.get(), doc->ui.selection)) doc->ui.hasSelection = false;
+        // 一緒に選んでいるもの: 消えたもの・最初に選んだものと同じものは外す
+        {
+            Widget* primary = doc->ui.hasSelection ? Resolve(doc->asset->root.get(), doc->ui.selection) : nullptr;
+            if (!primary) doc->ui.extraSelection.clear();
+            std::erase_if(doc->ui.extraSelection, [&](const std::string& name) {
+                Widget* w = doc->asset->root->Find(name);
+                return !w || w == primary || !w->GetParent();
+            });
+        }
         // マウスを離していて入力中でもなければ確定（元に戻すの単位）・保存・書き出し
         const bool idle = !ImGui::IsAnyItemActive() && !ImGui::IsMouseDown(ImGuiMouseButton_Left);
         if (doc->HasPending() && idle) doc->Commit();
@@ -479,7 +492,14 @@ void App::HandleDesignerKeys(Document& doc) {
         if (doc.view) doc.view->SetAsset(doc.asset);
     }
     if (!io.KeyCtrl && pressed(ImGuiKey_G)) doc.ui.showGrid = !doc.ui.showGrid;
-    if (pressed(ImGuiKey_Escape)) doc.ui.hasSelection = false;
+    if (pressed(ImGuiKey_Escape)) {
+        doc.ui.hasSelection = false;
+        doc.ui.extraSelection.clear();
+    }
+    if (!io.KeyCtrl && pressed(ImGuiKey_B) && !doc.background.image.empty()) {
+        doc.background.visible = !doc.background.visible;
+        doc.Save();
+    }
     if (doc.ui.keySelected && pressed(ImGuiKey_Delete)) {
         if (WidgetAnimation* a = doc.ui.animation >= 0 && doc.ui.animation < static_cast<int>(asset.animations.size()) ? &asset.animations[static_cast<size_t>(doc.ui.animation)] : nullptr) {
             if (doc.ui.keyTrack >= 0 && doc.ui.keyTrack < static_cast<int>(a->tracks.size())) {
@@ -551,6 +571,26 @@ void App::DrawToolbar(Document& doc) {
     ImGui::SameLine();
     if (IconButton(ICON_FA_MAGNET, "吸い付き（親・兄弟の端と中央。Alt で一時的に無効）", doc.ui.snap)) doc.ui.snap = !doc.ui.snap;
     ImGui::SameLine();
+    {
+        // 背景（キャプチャーのパネルで撮ったゲームの画面など）
+        const bool hasBg = !doc.background.image.empty();
+        if (IconButton(ICON_FA_IMAGE, hasBg ? "背景を表示する / しない（B）。右クリックで不透明度" : "背景なし（キャプチャーのパネルでゲームの画面を撮って敷けます）",
+                       hasBg && doc.background.visible)) {
+            if (hasBg) {
+                doc.background.visible = !doc.background.visible;
+                doc.Save();
+            } else if (ImGuiWindow* w = ImGui::FindWindowByName("###Capture")) {
+                if (w->DockNode && w->DockNode->TabBar) w->DockNode->TabBar->NextSelectedTabId = w->TabId;
+                ImGui::FocusWindow(w);
+            }
+        }
+        if (hasBg && ImGui::BeginPopupContextItem("bg-quick")) {
+            ImGui::SetNextItemWidth(160.0f * m_Scale);
+            if (ImGui::SliderFloat("不透明度", &doc.background.opacity, 0.0f, 1.0f, "%.2f")) doc.Save();
+            ImGui::EndPopup();
+        }
+    }
+    ImGui::SameLine();
     ImGui::BeginDisabled(!doc.CanUndo());
     if (IconButton(ICON_FA_ROTATE_LEFT, "元に戻す（Ctrl+Z）")) doc.Undo();
     ImGui::EndDisabled();
@@ -573,7 +613,7 @@ void App::DrawToolbar(Document& doc) {
     } else if (doc.ui.preview) {
         ImGui::TextDisabled("ボタン・スライダー・キーボード / ゲームパッドのフォーカス移動を試せます");
     } else {
-        ImGui::TextDisabled("ドラッグで移動・四隅でリサイズ・ホイールで拡大・中ボタンで移動");
+        ImGui::TextDisabled("ドラッグで移動・四隅でリサイズ・Shift + クリックで一緒に選ぶ・ホイールで拡大・中ボタンで移動");
     }
 }
 
@@ -633,7 +673,8 @@ void App::DrawHierarchy(Document& doc) {
 
 void App::DrawHierarchyNode(Document& doc, Widget& w, WidgetPath& path) {
     WidgetAsset& asset = *doc.asset;
-    const bool selected = doc.ui.hasSelection && doc.ui.selection == path;
+    const bool selected = (doc.ui.hasSelection && doc.ui.selection == path) ||
+                          (w.GetParent() && std::find(doc.ui.extraSelection.begin(), doc.ui.extraSelection.end(), w.name) != doc.ui.extraSelection.end());
     ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_FramePadding;
     if (selected) flags |= ImGuiTreeNodeFlags_Selected;
     bool hasChildren = false;
@@ -649,8 +690,13 @@ void App::DrawHierarchyNode(Document& doc, Widget& w, WidgetPath& path) {
     ImGui::PopStyleVar();
     const ImRect itemRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
     if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
-        doc.ui.selection = path;
-        doc.ui.hasSelection = true;
+        if (ImGui::GetIO().KeyCtrl || ImGui::GetIO().KeyShift) {
+            ToggleExtraSelection(doc, path); // 一緒に選ぶ（整列パネルで揃える）
+        } else {
+            doc.ui.selection = path;
+            doc.ui.hasSelection = true;
+            doc.ui.extraSelection.clear();
+        }
     }
     if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left) && w.GetParent()) {
         doc.ui.renaming = path;
@@ -832,6 +878,8 @@ UI::Rect App::Snap(Document& doc, Widget& w, const UI::Rect& rect, int handle) {
     addRect(parent->GetRect());
     for (const auto& c : parent->children) {
         if (c.get() == &w || c->generated || !c->IsVisible()) continue;
+        // まとめて動かしているものには吸い付かない（一緒に動くので）
+        if (std::find(doc.ui.extraSelection.begin(), doc.ui.extraSelection.end(), c->name) != doc.ui.extraSelection.end()) continue;
         addRect(c->GetRect());
     }
 
@@ -992,10 +1040,22 @@ void App::DrawCanvas(Document& doc) {
             if (handleHover >= 0) {
                 ui.drag = DesignerState::Drag::Resize;
                 ui.handle = handleHover;
+            } else if (io.KeyShift && hoverDoc) {
+                // Shift + クリック: 一緒に選ぶ / 外す（整列パネルで揃える）
+                ToggleExtraSelection(doc, DesignPathOf(hoverDoc));
             } else {
                 Widget* target = hoverDoc;
                 // 選択中のものの中をクリックしたら、そのまま動かせる（重なっていても）
                 if (selDoc && selDoc->GetScreenRect().Contains(mousePx) && target && target->IsDescendantOf(selDoc) && !io.KeyCtrl) target = selDoc;
+                // 一緒に選んでいるものをクリックしたときは、そのまま（まとめて選んだまま）
+                const bool inGroup = target && std::find(ui.extraSelection.begin(), ui.extraSelection.end(), target->name) != ui.extraSelection.end();
+                if (inGroup && selAsset) {
+                    // クリックしたものを最初に（今までの最初のものは一緒に選んだ側へ）
+                    std::erase(ui.extraSelection, target->name);
+                    ui.extraSelection.push_back(selAsset->name);
+                } else if (target != selDoc) {
+                    ui.extraSelection.clear();
+                }
                 if (target) {
                     ui.selection = DesignPathOf(target);
                     ui.hasSelection = true;
@@ -1009,6 +1069,15 @@ void App::DrawCanvas(Document& doc) {
             if (ui.drag != DesignerState::Drag::None && selAsset && selDoc) {
                 ui.dragSlot = selAsset->slot;
                 ui.dragRect = selDoc->GetRect();
+            }
+            // 一緒に選んでいるものも、まとめて動かす
+            ui.dragGroup.clear();
+            if (ui.drag == DesignerState::Drag::Move && docRoot) {
+                for (const std::string& name : ui.extraSelection) {
+                    Widget* ea = asset.root->Find(name);
+                    Widget* ev = ea && IsCanvasChild(*ea) ? Resolve(docRoot, PathOf(ea)) : nullptr;
+                    if (ev && ev->GetParent()) ui.dragGroup.push_back({name, ea->slot, ev->GetRect(), ev->GetParent()->GetRect()});
+                }
             }
         }
         if (active && ImGui::IsMouseDown(ImGuiMouseButton_Left) && (ui.drag == DesignerState::Drag::Move || ui.drag == DesignerState::Drag::Resize) && selAsset && selDoc) {
@@ -1039,6 +1108,16 @@ void App::DrawCanvas(Document& doc) {
                 slot.autoSize = selAsset->slot.autoSize;
                 SetSlotRect(slot, parentDoc ? parentDoc->GetRect() : UI::Rect{0, 0, res.x, res.y}, r);
                 selAsset->slot = slot;
+                if (ui.drag == DesignerState::Drag::Move) {
+                    const float mx = r.x - ui.dragRect.x, my = r.y - ui.dragRect.y; // 吸い付いた後の動き
+                    for (const DesignerState::GroupDrag& g : ui.dragGroup) {
+                        Widget* ea = asset.root->Find(g.name);
+                        if (!ea) continue;
+                        WidgetSlot gs = g.slot;
+                        SetSlotRect(gs, g.parent, {g.rect.x + mx, g.rect.y + my, g.rect.w, g.rect.h});
+                        ea->slot = gs;
+                    }
+                }
                 doc.Changed();
                 ImGui::SetTooltip("位置 %.0f, %.0f   大きさ %.0f × %.0f", r.x, r.y, r.w, r.h);
             }
@@ -1117,6 +1196,15 @@ void App::DrawCanvas(Document& doc) {
         if (hoverDoc && hoverDoc != selDoc) {
             const ImRect r = toScreen(hoverDoc->GetScreenRect());
             dl->AddRect(r.Min, r.Max, IM_COL32(120, 180, 255, 140), 0.0f, 0, 1.0f);
+        }
+        // 一緒に選んでいるもの（整列の対象）
+        for (const std::string& name : ui.extraSelection) {
+            Widget* ea = asset.root->Find(name);
+            Widget* ew = ea && docRoot ? Resolve(docRoot, PathOf(ea)) : nullptr;
+            if (!ew) continue;
+            const ImRect r = toScreen(ew->GetScreenRect());
+            dl->AddRect(r.Min, r.Max, ToU32(Theme::kAccent), 0.0f, 0, 1.5f);
+            dl->AddRectFilled(r.Min, r.Max, IM_COL32(90, 160, 255, 28));
         }
         if (selDoc) {
             const ImRect r = toScreen(selDoc->GetScreenRect());
@@ -1501,7 +1589,9 @@ void App::RenderDocument(Document& doc) {
     const auto presets = ResolutionPresets();
     const int preset = std::clamp(ui.resolution, 0, static_cast<int>(presets.size()) - 1);
     const Vec2 res = preset == 0 ? doc.asset->referenceResolution : Vec2{presets[static_cast<size_t>(preset)].w, presets[static_cast<size_t>(preset)].h};
-    doc.view->Update({0.0f, 0.0f, static_cast<float>(w), static_cast<float>(h)}, ImGui::GetIO().DeltaTime, ui.screenZoom * CanvasScale(*doc.asset, res));
+    const float uiScale = ui.screenZoom * CanvasScale(*doc.asset, res);
+    PaintBackground(doc, w, h, uiScale); // ゲームの画面などの下絵（UI の後ろ）
+    doc.view->Update({0.0f, 0.0f, static_cast<float>(w), static_cast<float>(h)}, ImGui::GetIO().DeltaTime, uiScale);
     doc.view->RefreshUserWidgets(); // 部品の UI がほかのタブで書き出されたら作り直す
     doc.view->Paint();
     for (const UIEvent& e : doc.view->TakeEvents()) {
