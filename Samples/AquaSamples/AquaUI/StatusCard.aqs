@@ -1,0 +1,1144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AquaSource version="2" output="UI/StatusCard.aqua" generator="Aqua 1.0.0">
+  <object key="document">
+    <string key="format">RutoUI</string>
+    <number key="version">1</number>
+    <array key="referenceResolution">
+      <number>1920</number>
+      <number>1080</number>
+    </array>
+    <object key="root">
+      <string key="type">UICanvasPanel</string>
+      <string key="name">Root</string>
+      <object key="common">
+        <string key="visibility">Visible</string>
+        <bool key="enabled">true</bool>
+        <number key="opacity">1</number>
+        <array key="translation">
+          <number>0</number>
+          <number>0</number>
+        </array>
+        <array key="renderScale">
+          <number>1</number>
+          <number>1</number>
+        </array>
+        <bool key="clipChildren">false</bool>
+        <string key="tooltip"/>
+        <string key="visibleBind"/>
+        <string key="shader"/>
+      </object>
+      <object key="properties"/>
+      <object key="slot">
+        <array key="anchorMin">
+          <number>0</number>
+          <number>0</number>
+        </array>
+        <array key="anchorMax">
+          <number>0</number>
+          <number>0</number>
+        </array>
+        <array key="pivot">
+          <number>0</number>
+          <number>0</number>
+        </array>
+        <array key="position">
+          <number>0</number>
+          <number>0</number>
+        </array>
+        <array key="size">
+          <number>200</number>
+          <number>60</number>
+        </array>
+        <bool key="autoSize">false</bool>
+        <number key="zOrder">0</number>
+        <array key="padding">
+          <number>0</number>
+          <number>0</number>
+          <number>0</number>
+          <number>0</number>
+        </array>
+        <string key="hAlign">Fill</string>
+        <string key="vAlign">Fill</string>
+        <string key="sizeRule">Auto</string>
+        <number key="fillWeight">1</number>
+      </object>
+      <array key="children">
+        <object>
+          <string key="type">UIBorder</string>
+          <string key="name">StatusCard</string>
+          <object key="common">
+            <string key="visibility">Visible</string>
+            <bool key="enabled">true</bool>
+            <number key="opacity">1</number>
+            <array key="translation">
+              <number>0</number>
+              <number>0</number>
+            </array>
+            <array key="renderScale">
+              <number>1</number>
+              <number>1</number>
+            </array>
+            <bool key="clipChildren">false</bool>
+            <string key="tooltip"/>
+            <string key="visibleBind"/>
+            <string key="shader"/>
+          </object>
+          <object key="properties">
+            <array key="background">
+              <number>0.054999999701976776</number>
+              <number>0.10999999940395355</number>
+              <number>0.13699999451637268</number>
+              <number>0.949999988079071</number>
+            </array>
+            <string key="texture"/>
+            <number key="cornerRadius">18</number>
+            <array key="borderColor">
+              <number>1</number>
+              <number>1</number>
+              <number>1</number>
+              <number>0.05999999865889549</number>
+            </array>
+            <number key="borderThickness">1</number>
+            <array key="contentPadding">
+              <number>22</number>
+              <number>18</number>
+              <number>22</number>
+              <number>20</number>
+            </array>
+            <bool key="shadow">true</bool>
+            <number key="shadowSize">18</number>
+            <array key="shadowColor">
+              <number>0</number>
+              <number>0</number>
+              <number>0</number>
+              <number>0.44999998807907104</number>
+            </array>
+            <array key="shadowOffset">
+              <number>0</number>
+              <number>6</number>
+            </array>
+          </object>
+          <object key="slot">
+            <array key="anchorMin">
+              <number>0</number>
+              <number>0</number>
+            </array>
+            <array key="anchorMax">
+              <number>0</number>
+              <number>0</number>
+            </array>
+            <array key="pivot">
+              <number>0</number>
+              <number>0</number>
+            </array>
+            <array key="position">
+              <number>0</number>
+              <number>0</number>
+            </array>
+            <array key="size">
+              <number>360</number>
+              <number>190</number>
+            </array>
+            <bool key="autoSize">false</bool>
+            <number key="zOrder">0</number>
+            <array key="padding">
+              <number>0</number>
+              <number>0</number>
+              <number>0</number>
+              <number>0</number>
+            </array>
+            <string key="hAlign">Fill</string>
+            <string key="vAlign">Fill</string>
+            <string key="sizeRule">Auto</string>
+            <number key="fillWeight">1</number>
+          </object>
+          <array key="children">
+            <object>
+              <string key="type">UIVerticalBox</string>
+              <string key="name">StatusBody</string>
+              <object key="common">
+                <string key="visibility">Visible</string>
+                <bool key="enabled">true</bool>
+                <number key="opacity">1</number>
+                <array key="translation">
+                  <number>0</number>
+                  <number>0</number>
+                </array>
+                <array key="renderScale">
+                  <number>1</number>
+                  <number>1</number>
+                </array>
+                <bool key="clipChildren">false</bool>
+                <string key="tooltip"/>
+                <string key="visibleBind"/>
+                <string key="shader"/>
+              </object>
+              <object key="properties">
+                <number key="spacing">12</number>
+                <array key="padding">
+                  <number>0</number>
+                  <number>0</number>
+                  <number>0</number>
+                  <number>0</number>
+                </array>
+              </object>
+              <object key="slot">
+                <array key="anchorMin">
+                  <number>0</number>
+                  <number>0</number>
+                </array>
+                <array key="anchorMax">
+                  <number>0</number>
+                  <number>0</number>
+                </array>
+                <array key="pivot">
+                  <number>0</number>
+                  <number>0</number>
+                </array>
+                <array key="position">
+                  <number>0</number>
+                  <number>0</number>
+                </array>
+                <array key="size">
+                  <number>200</number>
+                  <number>60</number>
+                </array>
+                <bool key="autoSize">false</bool>
+                <number key="zOrder">0</number>
+                <array key="padding">
+                  <number>0</number>
+                  <number>0</number>
+                  <number>0</number>
+                  <number>0</number>
+                </array>
+                <string key="hAlign">Fill</string>
+                <string key="vAlign">Fill</string>
+                <string key="sizeRule">Auto</string>
+                <number key="fillWeight">1</number>
+              </object>
+              <array key="children">
+                <object>
+                  <string key="type">UIHorizontalBox</string>
+                  <string key="name">StatusHead</string>
+                  <object key="common">
+                    <string key="visibility">Visible</string>
+                    <bool key="enabled">true</bool>
+                    <number key="opacity">1</number>
+                    <array key="translation">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <array key="renderScale">
+                      <number>1</number>
+                      <number>1</number>
+                    </array>
+                    <bool key="clipChildren">false</bool>
+                    <string key="tooltip"/>
+                    <string key="visibleBind"/>
+                    <string key="shader"/>
+                  </object>
+                  <object key="properties">
+                    <number key="spacing">16</number>
+                    <array key="padding">
+                      <number>0</number>
+                      <number>0</number>
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                  </object>
+                  <object key="slot">
+                    <array key="anchorMin">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <array key="anchorMax">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <array key="pivot">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <array key="position">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <array key="size">
+                      <number>200</number>
+                      <number>60</number>
+                    </array>
+                    <bool key="autoSize">false</bool>
+                    <number key="zOrder">0</number>
+                    <array key="padding">
+                      <number>0</number>
+                      <number>0</number>
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <string key="hAlign">Fill</string>
+                    <string key="vAlign">Fill</string>
+                    <string key="sizeRule">Auto</string>
+                    <number key="fillWeight">1</number>
+                  </object>
+                  <array key="children">
+                    <object>
+                      <string key="type">UIImage</string>
+                      <string key="name">StatusIcon</string>
+                      <object key="common">
+                        <string key="visibility">Visible</string>
+                        <bool key="enabled">true</bool>
+                        <number key="opacity">1</number>
+                        <array key="translation">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="renderScale">
+                          <number>1</number>
+                          <number>1</number>
+                        </array>
+                        <bool key="clipChildren">false</bool>
+                        <string key="tooltip"/>
+                        <string key="visibleBind"/>
+                        <string key="shader">Shaders/UI/Caustics.uishader</string>
+                        <bool key="shaderChildren">true</bool>
+                        <array key="shaderParam0">
+                          <number>0.20000000298023224</number>
+                          <number>0.8500000238418579</number>
+                          <number>0.800000011920929</number>
+                          <number>1</number>
+                        </array>
+                        <array key="shaderParam1">
+                          <number>0.6000000238418579</number>
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="shaderParam2">
+                          <number>1</number>
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="shaderParam3">
+                          <number>14</number>
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="shaderParam4">
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="shaderParam5">
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                      </object>
+                      <object key="properties">
+                        <string key="texture">@Circle</string>
+                        <array key="color">
+                          <number>0.19599999487400055</number>
+                          <number>0.8510000109672546</number>
+                          <number>0.800000011920929</number>
+                          <number>1</number>
+                        </array>
+                        <array key="size">
+                          <number>56</number>
+                          <number>56</number>
+                        </array>
+                        <bool key="preserveAspect">false</bool>
+                        <array key="sliceBorder">
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <number key="cornerRadius">0</number>
+                      </object>
+                      <object key="slot">
+                        <array key="anchorMin">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="anchorMax">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="pivot">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="position">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="size">
+                          <number>200</number>
+                          <number>60</number>
+                        </array>
+                        <bool key="autoSize">false</bool>
+                        <number key="zOrder">0</number>
+                        <array key="padding">
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <string key="hAlign">Fill</string>
+                        <string key="vAlign">Center</string>
+                        <string key="sizeRule">Auto</string>
+                        <number key="fillWeight">1</number>
+                      </object>
+                      <array key="children"/>
+                    </object>
+                    <object>
+                      <string key="type">UIVerticalBox</string>
+                      <string key="name">StatusNames</string>
+                      <object key="common">
+                        <string key="visibility">Visible</string>
+                        <bool key="enabled">true</bool>
+                        <number key="opacity">1</number>
+                        <array key="translation">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="renderScale">
+                          <number>1</number>
+                          <number>1</number>
+                        </array>
+                        <bool key="clipChildren">false</bool>
+                        <string key="tooltip"/>
+                        <string key="visibleBind"/>
+                        <string key="shader"/>
+                      </object>
+                      <object key="properties">
+                        <number key="spacing">0</number>
+                        <array key="padding">
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                      </object>
+                      <object key="slot">
+                        <array key="anchorMin">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="anchorMax">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="pivot">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="position">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="size">
+                          <number>200</number>
+                          <number>60</number>
+                        </array>
+                        <bool key="autoSize">false</bool>
+                        <number key="zOrder">0</number>
+                        <array key="padding">
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <string key="hAlign">Fill</string>
+                        <string key="vAlign">Center</string>
+                        <string key="sizeRule">Auto</string>
+                        <number key="fillWeight">1</number>
+                      </object>
+                      <array key="children">
+                        <object>
+                          <string key="type">UIText</string>
+                          <string key="name">StatusName</string>
+                          <object key="common">
+                            <string key="visibility">Visible</string>
+                            <bool key="enabled">true</bool>
+                            <number key="opacity">1</number>
+                            <array key="translation">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="renderScale">
+                              <number>1</number>
+                              <number>1</number>
+                            </array>
+                            <bool key="clipChildren">false</bool>
+                            <string key="tooltip"/>
+                            <string key="visibleBind"/>
+                            <string key="shader"/>
+                          </object>
+                          <object key="properties">
+                            <string key="text">アクア</string>
+                            <string key="font"/>
+                            <number key="fontSize">30</number>
+                            <array key="color">
+                              <number>0.8669999837875366</number>
+                              <number>0.9369999766349792</number>
+                              <number>0.9449999928474426</number>
+                              <number>1</number>
+                            </array>
+                            <string key="align">Left</string>
+                            <string key="verticalAlign">Center</string>
+                            <bool key="wrap">false</bool>
+                            <string key="effect">None</string>
+                            <number key="effectStrength">6</number>
+                            <number key="effectSpeed">1</number>
+                            <string key="reveal">None</string>
+                            <number key="revealSpeed">30</number>
+                            <number key="revealDelay">0</number>
+                            <number key="revealFade">0.18000000715255737</number>
+                            <bool key="revealAuto">true</bool>
+                            <number key="revealProgress">1</number>
+                            <bool key="revealOnShow">true</bool>
+                            <string key="revealSound"/>
+                            <number key="revealSoundEvery">2</number>
+                            <bool key="richText">true</bool>
+                            <bool key="shadow">false</bool>
+                            <array key="shadowColor">
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0.6000000238418579</number>
+                            </array>
+                            <array key="shadowOffset">
+                              <number>2</number>
+                              <number>2</number>
+                            </array>
+                          </object>
+                          <object key="slot">
+                            <array key="anchorMin">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="anchorMax">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="pivot">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="position">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="size">
+                              <number>200</number>
+                              <number>60</number>
+                            </array>
+                            <bool key="autoSize">false</bool>
+                            <number key="zOrder">0</number>
+                            <array key="padding">
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <string key="hAlign">Fill</string>
+                            <string key="vAlign">Fill</string>
+                            <string key="sizeRule">Auto</string>
+                            <number key="fillWeight">1</number>
+                          </object>
+                          <array key="children"/>
+                        </object>
+                        <object>
+                          <string key="type">UIText</string>
+                          <string key="name">StatusClass</string>
+                          <object key="common">
+                            <string key="visibility">Visible</string>
+                            <bool key="enabled">true</bool>
+                            <number key="opacity">1</number>
+                            <array key="translation">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="renderScale">
+                              <number>1</number>
+                              <number>1</number>
+                            </array>
+                            <bool key="clipChildren">false</bool>
+                            <string key="tooltip"/>
+                            <string key="visibleBind"/>
+                            <string key="shader"/>
+                          </object>
+                          <object key="properties">
+                            <string key="text">Lv.12 まほうつかい</string>
+                            <string key="font"/>
+                            <number key="fontSize">20</number>
+                            <array key="color">
+                              <number>0.550000011920929</number>
+                              <number>0.6800000071525574</number>
+                              <number>0.7099999785423279</number>
+                              <number>1</number>
+                            </array>
+                            <string key="align">Left</string>
+                            <string key="verticalAlign">Center</string>
+                            <bool key="wrap">false</bool>
+                            <string key="effect">None</string>
+                            <number key="effectStrength">6</number>
+                            <number key="effectSpeed">1</number>
+                            <string key="reveal">None</string>
+                            <number key="revealSpeed">30</number>
+                            <number key="revealDelay">0</number>
+                            <number key="revealFade">0.18000000715255737</number>
+                            <bool key="revealAuto">true</bool>
+                            <number key="revealProgress">1</number>
+                            <bool key="revealOnShow">true</bool>
+                            <string key="revealSound"/>
+                            <number key="revealSoundEvery">2</number>
+                            <bool key="richText">true</bool>
+                            <bool key="shadow">false</bool>
+                            <array key="shadowColor">
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0.6000000238418579</number>
+                            </array>
+                            <array key="shadowOffset">
+                              <number>2</number>
+                              <number>2</number>
+                            </array>
+                          </object>
+                          <object key="slot">
+                            <array key="anchorMin">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="anchorMax">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="pivot">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="position">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="size">
+                              <number>200</number>
+                              <number>60</number>
+                            </array>
+                            <bool key="autoSize">false</bool>
+                            <number key="zOrder">0</number>
+                            <array key="padding">
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <string key="hAlign">Fill</string>
+                            <string key="vAlign">Fill</string>
+                            <string key="sizeRule">Auto</string>
+                            <number key="fillWeight">1</number>
+                          </object>
+                          <array key="children"/>
+                        </object>
+                      </array>
+                    </object>
+                  </array>
+                </object>
+                <object>
+                  <string key="type">UIHorizontalBox</string>
+                  <string key="name">StatusHpRow</string>
+                  <object key="common">
+                    <string key="visibility">Visible</string>
+                    <bool key="enabled">true</bool>
+                    <number key="opacity">1</number>
+                    <array key="translation">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <array key="renderScale">
+                      <number>1</number>
+                      <number>1</number>
+                    </array>
+                    <bool key="clipChildren">false</bool>
+                    <string key="tooltip"/>
+                    <string key="visibleBind"/>
+                    <string key="shader"/>
+                  </object>
+                  <object key="properties">
+                    <number key="spacing">12</number>
+                    <array key="padding">
+                      <number>0</number>
+                      <number>0</number>
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                  </object>
+                  <object key="slot">
+                    <array key="anchorMin">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <array key="anchorMax">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <array key="pivot">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <array key="position">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <array key="size">
+                      <number>200</number>
+                      <number>60</number>
+                    </array>
+                    <bool key="autoSize">false</bool>
+                    <number key="zOrder">0</number>
+                    <array key="padding">
+                      <number>0</number>
+                      <number>0</number>
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <string key="hAlign">Fill</string>
+                    <string key="vAlign">Fill</string>
+                    <string key="sizeRule">Auto</string>
+                    <number key="fillWeight">1</number>
+                  </object>
+                  <array key="children">
+                    <object>
+                      <string key="type">UIText</string>
+                      <string key="name">StatusHpLabel</string>
+                      <object key="common">
+                        <string key="visibility">Visible</string>
+                        <bool key="enabled">true</bool>
+                        <number key="opacity">1</number>
+                        <array key="translation">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="renderScale">
+                          <number>1</number>
+                          <number>1</number>
+                        </array>
+                        <bool key="clipChildren">false</bool>
+                        <string key="tooltip"/>
+                        <string key="visibleBind"/>
+                        <string key="shader"/>
+                      </object>
+                      <object key="properties">
+                        <string key="text">HP</string>
+                        <string key="font"/>
+                        <number key="fontSize">20</number>
+                        <array key="color">
+                          <number>1</number>
+                          <number>0.49399998784065247</number>
+                          <number>0.41600000858306885</number>
+                          <number>1</number>
+                        </array>
+                        <string key="align">Left</string>
+                        <string key="verticalAlign">Center</string>
+                        <bool key="wrap">false</bool>
+                        <string key="effect">None</string>
+                        <number key="effectStrength">6</number>
+                        <number key="effectSpeed">1</number>
+                        <string key="reveal">None</string>
+                        <number key="revealSpeed">30</number>
+                        <number key="revealDelay">0</number>
+                        <number key="revealFade">0.18000000715255737</number>
+                        <bool key="revealAuto">true</bool>
+                        <number key="revealProgress">1</number>
+                        <bool key="revealOnShow">true</bool>
+                        <string key="revealSound"/>
+                        <number key="revealSoundEvery">2</number>
+                        <bool key="richText">true</bool>
+                        <bool key="shadow">false</bool>
+                        <array key="shadowColor">
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0.6000000238418579</number>
+                        </array>
+                        <array key="shadowOffset">
+                          <number>2</number>
+                          <number>2</number>
+                        </array>
+                      </object>
+                      <object key="slot">
+                        <array key="anchorMin">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="anchorMax">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="pivot">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="position">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="size">
+                          <number>200</number>
+                          <number>60</number>
+                        </array>
+                        <bool key="autoSize">false</bool>
+                        <number key="zOrder">0</number>
+                        <array key="padding">
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <string key="hAlign">Fill</string>
+                        <string key="vAlign">Center</string>
+                        <string key="sizeRule">Auto</string>
+                        <number key="fillWeight">1</number>
+                      </object>
+                      <array key="children"/>
+                    </object>
+                    <object>
+                      <string key="type">UIProgressBar</string>
+                      <string key="name">StatusHp</string>
+                      <object key="common">
+                        <string key="visibility">Visible</string>
+                        <bool key="enabled">true</bool>
+                        <number key="opacity">1</number>
+                        <array key="translation">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="renderScale">
+                          <number>1</number>
+                          <number>1</number>
+                        </array>
+                        <bool key="clipChildren">false</bool>
+                        <string key="tooltip"/>
+                        <string key="visibleBind"/>
+                        <string key="shader"/>
+                      </object>
+                      <object key="properties">
+                        <number key="percent">0.7200000286102295</number>
+                        <string key="bind"/>
+                        <string key="direction">LeftToRight</string>
+                        <array key="fillColor">
+                          <number>1</number>
+                          <number>0.49399998784065247</number>
+                          <number>0.41600000858306885</number>
+                          <number>1</number>
+                        </array>
+                        <array key="backgroundColor">
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0.44999998807907104</number>
+                        </array>
+                        <number key="cornerRadius">8</number>
+                        <array key="size">
+                          <number>260</number>
+                          <number>16</number>
+                        </array>
+                        <number key="smoothing">8</number>
+                      </object>
+                      <object key="slot">
+                        <array key="anchorMin">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="anchorMax">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="pivot">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="position">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="size">
+                          <number>200</number>
+                          <number>60</number>
+                        </array>
+                        <bool key="autoSize">false</bool>
+                        <number key="zOrder">0</number>
+                        <array key="padding">
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <string key="hAlign">Fill</string>
+                        <string key="vAlign">Center</string>
+                        <string key="sizeRule">Fill</string>
+                        <number key="fillWeight">1</number>
+                      </object>
+                      <array key="children"/>
+                    </object>
+                  </array>
+                </object>
+                <object>
+                  <string key="type">UIHorizontalBox</string>
+                  <string key="name">StatusMpRow</string>
+                  <object key="common">
+                    <string key="visibility">Visible</string>
+                    <bool key="enabled">true</bool>
+                    <number key="opacity">1</number>
+                    <array key="translation">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <array key="renderScale">
+                      <number>1</number>
+                      <number>1</number>
+                    </array>
+                    <bool key="clipChildren">false</bool>
+                    <string key="tooltip"/>
+                    <string key="visibleBind"/>
+                    <string key="shader"/>
+                  </object>
+                  <object key="properties">
+                    <number key="spacing">12</number>
+                    <array key="padding">
+                      <number>0</number>
+                      <number>0</number>
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                  </object>
+                  <object key="slot">
+                    <array key="anchorMin">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <array key="anchorMax">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <array key="pivot">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <array key="position">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <array key="size">
+                      <number>200</number>
+                      <number>60</number>
+                    </array>
+                    <bool key="autoSize">false</bool>
+                    <number key="zOrder">0</number>
+                    <array key="padding">
+                      <number>0</number>
+                      <number>0</number>
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <string key="hAlign">Fill</string>
+                    <string key="vAlign">Fill</string>
+                    <string key="sizeRule">Auto</string>
+                    <number key="fillWeight">1</number>
+                  </object>
+                  <array key="children">
+                    <object>
+                      <string key="type">UIText</string>
+                      <string key="name">StatusMpLabel</string>
+                      <object key="common">
+                        <string key="visibility">Visible</string>
+                        <bool key="enabled">true</bool>
+                        <number key="opacity">1</number>
+                        <array key="translation">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="renderScale">
+                          <number>1</number>
+                          <number>1</number>
+                        </array>
+                        <bool key="clipChildren">false</bool>
+                        <string key="tooltip"/>
+                        <string key="visibleBind"/>
+                        <string key="shader"/>
+                      </object>
+                      <object key="properties">
+                        <string key="text">MP</string>
+                        <string key="font"/>
+                        <number key="fontSize">20</number>
+                        <array key="color">
+                          <number>0.19599999487400055</number>
+                          <number>0.8510000109672546</number>
+                          <number>0.800000011920929</number>
+                          <number>1</number>
+                        </array>
+                        <string key="align">Left</string>
+                        <string key="verticalAlign">Center</string>
+                        <bool key="wrap">false</bool>
+                        <string key="effect">None</string>
+                        <number key="effectStrength">6</number>
+                        <number key="effectSpeed">1</number>
+                        <string key="reveal">None</string>
+                        <number key="revealSpeed">30</number>
+                        <number key="revealDelay">0</number>
+                        <number key="revealFade">0.18000000715255737</number>
+                        <bool key="revealAuto">true</bool>
+                        <number key="revealProgress">1</number>
+                        <bool key="revealOnShow">true</bool>
+                        <string key="revealSound"/>
+                        <number key="revealSoundEvery">2</number>
+                        <bool key="richText">true</bool>
+                        <bool key="shadow">false</bool>
+                        <array key="shadowColor">
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0.6000000238418579</number>
+                        </array>
+                        <array key="shadowOffset">
+                          <number>2</number>
+                          <number>2</number>
+                        </array>
+                      </object>
+                      <object key="slot">
+                        <array key="anchorMin">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="anchorMax">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="pivot">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="position">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="size">
+                          <number>200</number>
+                          <number>60</number>
+                        </array>
+                        <bool key="autoSize">false</bool>
+                        <number key="zOrder">0</number>
+                        <array key="padding">
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <string key="hAlign">Fill</string>
+                        <string key="vAlign">Center</string>
+                        <string key="sizeRule">Auto</string>
+                        <number key="fillWeight">1</number>
+                      </object>
+                      <array key="children"/>
+                    </object>
+                    <object>
+                      <string key="type">UIProgressBar</string>
+                      <string key="name">StatusMp</string>
+                      <object key="common">
+                        <string key="visibility">Visible</string>
+                        <bool key="enabled">true</bool>
+                        <number key="opacity">1</number>
+                        <array key="translation">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="renderScale">
+                          <number>1</number>
+                          <number>1</number>
+                        </array>
+                        <bool key="clipChildren">false</bool>
+                        <string key="tooltip"/>
+                        <string key="visibleBind"/>
+                        <string key="shader"/>
+                      </object>
+                      <object key="properties">
+                        <number key="percent">0.44999998807907104</number>
+                        <string key="bind"/>
+                        <string key="direction">LeftToRight</string>
+                        <array key="fillColor">
+                          <number>0.19599999487400055</number>
+                          <number>0.8510000109672546</number>
+                          <number>0.800000011920929</number>
+                          <number>1</number>
+                        </array>
+                        <array key="backgroundColor">
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0.44999998807907104</number>
+                        </array>
+                        <number key="cornerRadius">8</number>
+                        <array key="size">
+                          <number>260</number>
+                          <number>16</number>
+                        </array>
+                        <number key="smoothing">8</number>
+                      </object>
+                      <object key="slot">
+                        <array key="anchorMin">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="anchorMax">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="pivot">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="position">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="size">
+                          <number>200</number>
+                          <number>60</number>
+                        </array>
+                        <bool key="autoSize">false</bool>
+                        <number key="zOrder">0</number>
+                        <array key="padding">
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <string key="hAlign">Fill</string>
+                        <string key="vAlign">Center</string>
+                        <string key="sizeRule">Fill</string>
+                        <number key="fillWeight">1</number>
+                      </object>
+                      <array key="children"/>
+                    </object>
+                  </array>
+                </object>
+              </array>
+            </object>
+          </array>
+        </object>
+      </array>
+    </object>
+    <array key="animations"/>
+    <array key="styles"/>
+  </object>
+  <object key="preview">
+    <object key="variables"/>
+  </object>
+</AquaSource>

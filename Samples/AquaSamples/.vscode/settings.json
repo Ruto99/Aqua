@@ -1,0 +1,4 @@
+{
+  "cmake.useCMakePresets": "always",
+  "files.encoding": "utf8"
+}

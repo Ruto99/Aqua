@@ -1,0 +1,7 @@
+// 点滅: ゆっくり点滅する（「ボタンを押してください」など）
+// @param speed float 0 10 1.5 速さ（1 秒に何回）
+// @param minAlpha float 0 1 0.2 一番薄いとき
+vec4 effect(vec4 color) {
+    float k = 0.5 + 0.5 * cos(uTime * speed * 6.28318);
+    return vec4(color.rgb, color.a * mix(minAlpha, 1.0, k));
+}

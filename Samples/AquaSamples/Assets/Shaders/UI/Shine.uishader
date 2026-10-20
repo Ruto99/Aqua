@@ -1,0 +1,13 @@
+// 光が流れる: 斜めの光が一定の間隔で流れる（レアなボタン・タイトルロゴ）
+// @param shine color 1 1 1 0.8 光の色
+// @param width float 0.01 0.5 0.12 光の幅
+// @param speed float 0.05 3 0.8 速さ
+// @param interval float 0 5 1.5 間隔（秒）
+vec4 effect(vec4 color) {
+    vec2 uv = LocalUV();
+    float period = 1.0 / speed + interval;
+    float t = mod(uTime, period) * speed;
+    float pos = t * 1.7 - 0.35;
+    float k = 1.0 - smoothstep(0.0, width, abs(uv.x + uv.y * 0.35 - pos));
+    return vec4(mix(color.rgb, shine.rgb, k * shine.a), color.a);
+}

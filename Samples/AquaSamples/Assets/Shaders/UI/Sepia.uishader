@@ -1,0 +1,7 @@
+// セピア: 古い写真のような茶色にする（回想シーンなど）
+// @param strength float 0 1 1 強さ
+vec4 effect(vec4 color) {
+    float g = Luma(color.rgb);
+    vec3 sepia = vec3(g * 1.07, g * 0.74, g * 0.43);
+    return vec4(mix(color.rgb, sepia, strength), color.a);
+}

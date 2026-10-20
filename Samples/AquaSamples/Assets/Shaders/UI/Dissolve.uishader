@@ -1,0 +1,13 @@
+// ディゾルブ: まだらに消えていく（progress をアニメーション・スクリプトで動かす）
+// @param progress float 0 1 0.4 消えた割合
+// @param edge color 1 0.55 0.1 1 縁の色
+// @param width float 0 0.3 0.08 縁の太さ
+// @param scale float 1 60 14 模様の細かさ
+vec4 effect(vec4 color) {
+    vec2 uv = LocalUV();
+    float n = Noise(uv * scale) * 0.7 + Noise(uv * scale * 2.7) * 0.3;
+    float cut = progress * (1.0 + width) - width;
+    if (n < cut) return vec4(0.0);
+    float e = (1.0 - smoothstep(cut, cut + width, n)) * step(0.001, progress);
+    return vec4(mix(color.rgb, edge.rgb, e), color.a);
+}

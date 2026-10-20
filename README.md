@@ -54,9 +54,23 @@ MyProgram/
    ├─ ApplyEnginePatches.bat  RutoEngine にパッチを当てて SDK を作り直す
    ├─ Source/          Aqua のソース
    ├─ Resources/       アイコン（make_icon.py で作り直せる）
+   ├─ Samples/         機能ごとの UI のサンプル（AquaSamples プロジェクト）
    ├─ build/           ビルドフォルダ（debug / release）
    └─ bin/Aqua.exe     build.bat install で置かれる Aqua
 ```
+
+## サンプル
+
+[`Samples/AquaSamples`](Samples/AquaSamples/README.md) は、Aqua の機能ごとの見本を集めた RutoEngine のプロジェクト。
+文字アニメーション・会話ウィンドウ・UI シェーダー・キャプチャー・ウィジェットアニメーション・レイアウト・変数と入力・スタイルと部品の 8 つを、メニューから切り替えて試せる。
+
+```bat
+cd Samples\AquaSamples
+build.bat release run                          :: ゲームとして動かす
+..\..\Aqua.bat --project Samples\AquaSamples  :: Aqua で UI を開いて編集する
+```
+
+UI とシェーダーは `python Samples\generate_aqua_samples.py` で作り直せる（Aqua のコマンドライン import / export を使う）。
 
 ## RutoEngine との連携
 
