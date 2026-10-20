@@ -851,12 +851,13 @@ void App::DrawHierarchyNode(Document& doc, Widget& w, WidgetPath& path) {
         const bool hidden = w.visibility == WidgetVisibility::Collapsed || w.visibility == WidgetVisibility::Hidden;
         ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - ImGui::GetFrameHeight());
         ImGui::PushStyleColor(ImGuiCol_Button, {0, 0, 0, 0});
+        ImGui::PushStyleColor(ImGuiCol_Border, {0, 0, 0, 0});
         ImGui::PushStyleColor(ImGuiCol_Text, hidden ? Theme::kTextDim : Theme::kText);
         if (ImGui::SmallButton(hidden ? ICON_FA_EYE_SLASH : ICON_FA_EYE)) {
             w.visibility = hidden ? WidgetVisibility::Visible : WidgetVisibility::Hidden;
             doc.Changed();
         }
-        ImGui::PopStyleColor(2);
+        ImGui::PopStyleColor(3);
         if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) ImGui::SetTooltip("表示する / しない（場所は取る）");
     }
     if (!renaming && !w.style.empty()) {
@@ -1114,11 +1115,11 @@ void App::DrawCanvas(Document& doc) {
 
     // 背景（チェック柄）と画面
     dl->PushClipRect(cpos, {cpos.x + csize.x, cpos.y + csize.y}, true);
-    dl->AddRectFilled(cpos, {cpos.x + csize.x, cpos.y + csize.y}, IM_COL32(28, 29, 34, 255));
+    dl->AddRectFilled(cpos, {cpos.x + csize.x, cpos.y + csize.y}, IM_COL32(9, 20, 26, 255));
     const float cell = 16.0f;
     for (float y = cpos.y; y < cpos.y + csize.y; y += cell) {
         for (float x = cpos.x + (static_cast<int>((y - cpos.y) / cell) % 2) * cell; x < cpos.x + csize.x; x += cell * 2.0f)
-            dl->AddRectFilled({x, y}, {x + cell, y + cell}, IM_COL32(33, 34, 40, 255));
+            dl->AddRectFilled({x, y}, {x + cell, y + cell}, IM_COL32(12, 26, 33, 255));
     }
     dl->AddRectFilled({spos.x + 6, spos.y + 10}, {spos.x + ssize.x + 6, spos.y + ssize.y + 10}, IM_COL32(0, 0, 0, 90), 4.0f);
     if (doc.framebuffer) dl->AddImage(ImTextureRef(TextureId(*doc.framebuffer->GetColorTexture())), spos, {spos.x + ssize.x, spos.y + ssize.y}, {0, 1}, {1, 0});
@@ -1334,7 +1335,7 @@ void App::DrawCanvas(Document& doc) {
     if (!ui.preview) {
         if (hoverDoc && hoverDoc != selDoc) {
             const ImRect r = toScreen(hoverDoc->GetScreenRect());
-            dl->AddRect(r.Min, r.Max, IM_COL32(120, 180, 255, 140), 0.0f, 0, 1.0f);
+            dl->AddRect(r.Min, r.Max, Theme::U32(Theme::kAccent, 0.55f), 0.0f, 0, 1.0f);
         }
         // 一緒に選んでいるもの（整列の対象）
         for (const std::string& name : ui.extraSelection) {
@@ -1343,7 +1344,7 @@ void App::DrawCanvas(Document& doc) {
             if (!ew) continue;
             const ImRect r = toScreen(ew->GetScreenRect());
             dl->AddRect(r.Min, r.Max, ToU32(Theme::kAccent), 0.0f, 0, 1.5f);
-            dl->AddRectFilled(r.Min, r.Max, IM_COL32(90, 160, 255, 28));
+            dl->AddRectFilled(r.Min, r.Max, Theme::U32(Theme::kAccent, 0.11f));
         }
         if (selDoc) {
             const ImRect r = toScreen(selDoc->GetScreenRect());
@@ -1359,7 +1360,7 @@ void App::DrawCanvas(Document& doc) {
             const ImVec2 ts = ImGui::CalcTextSize(tag.c_str());
             const ImVec2 tp{r.Min.x, std::max(r.Min.y - ts.y - 6.0f, spos.y - ts.y - 6.0f)};
             dl->AddRectFilled({tp.x, tp.y}, {tp.x + ts.x + 10.0f, tp.y + ts.y + 4.0f}, accent, 3.0f);
-            dl->AddText({tp.x + 5.0f, tp.y + 2.0f}, IM_COL32(255, 255, 255, 255), tag.c_str());
+            dl->AddText({tp.x + 5.0f, tp.y + 2.0f}, Theme::U32(Theme::kAccentInk), tag.c_str());
             if (canTransform) {
                 // アンカー（Unity の花びら）
                 if (Widget* pd = selDoc->GetParent()) {
@@ -1779,7 +1780,7 @@ void App::RenderDocument(Document& doc) {
     if (!doc.framebuffer) doc.framebuffer = std::make_unique<Framebuffer>(w, h);
     else if (doc.framebuffer->GetWidth() != w || doc.framebuffer->GetHeight() != h) doc.framebuffer->Resize(w, h);
     doc.framebuffer->Bind();
-    RenderCommand::Clear({0.16f, 0.18f, 0.23f, 1.0f});
+    RenderCommand::Clear({0.09f, 0.15f, 0.19f, 1.0f});
     Renderer2D::BeginScene(Mat4::Ortho(0.0f, static_cast<float>(w), static_cast<float>(h), 0.0f, -1.0f, 1.0f), true);
     if (!doc.uiContext) doc.uiContext = UI::CreateContext();
     UI::SetContext(doc.uiContext);

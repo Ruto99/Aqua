@@ -241,7 +241,7 @@ void App::DrawAssetsPanel() {
             const char* icon = AssetIcon(ext);
             ImGui::PushFont(nullptr, ImGui::GetStyle().FontSizeBase * 1.8f);
             const ImVec2 ts = ImGui::CalcTextSize(icon);
-            dl->AddText({tp.x + (thumb - ts.x) * 0.5f, tp.y + (thumb - ts.y) * 0.5f}, ToU32(ui ? ImVec4(0.35f, 0.78f, 1.0f, 1.0f) : shader ? ImVec4(0.85f, 0.6f, 1.0f, 1.0f) : Theme::kTextDim), icon);
+            dl->AddText({tp.x + (thumb - ts.x) * 0.5f, tp.y + (thumb - ts.y) * 0.5f}, ToU32(ui ? Theme::kAccent : shader ? ImVec4(0.85f, 0.6f, 1.0f, 1.0f) : Theme::kTextDim), icon);
             ImGui::PopFont();
         }
         // 名前（2 行まで、はみ出しは切る）

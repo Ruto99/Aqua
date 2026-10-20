@@ -1,7 +1,7 @@
-From ecfbc8bc2f0b2c50f637877053932f8f2bed8cbd Mon Sep 17 00:00:00 2001
+From 0c20c643201df1bb410e2eab6dbb9935dd60a643 Mon Sep 17 00:00:00 2001
 From: Claude <noreply@anthropic.com>
 Date: Tue, 20 Oct 2026 02:48:06 +0000
-Subject: [PATCH] Add text animation and UI shaders to the widget UI
+Subject: [PATCH 1/2] Add text animation and UI shaders to the widget UI
 
 Text animation (UIText):
 - reveal: Typewriter / Fade / Pop / Rise / Drop / Spin, with speed,
@@ -51,47 +51,47 @@ Claude-Session: https://claude.ai/code/session_01EvWZpBe1ubkYBLjPh6xAoG
  create mode 100644 Modules/Engine/src/WidgetText.cpp
 
 diff --git a/Modules/Editor/src/EditorApp.h b/Modules/Editor/src/EditorApp.h
-index a9201ac..524749d 100644
+index 1ba6c5e..72ef5d4 100644
 --- a/Modules/Editor/src/EditorApp.h
 +++ b/Modules/Editor/src/EditorApp.h
-@@ -806,6 +806,7 @@ private:
-     std::vector<std::string> m_AnimatorList;
+@@ -845,6 +845,7 @@ private:
      std::vector<std::string> m_AnimClipList;
      std::vector<std::string> m_VideoList;
+     std::vector<std::string> m_ShaderGraphList;
 +    std::vector<std::string> m_UIShaderList; // UI のシェーダー（.uishader）
      fs::path m_RenamingFile;
      std::string m_FileRenameBuffer;
      fs::path m_DeleteFile;
 diff --git a/Modules/Editor/src/EditorPanels.cpp b/Modules/Editor/src/EditorPanels.cpp
-index da48cab..bccc312 100644
+index 7d18be5..889b391 100644
 --- a/Modules/Editor/src/EditorPanels.cpp
 +++ b/Modules/Editor/src/EditorPanels.cpp
-@@ -310,6 +310,7 @@ const std::vector<std::string>& EditorApp::GetAssetList(AssetType type) {
-         }
+@@ -311,6 +311,7 @@ const std::vector<std::string>& EditorApp::GetAssetList(AssetType type) {
          m_FontList = Assets::FindFiles({".ttf", ".otf", ".ttc", ".bdf", ".fnt", ".rfont"});
          m_VideoList = Assets::FindFiles({".mpg", ".mpeg"});
+         m_ShaderGraphList = Assets::FindFiles({".rshadergraph"});
 +        m_UIShaderList = Assets::FindFiles({".uishader"});
          // 動画を映すテクスチャ（シーンの VideoPlayer の targetTexture）
          for (const auto& ent : ActiveScene().GetEntities()) {
              if (auto* vp = ent->GetComponent<VideoPlayer>(); vp && !vp->targetTexture.empty()) {
-@@ -330,6 +331,7 @@ const std::vector<std::string>& EditorApp::GetAssetList(AssetType type) {
-     case AssetType::AnimatorController: return m_AnimatorList;
+@@ -332,6 +333,7 @@ const std::vector<std::string>& EditorApp::GetAssetList(AssetType type) {
      case AssetType::AnimationClip: return m_AnimClipList;
      case AssetType::Video: return m_VideoList;
+     case AssetType::ShaderGraph: return m_ShaderGraphList;
 +    case AssetType::UIShader: return m_UIShaderList;
      }
      return m_SceneList;
  }
 diff --git a/Modules/Engine/include/Ruto/Engine/Reflection.h b/Modules/Engine/include/Ruto/Engine/Reflection.h
-index 620565d..5bc3ec7 100644
+index f7314a5..685e4b7 100644
 --- a/Modules/Engine/include/Ruto/Engine/Reflection.h
 +++ b/Modules/Engine/include/Ruto/Engine/Reflection.h
 @@ -39,7 +39,7 @@ struct EntityRef {
      explicit operator bool() const { return id != 0; }
  };
  
--enum class AssetType { Mesh, Texture, Scene, Prefab, Audio, Timeline, Widget, Font, AnimatorController, AnimationClip, Video };
-+enum class AssetType { Mesh, Texture, Scene, Prefab, Audio, Timeline, Widget, Font, AnimatorController, AnimationClip, Video, UIShader };
+-enum class AssetType { Mesh, Texture, Scene, Prefab, Audio, Timeline, Widget, Font, AnimatorController, AnimationClip, Video, ShaderGraph };
++enum class AssetType { Mesh, Texture, Scene, Prefab, Audio, Timeline, Widget, Font, AnimatorController, AnimationClip, Video, ShaderGraph, UIShader };
  
  class PropertyVisitor {
  public:
@@ -206,10 +206,10 @@ index 0000000..f3303be
 +
 +} // namespace Ruto
 diff --git a/Modules/Engine/include/Ruto/Engine/Widgets.h b/Modules/Engine/include/Ruto/Engine/Widgets.h
-index e70c236..2085f72 100644
+index 038ac67..239c2c0 100644
 --- a/Modules/Engine/include/Ruto/Engine/Widgets.h
 +++ b/Modules/Engine/include/Ruto/Engine/Widgets.h
-@@ -35,6 +35,7 @@ namespace Ruto {
+@@ -36,6 +36,7 @@ namespace Ruto {
  
  class Font;
  class Texture;
@@ -217,7 +217,7 @@ index e70c236..2085f72 100644
  class WidgetDocument;
  struct WidgetContext;
  
-@@ -53,6 +54,9 @@ enum class HAlign { Fill, Left, Center, Right };
+@@ -54,6 +55,9 @@ enum class HAlign { Fill, Left, Center, Right };
  enum class VAlign { Fill, Top, Center, Bottom };
  enum class SizeRule { Auto, Fill };
  enum class TextAlign { Left, Center, Right };
@@ -227,7 +227,7 @@ index e70c236..2085f72 100644
  enum class TextVAlign { Top, Center, Bottom };
  
  // 親の中での置き方。親の種類によって使う値が変わる
-@@ -74,7 +78,7 @@ struct WidgetSlot {
+@@ -75,7 +79,7 @@ struct WidgetSlot {
  };
  
  // UI のイベント（スクリプトの Component::OnUIEvent と UIDocument::onEvent に届く）
@@ -236,10 +236,10 @@ index e70c236..2085f72 100644
  
  class Widget;
  
-@@ -162,6 +166,16 @@ public:
+@@ -163,6 +167,16 @@ public:
      bool clipChildren = false;    // 子を自分の範囲で切り取る
      std::string visibleBind;      // 変数が真のときだけ表示（"!変数名" で逆）
-     std::string style;            // スタイル（.rui の共通スタイル）の名前
+     std::string style;            // スタイル（UI アセットの共通スタイル）の名前
 +    // UI のシェーダー（Assets の .uishader）。空なら標準の描き方
 +    static constexpr int kShaderParamCount = 6;
 +    std::string shader;
@@ -253,7 +253,7 @@ index e70c236..2085f72 100644
  
      WidgetSlot slot;
      std::vector<std::unique_ptr<Widget>> children;
-@@ -345,6 +359,42 @@ class UIText : public Widget {
+@@ -346,6 +360,42 @@ class UIText : public Widget {
      void Reflect(PropertyVisitor& v) override;
      Vec2 ComputeDesiredSize(WidgetContext& ctx, float maxWidth) override;
      void Paint(WidgetContext& ctx) override;
@@ -296,7 +296,7 @@ index e70c236..2085f72 100644
  };
  
  class UIImage : public Widget {
-@@ -728,6 +778,7 @@ private:
+@@ -744,6 +794,7 @@ private:
      void Layout(const UI::Rect& screen, float scaleOverride);
      void TransformRecursive(Widget& w, const Vec2& scale, const Vec2& offset);
      void PaintRecursive(Widget& w);
@@ -304,7 +304,7 @@ index e70c236..2085f72 100644
      Widget* HitTestRecursive(Widget& w, const Vec2& p, bool interactiveOnly) const;
      void HandleInput();
      void HandleNavigation();
-@@ -735,6 +786,9 @@ private:
+@@ -751,6 +802,9 @@ private:
      void PaintTooltip();
      Vec2 LocalPoint(const Widget& w) const;
  
@@ -314,7 +314,7 @@ index e70c236..2085f72 100644
      struct PlayingAnim {
          std::string name;
          float time = 0.0f;
-@@ -788,6 +842,13 @@ class UIDocument : public Component {
+@@ -804,6 +858,13 @@ class UIDocument : public Component {
      void SetVariable(const std::string& name, const char* value) { GetDocument().SetVariable(name, std::string(value)); }
      void PlayAnimation(std::string_view name, bool loop = false) { GetDocument().PlayAnimation(name, loop); }
      void SetVisible(std::string_view widgetName, bool visible);
@@ -329,7 +329,7 @@ index e70c236..2085f72 100644
      // 画面の rect に描く（エディターのゲームビュー用。interactive = false なら見た目だけ）
      void Render(const UI::Rect& screen, float deltaTime, bool interactive);
 diff --git a/Modules/Engine/src/UIDocument.cpp b/Modules/Engine/src/UIDocument.cpp
-index bcaeb97..afcb6de 100644
+index 73d1be7..e778947 100644
 --- a/Modules/Engine/src/UIDocument.cpp
 +++ b/Modules/Engine/src/UIDocument.cpp
 @@ -5,6 +5,9 @@
@@ -341,8 +341,8 @@ index bcaeb97..afcb6de 100644
 +#include "Ruto/Platform/Platform.h"
  #include "Ruto/Graphics/Font.h"
  #include "Ruto/Platform/Input.h"
- 
-@@ -403,11 +406,26 @@ void WidgetDocument::PaintRecursive(Widget& w) {
+ #include "Ruto/Platform/Platform.h"
+@@ -421,11 +424,26 @@ void WidgetDocument::PaintRecursive(Widget& w) {
          m_Ctx.opacity = prev;
          return;
      }
@@ -369,7 +369,7 @@ index bcaeb97..afcb6de 100644
      w.PaintOverlay(m_Ctx);
      if (w.m_Focused && m_KeyboardMode && m_Ctx.interactive) {
          const float s = w.m_ScreenScale.y;
-@@ -417,6 +435,15 @@ void WidgetDocument::PaintRecursive(Widget& w) {
+@@ -435,6 +453,15 @@ void WidgetDocument::PaintRecursive(Widget& w) {
      m_Ctx.opacity = prev;
  }
  
@@ -385,7 +385,7 @@ index bcaeb97..afcb6de 100644
  void WidgetDocument::PaintTooltip() {
      if (!m_TooltipWidget || m_TooltipTime < 0.5f || !m_Ctx.interactive) return;
      const float s = m_Ctx.scale;
-@@ -527,6 +554,29 @@ void UIDocument::SetVisible(std::string_view widgetName, bool visible) {
+@@ -552,6 +579,29 @@ void UIDocument::SetVisible(std::string_view widgetName, bool visible) {
      if (Widget* w = Find(widgetName)) w->visibility = visible ? WidgetVisibility::Visible : WidgetVisibility::Collapsed;
  }
  
@@ -1298,10 +1298,10 @@ index 0000000..8116943
 +
 +} // namespace Ruto
 diff --git a/Modules/Engine/src/Widgets.cpp b/Modules/Engine/src/Widgets.cpp
-index 99811df..d84b5f5 100644
+index 01a3943..33d6614 100644
 --- a/Modules/Engine/src/Widgets.cpp
 +++ b/Modules/Engine/src/Widgets.cpp
-@@ -6,6 +6,7 @@
+@@ -7,6 +7,7 @@
  #include "Ruto/Core/Log.h"
  #include "Ruto/Engine/Assets.h"
  #include "Ruto/Engine/SceneSerializer.h"
@@ -1309,7 +1309,7 @@ index 99811df..d84b5f5 100644
  
  #include <algorithm>
  #include <cmath>
-@@ -21,6 +22,8 @@ const char* const kVAlign[] = {"Fill", "Top", "Center", "Bottom"};
+@@ -22,6 +23,8 @@ const char* const kVAlign[] = {"Fill", "Top", "Center", "Bottom"};
  const char* const kSizeRule[] = {"Auto", "Fill"};
  const char* const kTextAlign[] = {"Left", "Center", "Right"};
  const char* const kTextVAlign[] = {"Top", "Center", "Bottom"};
@@ -1318,7 +1318,7 @@ index 99811df..d84b5f5 100644
  const char* const kProgressDir[] = {"LeftToRight", "RightToLeft", "BottomToTop", "TopToBottom"};
  const char* const kToggleStyle[] = {"Switch", "Checkbox"};
  
-@@ -142,6 +145,31 @@ void Widget::ReflectCommon(PropertyVisitor& v) {
+@@ -143,6 +146,31 @@ void Widget::ReflectCommon(PropertyVisitor& v) {
      v.Property("clipChildren", clipChildren);
      v.Property("tooltip", tooltip);
      v.Property("visibleBind", visibleBind);
@@ -1350,7 +1350,7 @@ index 99811df..d84b5f5 100644
  }
  
  Widget* Widget::AddChild(std::unique_ptr<Widget> child, int index) {
-@@ -505,6 +533,20 @@ void UIText::Reflect(PropertyVisitor& v) {
+@@ -506,6 +534,20 @@ void UIText::Reflect(PropertyVisitor& v) {
      v.EnumField("align", align, kTextAlign);
      v.EnumField("verticalAlign", verticalAlign, kTextVAlign);
      v.Property("wrap", wrap);
@@ -1371,7 +1371,7 @@ index 99811df..d84b5f5 100644
      v.Header("影");
      v.Property("shadow", shadow);
      v.Color("shadowColor", shadowColor);
-@@ -512,7 +554,8 @@ void UIText::Reflect(PropertyVisitor& v) {
+@@ -513,7 +555,8 @@ void UIText::Reflect(PropertyVisitor& v) {
  }
  
  Vec2 UIText::ComputeDesiredSize(WidgetContext& ctx, float maxWidth) {
@@ -1417,10 +1417,10 @@ index 7546d11..ef304ca 100644
  
  } // namespace Ruto
 diff --git a/Modules/Graphics/include/Ruto/Graphics/Shader.h b/Modules/Graphics/include/Ruto/Graphics/Shader.h
-index 36be278..a6d7a9e 100644
+index dabbd9c..7a06bee 100644
 --- a/Modules/Graphics/include/Ruto/Graphics/Shader.h
 +++ b/Modules/Graphics/include/Ruto/Graphics/Shader.h
-@@ -18,6 +18,8 @@ public:
+@@ -19,6 +19,8 @@ public:
      Shader& operator=(const Shader&) = delete;
  
      bool IsValid() const { return m_Program != 0; }
@@ -1429,7 +1429,7 @@ index 36be278..a6d7a9e 100644
      void Bind() const;
  
      void SetInt(const std::string& name, int value);
-@@ -34,6 +36,7 @@ private:
+@@ -35,6 +37,7 @@ private:
      int GetLocation(const std::string& name);
  
      uint32_t m_Program = 0;
@@ -1545,45 +1545,45 @@ index 3f70cb0..fa6f61d 100644
      Flush();
      glEnable(GL_SCISSOR_TEST);
 diff --git a/Modules/Graphics/src/Shader.cpp b/Modules/Graphics/src/Shader.cpp
-index 325f847..9ab1143 100644
+index 51616f8..ea68004 100644
 --- a/Modules/Graphics/src/Shader.cpp
 +++ b/Modules/Graphics/src/Shader.cpp
 @@ -9,7 +9,7 @@ namespace Ruto {
  
  namespace {
  
--GLuint CompileStage(GLenum type, std::string_view source) {
-+GLuint CompileStage(GLenum type, std::string_view source, std::string& errorLog) {
+-GLuint CompileStage(GLenum type, std::string_view source, std::string* errorLog) {
++GLuint CompileStage(GLenum type, std::string_view source, std::string* errorLog, std::string& stored) {
      GLuint shader = glCreateShader(type);
      const GLchar* src = source.data();
      GLint length = static_cast<GLint>(source.size());
-@@ -24,6 +24,7 @@ GLuint CompileStage(GLenum type, std::string_view source) {
+@@ -24,6 +24,7 @@ GLuint CompileStage(GLenum type, std::string_view source, std::string* errorLog)
          std::string log(static_cast<size_t>(logLength > 0 ? logLength : 1), '\0');
          glGetShaderInfoLog(shader, logLength, nullptr, log.data());
-         Log::Error("{} shader compile error:\n{}", type == GL_VERTEX_SHADER ? "Vertex" : "Fragment", log);
-+        errorLog += log.c_str();
+         const char* stage = type == GL_VERTEX_SHADER ? "Vertex" : "Fragment";
++        stored += log.c_str();
+         if (errorLog) *errorLog += std::string(stage) + " shader:\n" + log.c_str() + "\n";
+         else Log::Error("{} shader compile error:\n{}", stage, log);
          glDeleteShader(shader);
-         return 0;
-     }
-@@ -33,8 +34,8 @@ GLuint CompileStage(GLenum type, std::string_view source) {
+@@ -35,8 +36,8 @@ GLuint CompileStage(GLenum type, std::string_view source, std::string* errorLog)
  } // namespace
  
- Shader::Shader(std::string_view vertexSource, std::string_view fragmentSource) {
--    GLuint vs = CompileStage(GL_VERTEX_SHADER, vertexSource);
--    GLuint fs = CompileStage(GL_FRAGMENT_SHADER, fragmentSource);
-+    GLuint vs = CompileStage(GL_VERTEX_SHADER, vertexSource, m_ErrorLog);
-+    GLuint fs = CompileStage(GL_FRAGMENT_SHADER, fragmentSource, m_ErrorLog);
+ Shader::Shader(std::string_view vertexSource, std::string_view fragmentSource, std::string* errorLog) {
+-    GLuint vs = CompileStage(GL_VERTEX_SHADER, vertexSource, errorLog);
+-    GLuint fs = CompileStage(GL_FRAGMENT_SHADER, fragmentSource, errorLog);
++    GLuint vs = CompileStage(GL_VERTEX_SHADER, vertexSource, errorLog, m_ErrorLog);
++    GLuint fs = CompileStage(GL_FRAGMENT_SHADER, fragmentSource, errorLog, m_ErrorLog);
      if (!vs || !fs) {
          if (vs) glDeleteShader(vs);
          if (fs) glDeleteShader(fs);
-@@ -56,6 +57,7 @@ Shader::Shader(std::string_view vertexSource, std::string_view fragmentSource) {
+@@ -57,6 +58,7 @@ Shader::Shader(std::string_view vertexSource, std::string_view fragmentSource, s
+         glGetProgramiv(program, GL_INFO_LOG_LENGTH, &logLength);
          std::string log(static_cast<size_t>(logLength > 0 ? logLength : 1), '\0');
          glGetProgramInfoLog(program, logLength, nullptr, log.data());
-         Log::Error("Shader link error:\n{}", log);
 +        m_ErrorLog += log.c_str();
+         if (errorLog) *errorLog += "Link:\n" + std::string(log.c_str()) + "\n";
+         else Log::Error("Shader link error:\n{}", log);
          glDeleteProgram(program);
-         return;
-     }
 -- 
-2.43.0
+2.53.0.windows.1
 

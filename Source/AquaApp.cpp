@@ -57,7 +57,8 @@ App::~App() = default;
 void App::OnStart() {
     std::error_code ec;
     fs::create_directories(AquaDataDir(), ec);
-    const fs::path ini = AquaDataDir() / "Layout.ini";
+    // RutoEngine 風だった前のレイアウト（Layout.ini）は使わず、Aqua のレイアウトから始める
+    const fs::path ini = AquaDataDir() / "AquaLayout.ini";
     m_ResetLayout = !fs::exists(ini, ec);
     // この Aqua.exe の場所を登録する（RutoEditor・RutoLauncher がどこにあっても見つけて起動できるように）
     Ruto::Aqua::RegisterExecutable(Platform::GetExecutableDir() / "Aqua.exe");
@@ -65,6 +66,7 @@ void App::OnStart() {
     options.iniPath = ini;
     EditorUI::Init(GetWindow(), options);
     m_Scale = EditorUI::GetScale();
+    ApplyAquaStyle(m_Scale);
 
     m_LogSink = Log::AddSink([this](Log::Level level, std::string_view message) {
         m_Log.push_back({level, std::string(message)});
@@ -440,8 +442,7 @@ void App::DrawMenuBar() {
         return;
     }
     ImGui::PopStyleVar();
-    ImGui::TextColored({0.35f, 0.78f, 1.0f, 1.0f}, ICON_FA_DROPLET);
-    ImGui::SameLine();
+    DrawMenuBrand();
     Document* doc = ActiveDocument();
     const bool open = m_Project.IsOpen();
 
@@ -523,16 +524,56 @@ void App::DrawMenuBar() {
         ImGui::EndMenu();
     }
 
-    // 右端: 連携の状態
+    // 中央: 開いている UI の名前
+    if (doc) {
+        const std::string title = std::format("{}  {}", ICON_FA_LAYER_GROUP, doc->GetTitle());
+        const float tw = ImGui::CalcTextSize(title.c_str()).x;
+        const float x = (ImGui::GetWindowWidth() - tw) * 0.5f;
+        if (x > ImGui::GetCursorPosX() + 20.0f * m_Scale) {
+            ImGui::SetCursorPosX(x);
+            ImGui::TextColored(Theme::kTextDim, "%s", title.c_str());
+        }
+    }
+
+    // 右端: 連携の状態（丸い札）
     if (open) {
-        const std::string status = m_EditorRunning ? ICON_FA_LINK "  RutoEditor にライブ反映中" : ICON_FA_LINK_SLASH "  RutoEditor は起動していません";
-        const float w = ImGui::CalcTextSize(status.c_str()).x + 16.0f * m_Scale;
-        ImGui::SetCursorPosX(ImGui::GetWindowWidth() - w);
-        ImGui::TextColored(m_EditorRunning ? Theme::kSuccess : Theme::kTextDim, "%s", status.c_str());
+        const std::string status = m_EditorRunning ? ICON_FA_LINK "  ライブ反映中" : ICON_FA_LINK_SLASH "  RutoEditor 未起動";
+        const ImVec2 ts = ImGui::CalcTextSize(status.c_str());
+        const ImVec2 pad{10.0f * m_Scale, 3.0f * m_Scale};
+        const float w = ts.x + pad.x * 2.0f;
+        ImGui::SetCursorPosX(ImGui::GetWindowWidth() - w - 10.0f * m_Scale);
+        const ImVec2 p = ImGui::GetCursorScreenPos();
+        const float h = ImGui::GetFrameHeight();
+        const ImVec2 min{p.x, p.y + (h - ts.y) * 0.5f - pad.y};
+        const ImVec2 max{p.x + w, min.y + ts.y + pad.y * 2.0f};
+        const ImVec4 col = m_EditorRunning ? Theme::kSuccess : Theme::kTextDim;
+        ImDrawList* dl = ImGui::GetWindowDrawList();
+        dl->AddRectFilled(min, max, Theme::U32(col, 0.14f), 100.0f);
+        dl->AddRect(min, max, Theme::U32(col, 0.45f), 100.0f);
+        dl->AddText({min.x + pad.x, min.y + pad.y}, Theme::U32(col), status.c_str());
+        ImGui::Dummy({w, h});
         if (ImGui::IsItemHovered())
             ImGui::SetTooltip("編集すると Assets の .aqua がすぐ書き出され、\nRutoEditor のシーン・ゲームビュー・実行中のゲームに反映されます");
     }
     ImGui::EndMainMenuBar();
+}
+
+void App::DrawMenuBrand() {
+    // メニューの左端: アクアの札に「Aqua」
+    const float h = ImGui::GetFrameHeight();
+    const ImVec2 p = ImGui::GetCursorScreenPos();
+    const char* label = ICON_FA_DROPLET " Aqua";
+    ImGui::PushFont(GetBoldFont(), ImGui::GetStyle().FontSizeBase);
+    const ImVec2 ts = ImGui::CalcTextSize(label);
+    const ImVec2 pad{9.0f * m_Scale, 3.0f * m_Scale};
+    const ImVec2 min{p.x, p.y + (h - ts.y) * 0.5f - pad.y};
+    const ImVec2 max{p.x + ts.x + pad.x * 2.0f, min.y + ts.y + pad.y * 2.0f};
+    ImDrawList* dl = ImGui::GetWindowDrawList();
+    dl->AddRectFilled(min, max, Theme::U32(Theme::kAccent), 6.0f * m_Scale);
+    dl->AddText({min.x + pad.x, min.y + pad.y}, Theme::U32(Theme::kAccentInk), label);
+    ImGui::PopFont();
+    ImGui::Dummy({max.x - min.x, h});
+    ImGui::SameLine(0.0f, 10.0f * m_Scale);
 }
 
 void App::HandleShortcuts() {
@@ -576,7 +617,7 @@ void App::DrawDockSpace() {
     const float bottom = std::round(26.0f * m_Scale);
     ImGui::SetNextWindowPos({vp->Pos.x, vp->Pos.y + top});
     ImGui::SetNextWindowSize({vp->Size.x, vp->Size.y - top - bottom});
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {4.0f, 2.0f});
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {6.0f * m_Scale, 6.0f * m_Scale});
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
     ImGui::PushStyleColor(ImGuiCol_WindowBg, Theme::kBackground);
@@ -599,14 +640,15 @@ void App::BuildDefaultLayout(ImGuiID id) {
     ImGui::DockBuilderRemoveNode(id);
     ImGui::DockBuilderAddNode(id, ImGuiDockNodeFlags_DockSpace);
     ImGui::DockBuilderSetNodeSize(id, vp->Size);
+    // 左: 部品（パレット・プロジェクト）／中央: キャンバス／右: 階層の下に詳細／下: アニメーションなど
     ImGuiID center = id;
-    ImGuiID left = ImGui::DockBuilderSplitNode(center, ImGuiDir_Left, 0.18f, nullptr, &center);
-    const ImGuiID right = ImGui::DockBuilderSplitNode(center, ImGuiDir_Right, 0.26f, nullptr, &center);
+    const ImGuiID left = ImGui::DockBuilderSplitNode(center, ImGuiDir_Left, 0.15f, nullptr, &center);
+    ImGuiID right = ImGui::DockBuilderSplitNode(center, ImGuiDir_Right, 0.27f, nullptr, &center);
     const ImGuiID bottom = ImGui::DockBuilderSplitNode(center, ImGuiDir_Down, 0.30f, nullptr, &center);
-    const ImGuiID leftBottom = ImGui::DockBuilderSplitNode(left, ImGuiDir_Down, 0.55f, nullptr, &left);
-    ImGui::DockBuilderDockWindow("###Project", left);
+    const ImGuiID rightTop = ImGui::DockBuilderSplitNode(right, ImGuiDir_Up, 0.36f, nullptr, &right);
     ImGui::DockBuilderDockWindow("###Palette", left);
-    ImGui::DockBuilderDockWindow("###Hierarchy", leftBottom);
+    ImGui::DockBuilderDockWindow("###Project", left);
+    ImGui::DockBuilderDockWindow("###Hierarchy", rightTop);
     ImGui::DockBuilderDockWindow("###Canvas", center);
     ImGui::DockBuilderDockWindow("###Details", right);
     ImGui::DockBuilderDockWindow("###Styles", right);
@@ -630,12 +672,21 @@ void App::DrawStatusBar(float height) {
     ImGui::SetNextWindowSize({vp->Size.x, height});
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {10.0f * m_Scale, 4.0f * m_Scale});
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-    ImGui::PushStyleColor(ImGuiCol_WindowBg, Theme::kPanel);
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, Theme::kBackground);
     ImGui::Begin("##AquaStatus", nullptr,
                  ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoMove |
                      ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav);
     ImGui::PopStyleVar(2);
     ImGui::PopStyleColor();
+    {
+        // 上の縁に、左からアクアが薄れていく線（Aqua の目印）
+        ImDrawList* dl = ImGui::GetWindowDrawList();
+        const ImVec2 wp = ImGui::GetWindowPos();
+        const float w = ImGui::GetWindowWidth();
+        const float t = std::max(1.0f, std::round(2.0f * m_Scale));
+        dl->AddRectFilledMultiColor(wp, {wp.x + w, wp.y + t}, Theme::U32(Theme::kAccent), Theme::U32(Theme::kAccent, 0.0f),
+                                    Theme::U32(Theme::kAccent, 0.0f), Theme::U32(Theme::kAccent));
+    }
     const double now = Platform::GetTime();
     if (!m_Notice.empty() && now - m_NoticeTime < 5.0) {
         ImGui::TextColored(m_NoticeError ? Theme::kError : Theme::kSuccess, "%s  %s", m_NoticeError ? ICON_FA_TRIANGLE_EXCLAMATION : ICON_FA_CHECK, m_Notice.c_str());
@@ -667,41 +718,98 @@ void App::DrawWelcome() {
     ImGui::PushStyleColor(ImGuiCol_WindowBg, Theme::kBackground);
     ImGui::Begin("##AquaWelcome", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoMove);
     ImGui::PopStyleColor();
-    const float w = std::min(ImGui::GetContentRegionAvail().x - 40.0f, 720.0f * m_Scale);
-    ImGui::SetCursorPos({(ImGui::GetWindowWidth() - w) * 0.5f, 60.0f * m_Scale});
+
+    // 上から差し込む光（アクアのグラデーション）
+    ImDrawList* bg = ImGui::GetWindowDrawList();
+    const ImVec2 wp = ImGui::GetWindowPos();
+    const ImVec2 ws = ImGui::GetWindowSize();
+    const float glowH = std::min(ws.y, 320.0f * m_Scale);
+    bg->AddRectFilledMultiColor(wp, {wp.x + ws.x, wp.y + glowH}, Theme::U32(Theme::kAccent, 0.16f), Theme::U32(Theme::kAccent, 0.05f),
+                                Theme::U32(Theme::kAccent, 0.0f), Theme::U32(Theme::kAccent, 0.0f));
+
+    const float w = std::min(ImGui::GetContentRegionAvail().x - 40.0f, 760.0f * m_Scale);
+    ImGui::SetCursorPos({(ImGui::GetWindowWidth() - w) * 0.5f, 64.0f * m_Scale});
     ImGui::BeginGroup();
-    ImGui::PushFont(GetBoldFont(), ImGui::GetStyle().FontSizeBase * 2.4f);
-    ImGui::TextColored({0.35f, 0.78f, 1.0f, 1.0f}, ICON_FA_DROPLET "  Aqua");
-    ImGui::PopFont();
-    ImGui::TextDisabled("RutoEngine のゲームの UI（メニュー・HUD・設定画面）を見たまま作るツール");
+    DrawLogo(ImGui::GetStyle().FontSizeBase * 2.6f);
     ImGui::Spacing();
+    ImGui::TextColored(Theme::kTextDim, "ゲームの UI（メニュー・HUD・設定画面）を見たまま作る、RutoEngine のための UI デザイナー");
+    ImGui::Dummy({0.0f, 14.0f * m_Scale});
     if (!m_Error.empty()) {
         ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + w);
         ImGui::TextColored(Theme::kError, ICON_FA_TRIANGLE_EXCLAMATION "  %s", m_Error.c_str());
         ImGui::PopTextWrapPos();
+        ImGui::Spacing();
     }
-    ImGui::Spacing();
-    ImGui::PushStyleColor(ImGuiCol_Button, Theme::kAccentDim);
-    if (ImGui::Button(ICON_FA_FOLDER_OPEN "  プロジェクトのフォルダを開く...", {w, 40.0f * m_Scale})) {
+    ImGui::PushStyleColor(ImGuiCol_Button, Theme::kAccent);
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, {0.40f, 0.92f, 0.88f, 1.0f});
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, Theme::kAccent);
+    ImGui::PushStyleColor(ImGuiCol_Text, Theme::kAccentInk);
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 100.0f);
+    ImGui::PushFont(GetBoldFont(), ImGui::GetStyle().FontSizeBase);
+    if (ImGui::Button(ICON_FA_FOLDER_OPEN "  プロジェクトのフォルダを開く...", {std::min(w, 340.0f * m_Scale), 44.0f * m_Scale})) {
         Platform::ShowFolderDialog(Platform::GetDocumentsDir(), [this](std::optional<fs::path> p) {
             if (p) OpenProject(*p);
         });
     }
-    ImGui::PopStyleColor();
+    ImGui::PopFont();
+    ImGui::PopStyleVar();
+    ImGui::PopStyleColor(4);
+    ImGui::Dummy({0.0f, 20.0f * m_Scale});
+
+    ImGui::TextColored(Theme::kAccent, ICON_FA_CLOCK_ROTATE_LEFT);
+    ImGui::SameLine();
+    ImGui::TextUnformatted("最近のプロジェクト");
+    ImGui::SameLine();
+    ImGui::TextDisabled("（RutoLauncher のプロジェクトも表示）");
     ImGui::Spacing();
-    ImGui::SeparatorText("最近のプロジェクト（RutoLauncher のプロジェクトも表示）");
     const auto recent = LoadRecentProjects();
     if (recent.empty()) ImGui::TextDisabled("まだありません。RutoLauncher でプロジェクトを作ってから開いてください");
+    // 1 件ずつ角の丸いカードにする
     std::error_code ec;
+    const float cardH = ImGui::GetTextLineHeight() * 2.0f + 18.0f * m_Scale;
+    const float rounding = 10.0f * m_Scale;
     for (const fs::path& p : recent) {
         const bool exists = fs::is_directory(p / "Assets", ec);
         ImGui::PushID(FileSystem::ToUtf8(p).c_str());
+        const ImVec2 cp = ImGui::GetCursorScreenPos();
         ImGui::BeginDisabled(!exists);
-        if (ImGui::Selectable(std::format(ICON_FA_FOLDER "  {}##p", FileSystem::ToUtf8(p.filename())).c_str(), false, 0, {w, 0.0f})) OpenProject(p);
+        const bool clicked = ImGui::InvisibleButton("##card", {w, cardH});
         ImGui::EndDisabled();
-        ImGui::SameLine(w * 0.35f);
-        ImGui::TextDisabled("%s%s", FileSystem::ToUtf8(p).c_str(), exists ? "" : "（見つかりません）");
+        const bool hovered = exists && ImGui::IsItemHovered();
+        ImDrawList* dl = ImGui::GetWindowDrawList();
+        const ImVec2 cmax{cp.x + w, cp.y + cardH};
+        dl->AddRectFilled(cp, cmax, Theme::U32(hovered ? Theme::kFrameHover : Theme::kPanel), rounding);
+        if (hovered) {
+            dl->AddRect(cp, cmax, Theme::U32(Theme::kAccent, 0.7f), rounding, 0, 1.5f);
+            ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
+        }
+        // 左の丸いアイコン
+        const float pad = 9.0f * m_Scale;
+        const float r = (cardH - pad * 2.0f) * 0.5f;
+        const ImVec2 ic{cp.x + pad + r, cp.y + cardH * 0.5f};
+        const ImVec4 iconCol = exists ? Theme::kAccent : Theme::kTextDim;
+        dl->AddCircleFilled(ic, r, Theme::U32(iconCol, 0.16f));
+        const ImVec2 is = ImGui::CalcTextSize(ICON_FA_FOLDER);
+        dl->AddText({ic.x - is.x * 0.5f, ic.y - is.y * 0.5f}, Theme::U32(iconCol), ICON_FA_FOLDER);
+        const float tx = ic.x + r + 12.0f * m_Scale;
+        const float lh = ImGui::GetTextLineHeight();
+        const std::string name = FileSystem::ToUtf8(p.filename());
+        const std::string path = FileSystem::ToUtf8(p) + (exists ? "" : "（見つかりません）");
+        dl->PushClipRect(cp, {cmax.x - pad, cmax.y}, true);
+        dl->AddText({tx, ic.y - lh}, Theme::U32(exists ? Theme::kText : Theme::kTextDim), name.c_str());
+        dl->AddText({tx, ic.y}, Theme::U32(Theme::kTextDim), path.c_str());
+        dl->PopClipRect();
+        if (exists) {
+            const ImVec2 as = ImGui::CalcTextSize(ICON_FA_ARROW_RIGHT);
+            dl->AddText({cmax.x - pad - as.x - 6.0f * m_Scale, ic.y - as.y * 0.5f}, Theme::U32(hovered ? Theme::kAccent : Theme::kTextDim, hovered ? 1.0f : 0.5f),
+                        ICON_FA_ARROW_RIGHT);
+        }
         ImGui::PopID();
+        ImGui::Dummy({0.0f, 2.0f * m_Scale});
+        if (clicked && exists) {
+            OpenProject(p); // 一覧が変わるので最後に開く
+            break;
+        }
     }
     ImGui::EndGroup();
     ImGui::End();
@@ -775,9 +883,7 @@ void App::DrawPopups() {
         m_OpenAboutPopup = false;
     }
     if (ImGui::BeginPopupModal("Aqua について", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-        ImGui::PushFont(GetBoldFont(), ImGui::GetStyle().FontSizeBase * 1.6f);
-        ImGui::TextColored({0.35f, 0.78f, 1.0f, 1.0f}, ICON_FA_DROPLET "  Aqua");
-        ImGui::PopFont();
+        DrawLogo(ImGui::GetStyle().FontSizeBase * 1.6f);
         ImGui::TextDisabled("Aqua %s · RutoEngine の UI を作るツール（UI バイナリ フォーマット %d）", AQUA_VERSION, static_cast<int>(Ruto::Aqua::kFormatVersion));
         ImGui::Spacing();
         ImGui::BulletText("AquaUI/*.aqs … 編集用ファイル（バージョン管理向けの XML）");

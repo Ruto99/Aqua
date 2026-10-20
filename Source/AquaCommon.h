@@ -12,6 +12,8 @@
 
 #include <imgui.h>
 
+#include "AquaTheme.h"
+
 #include <span>
 #include <string>
 #include <string_view>

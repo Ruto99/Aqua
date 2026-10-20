@@ -19,11 +19,18 @@ RutoEngine とは別のアプリで、作った UI は `.aqua`（UI のバイナ
 
 RutoEngine の SDK（ビルド済みのエンジン）をリンクして作る。先に RutoEngine の `Setup.bat` で SDK を作っておく。
 
-**エンジンのパッチ**: キャプチャー・テキストアニメーション・UI のシェーダーは RutoEngine 側の実装が要る。RutoEngine のフォルダで、`EnginePatches` のパッチを番号の順に当ててから SDK を作り直す。
+**エンジンのパッチ**: キャプチャー・テキストアニメーション・UI のシェーダーは RutoEngine 側の実装が要る。**`ApplyEnginePatches.bat` をダブルクリック**すると、`EnginePatches` のパッチを番号の順に RutoEngine へ `git am` で当て、`Setup.bat` で SDK を作り直す。
+
+- 当て済みのパッチは飛ばすので、何度実行してもよい（パッチが増えたときもこれを実行する）。
+- RutoEngine にコミットしていない変更があると、パッチを当てる前に止まる（先にコミットするか stash する）。
+- パッチが当たらなかったときは `git am --abort` で元に戻して止まる。
+- `ApplyEnginePatches.bat --no-setup` でパッチだけ当てる（SDK は後で `Setup.bat`）。`--no-pause` で最後に止まらない。
+
+手で当てるなら、RutoEngine のフォルダで次のようにする。
 
 ```bat
 cd ..\RutoEngine
-git am ..\Aqua\EnginePatches\0001-UICapture.patch ..\Aqua\EnginePatches\0002-TextAnimation-UIShader.patch
+git am -3 ..\Aqua\EnginePatches\0001-UICapture.patch ..\Aqua\EnginePatches\0002-TextAnimation-UIShader.patch ..\Aqua\EnginePatches\0003-Fix-duplicate-glGetIntegerv.patch
 Setup.bat
 ```
 
@@ -44,6 +51,7 @@ MyProgram/
 └─ Aqua/         このフォルダ
    ├─ Aqua.bat         Aqua を開く（必要ならビルドしてから）
    ├─ build.bat        ビルド
+   ├─ ApplyEnginePatches.bat  RutoEngine にパッチを当てて SDK を作り直す
    ├─ Source/          Aqua のソース
    ├─ Resources/       アイコン（make_icon.py で作り直せる）
    ├─ build/           ビルドフォルダ（debug / release）

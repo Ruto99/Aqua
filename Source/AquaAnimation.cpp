@@ -324,7 +324,7 @@ void App::DrawAnimations(Document& doc) {
         }
         // 線とキーを描く
         if (t.curve.keys.size() >= 2)
-            rdl->AddLine({timeToX(t.curve.keys.front().time), y + rowH * 0.5f}, {timeToX(t.curve.keys.back().time), y + rowH * 0.5f}, IM_COL32(120, 160, 255, 90), 2.0f);
+            rdl->AddLine({timeToX(t.curve.keys.front().time), y + rowH * 0.5f}, {timeToX(t.curve.keys.back().time), y + rowH * 0.5f}, Theme::U32(Theme::kAccent, 0.35f), 2.0f);
         for (int ki = 0; ki < static_cast<int>(t.curve.keys.size()); ++ki) {
             const float kx = timeToX(t.curve.keys[static_cast<size_t>(ki)].time);
             const float r = (ki == hoverKey ? 6.0f : 5.0f) * s;

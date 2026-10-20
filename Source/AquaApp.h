@@ -57,6 +57,7 @@ private:
     // ---- 画面（AquaApp.cpp） ----
     void DrawUI();
     void DrawMenuBar();
+    void DrawMenuBrand();
     void DrawDockSpace();
     void BuildDefaultLayout(unsigned int dockspace);
     void DrawStatusBar(float height);
