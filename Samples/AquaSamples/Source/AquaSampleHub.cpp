@@ -18,6 +18,7 @@ using namespace Ruto;
 //     snapshot          … UICapture「Snapshot」に今の画面を撮る
 //     score-add / score-reset … 変数 score を変える
 //     bounding-hit      … Bounding ペインが押された（変数 hits を増やす）
+//     override-rename / override-reset … パーツの上書きをスクリプトで変える / 消す
 class AquaSampleHub : public Component {
     RUTO_COMPONENT(AquaSampleHub)
 
@@ -58,6 +59,20 @@ class AquaSampleHub : public Component {
             UI()->SetVariable("score", 0.0);
         } else if (msg == "bounding-hit") {
             UI()->SetVariable("hits", static_cast<double>(++m_Hits));
+        } else if (msg == "override-rename") {
+            // 置いたパーツの中の値を、置き場所ごとに変える
+            static const char* const kNames[] = {"アクア・改", "ルト・改", "コーラル・改"};
+            const char* const members[] = {"MemberAqua", "MemberRuto", "MemberCoral"};
+            for (int i = 0; i < 3; ++i) {
+                if (auto* part = UI()->Find<UIUserWidget>(members[i])) {
+                    part->SetOverride("StatusName", "text", kNames[i]);
+                    part->SetOverride("StatusHp", "percent", 1.0);
+                }
+            }
+        } else if (msg == "override-reset") {
+            for (const char* m : {"MemberAqua", "MemberRuto", "MemberCoral"}) {
+                if (auto* part = UI()->Find<UIUserWidget>(m)) part->ClearOverrides();
+            }
         }
     }
 

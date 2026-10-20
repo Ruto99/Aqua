@@ -421,6 +421,7 @@ SAMPLES = [
     ("Binding", "変数と入力", "スライダー・トグル・入力欄と {変数} の連動"),
     ("Styles", "スタイルと部品", "共通の見た目と、UI を部品として使い回す"),
     ("Transform", "変形と頂点カラー", "回転・四隅の色・Bounding ペイン・ユーザーデータ"),
+    ("Overrides", "パーツの上書き", "同じパーツを置いた先ごとに、名前・ゲージ・色を変える"),
 ]
 
 
@@ -1231,6 +1232,46 @@ def make_transform():
     return document(page("変形と頂点カラー", "LayoutEditor 風の機能 その 1", [rotate_card, color_card, hit_card]), [loop])
 
 
+# ---------------------------------------------------------------------------
+# パーツの上書き
+# ---------------------------------------------------------------------------
+
+
+def make_overrides():
+    import json as _json
+
+    members = [
+        ("Aqua", {"StatusName": {"text": "アクア"}, "StatusClass": {"text": "Lv.12 まほうつかい"}, "StatusHp": {"percent": 0.72}, "StatusMp": {"percent": 0.45}}),
+        ("Ruto", {"StatusName": {"text": "ルト"}, "StatusClass": {"text": "Lv.15 けんし"}, "StatusHp": {"percent": 0.95}, "StatusMp": {"percent": 0.1},
+                  "StatusIcon": {"shaderParam0": list(CORAL)}}),
+        ("Coral", {"StatusName": {"text": "コーラル"}, "StatusClass": {"text": "Lv.9 そうりょ"}, "StatusHp": {"percent": 0.3}, "StatusMp": {"percent": 0.9},
+                   "StatusIcon": {"shaderParam0": list(GOLD)}}),
+    ]
+    cards = [
+        widget("UIUserWidget", f"Member{n}", {"asset": "UI/StatusCard.aqua", "overrides": _json.dumps(ov, ensure_ascii=False)},
+               slot=box(v="Top"))
+        for n, ov in members
+    ]
+    party = widget("UISizeBox", "PartySize", {"widthOverride": 1140, "heightOverride": 200},
+                   children=[hbox("Party", cards, spacing=30)])
+    party_card = card(
+        "PartyCard",
+        "同じパーツ（StatusCard）を 3 つ置いて、それぞれ上書き",
+        [
+            party,
+            note("PartyNote", "置いたパーツを選ぶと、詳細の下の「パーツの上書き」で中のウィジェット（StatusName・StatusHp・StatusIcon など）を選んで値を変えられる。"
+                 "パーツの元の値と違うものだけが保存され、パーツ（StatusCard）を直すと上書きしていない所はすべての置き場所に反映される"),
+            hbox("OverrideButtons", [
+                button("RenameButton", "スクリプトで名前を変える（SetOverride）", "override-rename", size=24, contentPadding=[20, 10, 20, 10]),
+                button("ResetButton", "上書きを消す（ClearOverrides）", "override-reset", size=24, color=PANEL_LIGHT, contentPadding=[20, 10, 20, 10]),
+            ], spacing=16),
+        ],
+        slot=at(0, 200, 0, 0, anchor=(0.5, 0), pivot=(0.5, 0), auto=True),
+        width=1180,
+    )
+    return document(page("パーツの上書き", "LayoutEditor 風の機能 その 2", [party_card]))
+
+
 UIS = {
     "Menu": make_menu,
     "TextAnimation": make_text_animation,
@@ -1243,6 +1284,7 @@ UIS = {
     "StatusCard": make_status_card,
     "Styles": make_styles,
     "Transform": make_transform,
+    "Overrides": make_overrides,
 }
 
 

@@ -89,6 +89,8 @@ private:
     void DrawCanvas(Document& doc);
     void DrawDetails(Document& doc);
     void DrawSlot(Document& doc, Widget& w);
+    // パーツ（UIUserWidget）の上書き: 中のウィジェットを選んで、置いた先だけ値を変える
+    void DrawPartOverrides(Document& doc, UIUserWidget& uw);
     void DrawWidgetMenu(Document& doc, const WidgetPath& path);
     void HandleDesignerKeys(Document& doc);
     Widget* AddWidget(Document& doc, const std::string& type, Widget* parent, int index = -1, const Vec2* canvasPos = nullptr);
@@ -167,6 +169,9 @@ private:
     bool m_NewShaderApply = true;
     int m_ShaderJumpLine = -1;                 // エラーの行へカーソルを動かす
     int m_ShaderCursorLine = 1;
+
+    // パーツの上書きで編集している中のウィジェット（名前）
+    std::string m_OverrideTarget;
 
     // 整列
     int m_ArrangeRelative = 0;         // 0: 選んだものの範囲 / 1: 親 / 2: 最初に選んだもの

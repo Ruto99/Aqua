@@ -3157,6 +3157,7 @@
                               </object>
                               <object key="properties">
                                 <string key="asset">UI/StatusCard.aqua</string>
+                                <string key="overrides"/>
                               </object>
                               <object key="slot">
                                 <array key="anchorMin">
@@ -3223,6 +3224,7 @@
                               </object>
                               <object key="properties">
                                 <string key="asset">UI/StatusCard.aqua</string>
+                                <string key="overrides"/>
                               </object>
                               <object key="slot">
                                 <array key="anchorMin">

@@ -73,6 +73,12 @@ inline constexpr const char* CardTransformContent = "CardTransformContent";
 inline constexpr const char* CardTransformNumber = "CardTransformNumber";
 inline constexpr const char* CardTransformLabel = "CardTransformLabel";
 inline constexpr const char* CardTransformDesc = "CardTransformDesc";
+inline constexpr const char* OpenOverrides = "OpenOverrides";
+inline constexpr const char* CardOverridesSize = "CardOverridesSize";
+inline constexpr const char* CardOverridesContent = "CardOverridesContent";
+inline constexpr const char* CardOverridesNumber = "CardOverridesNumber";
+inline constexpr const char* CardOverridesLabel = "CardOverridesLabel";
+inline constexpr const char* CardOverridesDesc = "CardOverridesDesc";
 inline constexpr const char* MenuHint = "MenuHint";
 } // namespace Widgets
 
@@ -97,6 +103,7 @@ inline constexpr const char* open_UI_Layout_aqua = "open:UI/Layout.aqua";
 inline constexpr const char* open_UI_Binding_aqua = "open:UI/Binding.aqua";
 inline constexpr const char* open_UI_Styles_aqua = "open:UI/Styles.aqua";
 inline constexpr const char* open_UI_Transform_aqua = "open:UI/Transform.aqua";
+inline constexpr const char* open_UI_Overrides_aqua = "open:UI/Overrides.aqua";
 } // namespace Messages
 
 } // namespace AquaUI::Menu

@@ -111,6 +111,7 @@ public:
         if (Row(n)) changed |= DragVec(Id(n), &v.x, 4, 0.5f, 0.0f, "%.0f");
     }
     void Property(std::string_view n, std::string& v) override {
+        if (n == "overrides") return; // パーツの上書き（専用の欄で編集する）
         if (!Row(n)) return;
         const bool richText = n == "text" && target && std::string_view(target->GetTypeName()) == "UIText";
         if (n == "text") changed |= ImGui::InputTextMultiline(Id(n), &v, {-FLT_MIN, ImGui::GetTextLineHeight() * 2.6f});
@@ -1690,6 +1691,117 @@ void App::DrawSlot(Document& doc, Widget& w) {
     if (changed) doc.Changed();
 }
 
+void App::DrawPartOverrides(Document& doc, UIUserWidget& uw) {
+    auto part = WidgetAsset::Load(uw.asset);
+    if (!part || !part->root) return;
+    ImGui::Spacing();
+    ImGui::PushStyleColor(ImGuiCol_Text, Theme::kAccent);
+    ImGui::SeparatorText("パーツの上書き");
+    ImGui::PopStyleColor();
+    ImGui::PushTextWrapPos(0.0f);
+    ImGui::TextDisabled("中のウィジェットを選んで値を変えると、ここに置いたパーツだけが変わります（パーツの元の値と違うものだけ保存）");
+    ImGui::PopTextWrapPos();
+
+    Json all = Json::MakeObject();
+    if (!uw.overrides.empty()) {
+        if (auto parsed = Json::Parse(uw.overrides); parsed && parsed->IsObject()) all = std::move(*parsed);
+    }
+    const Json& readOnly = all; // 読むだけ（無いキーを作らない）
+    auto save = [&]() {
+        uw.overrides = all.Size() == 0 ? std::string() : all.Dump(0);
+        doc.Changed();
+    };
+
+    // 中のウィジェット（名前の付いたもの）
+    std::vector<Widget*> inner;
+    part->root->ForEach([&](Widget& w) {
+        if (&w != part->root.get() && !w.generated && !w.name.empty()) inner.push_back(&w);
+    });
+    Widget* original = nullptr;
+    for (Widget* w : inner) {
+        if (w->name == m_OverrideTarget) original = w;
+    }
+    const std::string preview = original ? std::format("{}  {}", WidgetIcon(original->GetTypeName()), original->name) : std::string("（中のウィジェットを選ぶ）");
+    ImGui::SetNextItemWidth(-FLT_MIN);
+    if (ImGui::BeginCombo("##override-target", preview.c_str(), ImGuiComboFlags_HeightLarge)) {
+        for (Widget* w : inner) {
+            const bool overridden = readOnly[w->name].IsObject();
+            const std::string label = std::format("{}  {}{}", WidgetIcon(w->GetTypeName()), w->name, overridden ? "  ●" : "");
+            if (ImGui::Selectable(label.c_str(), w == original)) m_OverrideTarget = w->name;
+        }
+        ImGui::EndCombo();
+    }
+
+    // 上書きしているもの
+    std::string clear;
+    for (const auto& [name, props] : all.Items()) {
+        if (!props.IsObject()) continue;
+        ImGui::PushID(name.c_str());
+        if (IconButton(ICON_FA_XMARK, "この上書きを消す（パーツの値に戻す）")) clear = name;
+        ImGui::SameLine();
+        ImGui::AlignTextToFramePadding();
+        std::string keys;
+        for (const auto& [k, v] : props.Items()) keys += (keys.empty() ? "" : "・") + PropertyLabelJa(k);
+        if (ImGui::Selectable(std::format("{}: {}", name, keys).c_str(), name == m_OverrideTarget)) m_OverrideTarget = name;
+        ImGui::PopID();
+    }
+    if (!clear.empty()) {
+        Json rest = Json::MakeObject();
+        for (const auto& [k, v] : all.Items()) {
+            if (k != clear) rest[k] = v;
+        }
+        all = std::move(rest);
+        save();
+        return;
+    }
+    if (!original) return;
+
+    // パーツの値に上書きを重ねたものを編集し、元の値と違うものだけを上書きにする
+    auto edited = original->Clone();
+    if (readOnly[original->name].IsObject()) {
+        const Json& props = readOnly[original->name];
+        SceneSerializer::DeserializeProperties(props, [&](PropertyVisitor& v) { edited->ReflectCommon(v); });
+        SceneSerializer::DeserializeProperties(props, [&](PropertyVisitor& v) { edited->Reflect(v); });
+    }
+    DesignerVisitor v(m_Project);
+    v.target = edited.get();
+    v.onEditShader = [this](const std::string& path) { OpenShaderEditor(path); };
+    v.Begin("override");
+    edited->Reflect(v);
+    v.Header("共通");
+    edited->ReflectCommon(v);
+    v.End();
+    if (readOnly[original->name].IsObject() && ImGui::Button(ICON_FA_ROTATE_LEFT "  このウィジェットをパーツの値に戻す", {-FLT_MIN, 0.0f})) {
+        clear = original->name;
+        Json rest = Json::MakeObject();
+        for (const auto& [k, val] : all.Items()) {
+            if (k != clear) rest[k] = val;
+        }
+        all = std::move(rest);
+        save();
+        return;
+    }
+    if (!v.changed) return;
+    const Json before = WidgetAsset::SerializeWidget(*original);
+    const Json after = WidgetAsset::SerializeWidget(*edited);
+    Json diff = Json::MakeObject();
+    for (const char* group : {"common", "properties"}) {
+        for (const auto& [k, val] : after[group].Items()) {
+            if (before[group][k].Dump(0) != val.Dump(0)) diff[k] = val;
+        }
+    }
+    if (diff.Size() == 0) {
+        Json rest = Json::MakeObject();
+        for (const auto& [k, val] : all.Items()) {
+            if (k != original->name) rest[k] = val;
+        }
+        all = std::move(rest);
+    } else {
+        all[original->name] = std::move(diff);
+    }
+    save();
+}
+
 void App::DrawDetails(Document& doc) {
     WidgetAsset& asset = *doc.asset;
     DesignerState& ui = doc.ui;
@@ -1876,6 +1988,7 @@ void App::DrawDetails(Document& doc) {
     if (auto* uw = dynamic_cast<UIUserWidget*>(w); uw && !uw->asset.empty()) {
         ImGui::Spacing();
         if (ImGui::Button(ICON_FA_PUZZLE_PIECE "  この部品の UI を開く", {-FLT_MIN, 0.0f})) OpenDocument(Assets::GetPath(uw->asset));
+        DrawPartOverrides(doc, *uw);
     }    if (std::string_view(w->GetTypeName()) == "UICapture") {
         // キャプチャー: 撮った画面はゲームのメモリ（テクスチャ）に持つだけで、ファイルには保存しない
         ImGui::Spacing();
