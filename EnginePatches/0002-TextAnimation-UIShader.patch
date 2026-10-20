@@ -1,0 +1,1589 @@
+From ecfbc8bc2f0b2c50f637877053932f8f2bed8cbd Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Tue, 20 Oct 2026 02:48:06 +0000
+Subject: [PATCH] Add text animation and UI shaders to the widget UI
+
+Text animation (UIText):
+- reveal: Typewriter / Fade / Pop / Rise / Drop / Spin, with speed,
+  delay, per-character fade time, sound every N characters, restart on
+  show, and a manual revealProgress (0-1) for timelines
+- effect: Wave / Shake / Rainbow / Pulse / Swing / Glitch
+- inline tags: <wave> <shake> <rainbow> <pulse> <swing> <glitch>
+  <color=#RRGGBB(AA)> <alpha=x> <pause=sec> <speed=x>; unknown tags stay
+  as text, and tags are left out of the measured size
+- RestartReveal / SkipReveal / IsRevealing, UIEventType::TextRevealed,
+  UIDocument::RestartText / SkipText / IsTextRevealing
+- characters are drawn one quad each so every glyph can move
+
+UI shaders:
+- .uishader assets: one GLSL effect(vec4 color) function with helpers
+  (uTime, uRect, LocalUV, SampleTexture, Luma, HueShift, Noise) and up
+  to 6 "// @param" values (float / vec2 / color / toggle)
+- every widget gets shader, shaderChildren and shaderParam0-5 (only
+  saved when a shader is set; animatable like other properties)
+- nested shaders, fallback to normal drawing on compile errors, error
+  lines numbered as in the .uishader, hot reload when the file changes
+- 13 presets (grayscale, sepia, flash, shine, dissolve, gradient,
+  rainbow, hue shift, blink, scanlines, hologram, vignette, wave)
+- Renderer2D::SetShader for custom fragment shaders; Shader keeps its
+  error log; AssetType::UIShader and the editor's asset list
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01EvWZpBe1ubkYBLjPh6xAoG
+---
+ Modules/Editor/src/EditorApp.h                |   1 +
+ Modules/Editor/src/EditorPanels.cpp           |   2 +
+ .../Engine/include/Ruto/Engine/Reflection.h   |   2 +-
+ Modules/Engine/include/Ruto/Engine/UIShader.h | 104 ++++
+ Modules/Engine/include/Ruto/Engine/Widgets.h  |  63 ++-
+ Modules/Engine/src/UIDocument.cpp             |  50 ++
+ Modules/Engine/src/UIShader.cpp               | 392 +++++++++++++++
+ Modules/Engine/src/WidgetPaint.cpp            |   4 +
+ Modules/Engine/src/WidgetText.cpp             | 463 ++++++++++++++++++
+ Modules/Engine/src/Widgets.cpp                |  45 +-
+ .../include/Ruto/Graphics/Renderer2D.h        |  12 +
+ .../Graphics/include/Ruto/Graphics/Shader.h   |   3 +
+ Modules/Graphics/src/Renderer2D.cpp           |  52 +-
+ Modules/Graphics/src/Shader.cpp               |   8 +-
+ 14 files changed, 1186 insertions(+), 15 deletions(-)
+ create mode 100644 Modules/Engine/include/Ruto/Engine/UIShader.h
+ create mode 100644 Modules/Engine/src/UIShader.cpp
+ create mode 100644 Modules/Engine/src/WidgetText.cpp
+
+diff --git a/Modules/Editor/src/EditorApp.h b/Modules/Editor/src/EditorApp.h
+index a9201ac..524749d 100644
+--- a/Modules/Editor/src/EditorApp.h
++++ b/Modules/Editor/src/EditorApp.h
+@@ -806,6 +806,7 @@ private:
+     std::vector<std::string> m_AnimatorList;
+     std::vector<std::string> m_AnimClipList;
+     std::vector<std::string> m_VideoList;
++    std::vector<std::string> m_UIShaderList; // UI のシェーダー（.uishader）
+     fs::path m_RenamingFile;
+     std::string m_FileRenameBuffer;
+     fs::path m_DeleteFile;
+diff --git a/Modules/Editor/src/EditorPanels.cpp b/Modules/Editor/src/EditorPanels.cpp
+index da48cab..bccc312 100644
+--- a/Modules/Editor/src/EditorPanels.cpp
++++ b/Modules/Editor/src/EditorPanels.cpp
+@@ -310,6 +310,7 @@ const std::vector<std::string>& EditorApp::GetAssetList(AssetType type) {
+         }
+         m_FontList = Assets::FindFiles({".ttf", ".otf", ".ttc", ".bdf", ".fnt", ".rfont"});
+         m_VideoList = Assets::FindFiles({".mpg", ".mpeg"});
++        m_UIShaderList = Assets::FindFiles({".uishader"});
+         // 動画を映すテクスチャ（シーンの VideoPlayer の targetTexture）
+         for (const auto& ent : ActiveScene().GetEntities()) {
+             if (auto* vp = ent->GetComponent<VideoPlayer>(); vp && !vp->targetTexture.empty()) {
+@@ -330,6 +331,7 @@ const std::vector<std::string>& EditorApp::GetAssetList(AssetType type) {
+     case AssetType::AnimatorController: return m_AnimatorList;
+     case AssetType::AnimationClip: return m_AnimClipList;
+     case AssetType::Video: return m_VideoList;
++    case AssetType::UIShader: return m_UIShaderList;
+     }
+     return m_SceneList;
+ }
+diff --git a/Modules/Engine/include/Ruto/Engine/Reflection.h b/Modules/Engine/include/Ruto/Engine/Reflection.h
+index 620565d..5bc3ec7 100644
+--- a/Modules/Engine/include/Ruto/Engine/Reflection.h
++++ b/Modules/Engine/include/Ruto/Engine/Reflection.h
+@@ -39,7 +39,7 @@ struct EntityRef {
+     explicit operator bool() const { return id != 0; }
+ };
+ 
+-enum class AssetType { Mesh, Texture, Scene, Prefab, Audio, Timeline, Widget, Font, AnimatorController, AnimationClip, Video };
++enum class AssetType { Mesh, Texture, Scene, Prefab, Audio, Timeline, Widget, Font, AnimatorController, AnimationClip, Video, UIShader };
+ 
+ class PropertyVisitor {
+ public:
+diff --git a/Modules/Engine/include/Ruto/Engine/UIShader.h b/Modules/Engine/include/Ruto/Engine/UIShader.h
+new file mode 100644
+index 0000000..f3303be
+--- /dev/null
++++ b/Modules/Engine/include/Ruto/Engine/UIShader.h
+@@ -0,0 +1,104 @@
++#pragma once
++
++// UI のシェーダー（ウィジェットの見た目を GLSL で変える）
++//
++//   .uishader … Assets の中のテキストファイル。effect() を 1 つ書く:
++//
++//       // @param strength float 0 1 0.5 強さ
++//       // @param tint color 1 0.8 0.3 1 色
++//       vec4 effect(vec4 color) {
++//           float g = Luma(color.rgb);
++//           return vec4(mix(color.rgb, vec3(g) * tint.rgb, strength), color.a);
++//       }
++//
++//   color はふだん描かれる色（テクスチャ × 頂点の色）。返した色がそのまま描かれる。
++//   使えるもの:
++//     uTime（秒）・uRect（ウィジェットの範囲。描画先のピクセル、左下が原点: x, y, 幅, 高さ）・uScreenSize
++//     vUV・vColor・SampleTexture(uv)・LocalUV()（ウィジェットの中の 0〜1、左上が原点）・LocalPixel()・ScreenUV()
++//     Luma(rgb)・HueShift(rgb, 回転 0〜1)・Hash(vec2)・Noise(vec2)
++//   @param の書き方（最大 6 個。ウィジェットごとに値を変えられ、アニメーションもできる）:
++//     // @param 名前 float 最小 最大 既定値 表示名
++//     // @param 名前 vec2  最小 最大 x y 表示名
++//     // @param 名前 color r g b a 表示名
++//     // @param 名前 toggle 既定値（0 / 1） 表示名
++//
++// ファイルを書き換えると自動で読み直す（エディター・ゲームの実行中も）。
++
++#include "Ruto/Math/Math.h"
++#include "Ruto/UI/UI.h"
++
++#include <cstdint>
++#include <memory>
++#include <span>
++#include <string>
++#include <string_view>
++#include <vector>
++
++namespace Ruto {
++
++class Shader;
++
++struct UIShaderParam {
++    enum class Type { Float, Vec2, Color, Toggle };
++    std::string name;
++    std::string label;          // 表示名（無ければ name）
++    Type type = Type::Float;
++    Vec4 defaultValue{0.0f, 0.0f, 0.0f, 0.0f};
++    float min = 0.0f, max = 1.0f;
++    int slot = 0;               // ウィジェットの shaderParams の何番目か
++};
++
++class UIShader {
++public:
++    static constexpr int kMaxParams = 6;
++
++    struct Preset {
++        const char* name;        // ファイル名の元（英字）
++        const char* label;       // 表示名
++        const char* description;
++        const char* source;
++    };
++
++    ~UIShader();
++
++    // Assets からの相対パスの .uishader（読めなければ nullptr。コンパイルに失敗したら IsValid() が false）
++    static std::shared_ptr<UIShader> Get(std::string_view assetPath);
++    // 文字列から作る（エディターで書きかけのシェーダーを試すとき）
++    static std::shared_ptr<UIShader> FromSource(std::string source, std::string name = {});
++    // 次の Get で読み直させる（エディターで保存したとき）
++    static void Reload(std::string_view assetPath);
++    static void ClearCache();
++
++    // @param の行を読む
++    static std::vector<UIShaderParam> ParseParams(std::string_view source);
++    // 組み込みの見本（グレースケール・ディゾルブ・シャインなど）
++    static std::span<const Preset> GetPresets();
++    // 新しいシェーダーの書き出し（説明のコメント付き）
++    static std::string NewShaderSource();
++
++    bool IsValid() const;
++    const std::string& GetError() const { return m_Error; } // コンパイルのエラー（行番号は .uishader の行）
++    const std::string& GetSource() const { return m_Source; }
++    const std::string& GetName() const { return m_Name; }
++    const std::vector<UIShaderParam>& GetParams() const { return m_Params; }
++    const UIShaderParam* FindParam(std::string_view name) const;
++    // 読み直すたびに増える
++    uint64_t GetVersion() const { return m_Version; }
++
++    // これから描く四角形をこのシェーダーで描く（Renderer2D::SetShader と uniform）。
++    //   screenRect: ウィジェットの範囲（UI のピクセル、左上が原点）
++    void Apply(const UI::Rect& screenRect, std::span<const Vec4> params, float time);
++
++private:
++    UIShader() = default;
++    void Compile(std::string source);
++
++    std::unique_ptr<Shader> m_Shader;
++    std::string m_Source;
++    std::string m_Name;
++    std::string m_Error;
++    std::vector<UIShaderParam> m_Params;
++    uint64_t m_Version = 0;
++};
++
++} // namespace Ruto
+diff --git a/Modules/Engine/include/Ruto/Engine/Widgets.h b/Modules/Engine/include/Ruto/Engine/Widgets.h
+index e70c236..2085f72 100644
+--- a/Modules/Engine/include/Ruto/Engine/Widgets.h
++++ b/Modules/Engine/include/Ruto/Engine/Widgets.h
+@@ -35,6 +35,7 @@ namespace Ruto {
+ 
+ class Font;
+ class Texture;
++class UIShader;
+ class WidgetDocument;
+ struct WidgetContext;
+ 
+@@ -53,6 +54,9 @@ enum class HAlign { Fill, Left, Center, Right };
+ enum class VAlign { Fill, Top, Center, Bottom };
+ enum class SizeRule { Auto, Fill };
+ enum class TextAlign { Left, Center, Right };
++// テキストアニメーション: ずっと続く動き / 文字の出し方
++enum class TextEffect { None, Wave, Shake, Rainbow, Pulse, Swing, Glitch };
++enum class TextReveal { None, Typewriter, Fade, Pop, Rise, Drop, Spin };
+ enum class TextVAlign { Top, Center, Bottom };
+ 
+ // 親の中での置き方。親の種類によって使う値が変わる
+@@ -74,7 +78,7 @@ struct WidgetSlot {
+ };
+ 
+ // UI のイベント（スクリプトの Component::OnUIEvent と UIDocument::onEvent に届く）
+-enum class UIEventType { Click, ValueChanged, Submit, HoverEnter, HoverExit };
++enum class UIEventType { Click, ValueChanged, Submit, HoverEnter, HoverExit, TextRevealed /* テキストを出し終えた */ };
+ 
+ class Widget;
+ 
+@@ -162,6 +166,16 @@ public:
+     bool clipChildren = false;    // 子を自分の範囲で切り取る
+     std::string visibleBind;      // 変数が真のときだけ表示（"!変数名" で逆）
+     std::string style;            // スタイル（.rui の共通スタイル）の名前
++    // UI のシェーダー（Assets の .uishader）。空なら標準の描き方
++    static constexpr int kShaderParamCount = 6;
++    std::string shader;
++    bool shaderChildren = true;   // 子にも同じシェーダーを掛ける
++    Vec4 shaderParams[kShaderParamCount]{}; // シェーダーの @param の値（宣言の順）
++    // shaderParams をシェーダーの既定値にする（シェーダーを読めなければ何もしない）
++    void ResetShaderParams();
++    // シェーダーの @param を名前で変える（無い名前なら false）。float は x だけ、色は 4 つ使う
++    bool SetShaderParam(std::string_view param, const Vec4& value);
++    bool SetShaderParam(std::string_view param, float value) { return SetShaderParam(param, Vec4{value, 0.0f, 0.0f, 0.0f}); }
+ 
+     WidgetSlot slot;
+     std::vector<std::unique_ptr<Widget>> children;
+@@ -345,6 +359,42 @@ class UIText : public Widget {
+     void Reflect(PropertyVisitor& v) override;
+     Vec2 ComputeDesiredSize(WidgetContext& ctx, float maxWidth) override;
+     void Paint(WidgetContext& ctx) override;
++
++    // ---- テキストアニメーション ----
++    //   文字の中に <wave>…</wave>・<shake>・<rainbow>・<pulse>・<swing>・<glitch>・<color=#ff8800>・<alpha=0.5>
++    //   <pause=0.5>（出すのを止める秒）・<speed=2>（出す速さの倍率）を書ける（richText が true のとき）
++    TextEffect effect = TextEffect::None;   // 文字全体の動き
++    float effectStrength = 6.0f;            // 動きの大きさ（基準解像度の単位）
++    float effectSpeed = 1.0f;               // 動きの速さ
++    TextReveal reveal = TextReveal::None;   // 文字の出し方（None なら全部すぐ出す）
++    float revealSpeed = 30.0f;              // 1 秒に出す文字の数
++    float revealDelay = 0.0f;               // 出し始めるまでの秒
++    float revealFade = 0.18f;               // 1 文字が出きるまでの秒（フェード・ポップなど）
++    bool revealAuto = true;                 // false なら revealProgress（0〜1）の分だけ出す（タイムラインで動かす）
++    float revealProgress = 1.0f;
++    bool revealOnShow = true;               // 表示し直すたびに最初から出す
++    std::string revealSound;                // 文字を出すときの音（会話の「ピピピ」）
++    int revealSoundEvery = 2;               // 何文字ごとに鳴らすか
++    bool richText = true;                   // <wave> などのタグを使う
++
++    // スクリプトから: 最初から出し直す / すぐ全部出す / 出している途中か
++    void RestartReveal();
++    void SkipReveal();
++    bool IsRevealing() const { return m_Revealing; }
++    // タグを除いた文字（{変数} は置き換え済み）
++    static std::string StripTags(std::string_view text);
++
++private:
++    bool UsesAnimation() const;
++    void PaintAnimated(WidgetContext& ctx, const std::string& resolved, float px);
++    float m_RevealTime = 0.0f;   // 出し始めてからの秒
++    float m_EffectTime = 0.0f;   // 動きの時間
++    std::string m_RevealText;    // 出している文字（変わったら最初から）
++    bool m_Revealing = false;
++    bool m_RevealDoneSent = true;
++    bool m_SkipReveal = false;
++    int m_SoundCount = 0;        // 音を鳴らした文字の数
++    double m_LastPaint = -100.0;
+ };
+ 
+ class UIImage : public Widget {
+@@ -728,6 +778,7 @@ private:
+     void Layout(const UI::Rect& screen, float scaleOverride);
+     void TransformRecursive(Widget& w, const Vec2& scale, const Vec2& offset);
+     void PaintRecursive(Widget& w);
++    void ApplyShaderStack();
+     Widget* HitTestRecursive(Widget& w, const Vec2& p, bool interactiveOnly) const;
+     void HandleInput();
+     void HandleNavigation();
+@@ -735,6 +786,9 @@ private:
+     void PaintTooltip();
+     Vec2 LocalPoint(const Widget& w) const;
+ 
++    // 描いている途中のシェーダー（入れ子にできる。外側に戻るときに掛け直す）
++    std::vector<std::pair<std::shared_ptr<UIShader>, Widget*>> m_ShaderStack;
++
+     struct PlayingAnim {
+         std::string name;
+         float time = 0.0f;
+@@ -788,6 +842,13 @@ class UIDocument : public Component {
+     void SetVariable(const std::string& name, const char* value) { GetDocument().SetVariable(name, std::string(value)); }
+     void PlayAnimation(std::string_view name, bool loop = false) { GetDocument().PlayAnimation(name, loop); }
+     void SetVisible(std::string_view widgetName, bool visible);
++    // テキストアニメーション: 最初から出し直す / すぐ全部出す（会話を送るときなど）/ 出している途中か
++    void RestartText(std::string_view widgetName);
++    void SkipText(std::string_view widgetName);
++    bool IsTextRevealing(std::string_view widgetName);
++    // UI のシェーダーの @param を名前で変える（例: SetShaderParam("Logo", "progress", 0.5f)）
++    bool SetShaderParam(std::string_view widgetName, std::string_view param, float value);
++    bool SetShaderParam(std::string_view widgetName, std::string_view param, const Vec4& value);
+ 
+     // 画面の rect に描く（エディターのゲームビュー用。interactive = false なら見た目だけ）
+     void Render(const UI::Rect& screen, float deltaTime, bool interactive);
+diff --git a/Modules/Engine/src/UIDocument.cpp b/Modules/Engine/src/UIDocument.cpp
+index bcaeb97..afcb6de 100644
+--- a/Modules/Engine/src/UIDocument.cpp
++++ b/Modules/Engine/src/UIDocument.cpp
+@@ -5,6 +5,9 @@
+ #include "Ruto/Engine/Assets.h"
+ #include "Ruto/Engine/Entity.h"
+ #include "Ruto/Engine/ProjectSettings.h"
++#include "Ruto/Engine/UIShader.h"
++#include "Ruto/Graphics/Renderer2D.h"
++#include "Ruto/Platform/Platform.h"
+ #include "Ruto/Graphics/Font.h"
+ #include "Ruto/Platform/Input.h"
+ 
+@@ -403,11 +406,26 @@ void WidgetDocument::PaintRecursive(Widget& w) {
+         m_Ctx.opacity = prev;
+         return;
+     }
++    // UI のシェーダー（読めない・コンパイルできないときは標準の描き方のまま）
++    std::shared_ptr<UIShader> shader = w.shader.empty() ? nullptr : UIShader::Get(w.shader);
++    if (shader && !shader->IsValid()) shader.reset();
++    if (shader) {
++        m_ShaderStack.emplace_back(shader, &w);
++        ApplyShaderStack();
++    }
+     w.Paint(m_Ctx);
++    if (shader && !w.shaderChildren) {
++        m_ShaderStack.pop_back();
++        ApplyShaderStack();
++    }
+     const bool clip = ClipsChildren(w);
+     if (clip) UI::PushClip(w.m_ScreenRect);
+     for (Widget* c : PaintOrder(w)) PaintRecursive(*c);
+     if (clip) UI::PopClip();
++    if (shader && w.shaderChildren) {
++        m_ShaderStack.pop_back();
++        ApplyShaderStack();
++    }
+     w.PaintOverlay(m_Ctx);
+     if (w.m_Focused && m_KeyboardMode && m_Ctx.interactive) {
+         const float s = w.m_ScreenScale.y;
+@@ -417,6 +435,15 @@ void WidgetDocument::PaintRecursive(Widget& w) {
+     m_Ctx.opacity = prev;
+ }
+ 
++void WidgetDocument::ApplyShaderStack() {
++    if (m_ShaderStack.empty()) {
++        Renderer2D::SetShader(nullptr);
++        return;
++    }
++    auto& [shader, widget] = m_ShaderStack.back();
++    shader->Apply(widget->m_ScreenRect, std::span<const Vec4>(widget->shaderParams, Widget::kShaderParamCount), static_cast<float>(Platform::GetTime()));
++}
++
+ void WidgetDocument::PaintTooltip() {
+     if (!m_TooltipWidget || m_TooltipTime < 0.5f || !m_Ctx.interactive) return;
+     const float s = m_Ctx.scale;
+@@ -527,6 +554,29 @@ void UIDocument::SetVisible(std::string_view widgetName, bool visible) {
+     if (Widget* w = Find(widgetName)) w->visibility = visible ? WidgetVisibility::Visible : WidgetVisibility::Collapsed;
+ }
+ 
++void UIDocument::RestartText(std::string_view widgetName) {
++    if (auto* t = dynamic_cast<UIText*>(Find(widgetName))) t->RestartReveal();
++}
++
++void UIDocument::SkipText(std::string_view widgetName) {
++    if (auto* t = dynamic_cast<UIText*>(Find(widgetName))) t->SkipReveal();
++}
++
++bool UIDocument::IsTextRevealing(std::string_view widgetName) {
++    auto* t = dynamic_cast<UIText*>(Find(widgetName));
++    return t && t->IsRevealing();
++}
++
++bool UIDocument::SetShaderParam(std::string_view widgetName, std::string_view param, float value) {
++    Widget* w = Find(widgetName);
++    return w && w->SetShaderParam(param, value);
++}
++
++bool UIDocument::SetShaderParam(std::string_view widgetName, std::string_view param, const Vec4& value) {
++    Widget* w = Find(widgetName);
++    return w && w->SetShaderParam(param, value);
++}
++
+ void UIDocument::Render(const UI::Rect& screen, float deltaTime, bool interactive) {
+     WidgetDocument& doc = GetDocument();
+     doc.interactive = interactive && interactable;
+diff --git a/Modules/Engine/src/UIShader.cpp b/Modules/Engine/src/UIShader.cpp
+new file mode 100644
+index 0000000..0d575e8
+--- /dev/null
++++ b/Modules/Engine/src/UIShader.cpp
+@@ -0,0 +1,392 @@
++// UI のシェーダー（.uishader）: effect() を標準のフラグメントシェーダーに組み込んでコンパイルする
++
++#include "Ruto/Engine/UIShader.h"
++
++#include "Ruto/Core/FileSystem.h"
++#include "Ruto/Core/Log.h"
++#include "Ruto/Engine/Assets.h"
++#include "Ruto/Graphics/Renderer2D.h"
++#include "Ruto/Graphics/Shader.h"
++#include "Ruto/Platform/Platform.h"
++
++#include <algorithm>
++#include <cctype>
++#include <filesystem>
++#include <format>
++#include <sstream>
++#include <unordered_map>
++
++namespace Ruto {
++
++namespace {
++
++// effect() の前に入るもの（組み込みの uniform と便利な関数）
++constexpr const char* kHelpers = R"(
++uniform float uTime;
++uniform vec4 uRect;
++uniform vec2 uScreenSize;
++uniform vec4 uParams[6];
++
++// ウィジェットの中の位置（0〜1、左上が原点）
++vec2 LocalUV() {
++    vec2 p = (gl_FragCoord.xy - uRect.xy) / max(uRect.zw, vec2(1.0));
++    return vec2(p.x, 1.0 - p.y);
++}
++// ウィジェットの中の位置（ピクセル、左上が原点）
++vec2 LocalPixel() { return LocalUV() * uRect.zw; }
++// 画面の中の位置（0〜1、左下が原点）
++vec2 ScreenUV() { return gl_FragCoord.xy / max(uScreenSize, vec2(1.0)); }
++float Luma(vec3 c) { return dot(c, vec3(0.299, 0.587, 0.114)); }
++// 色相を回す（shift: 0〜1 で 1 周）
++vec3 HueShift(vec3 c, float shift) {
++    const mat3 toYIQ = mat3(0.299, 0.596, 0.211, 0.587, -0.274, -0.523, 0.114, -0.322, 0.312);
++    const mat3 toRGB = mat3(1.0, 1.0, 1.0, 0.956, -0.272, -1.106, 0.621, -0.647, 1.703);
++    vec3 yiq = toYIQ * c;
++    float h = atan(yiq.z, yiq.y) + shift * 6.28318530718;
++    yiq.yz = vec2(cos(h), sin(h)) * length(yiq.yz);
++    return toRGB * yiq;
++}
++float Hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123); }
++float Noise(vec2 p) {
++    vec2 i = floor(p);
++    vec2 f = fract(p);
++    vec2 u = f * f * (3.0 - 2.0 * f);
++    return mix(mix(Hash(i), Hash(i + vec2(1.0, 0.0)), u.x), mix(Hash(i + vec2(0.0, 1.0)), Hash(i + vec2(1.0, 1.0)), u.x), u.y);
++}
++)";
++
++// main の始まりと終わり（間に @param の値を入れる行が入る）
++constexpr const char* kMainBegin = R"(
++void main() {
++)";
++constexpr const char* kMainEnd = R"(    FragColor = effect(SampleTexture(vUV) * vColor);
++    if (FragColor.a <= 0.001) discard;
++}
++)";
++
++bool IsIdentifier(std::string_view s) {
++    if (s.empty() || !(std::isalpha(static_cast<unsigned char>(s[0])) || s[0] == '_')) return false;
++    return std::all_of(s.begin(), s.end(), [](char c) { return std::isalnum(static_cast<unsigned char>(c)) || c == '_'; });
++}
++
++const UIShader::Preset kPresets[] = {
++    {"Grayscale", "グレースケール", "色を抜いて白黒にする（使えないボタンなど）",
++     R"(// @param strength float 0 1 1 強さ
++vec4 effect(vec4 color) {
++    return vec4(mix(color.rgb, vec3(Luma(color.rgb)), strength), color.a);
++}
++)"},
++    {"Sepia", "セピア", "古い写真のような茶色にする（回想シーンなど）",
++     R"(// @param strength float 0 1 1 強さ
++vec4 effect(vec4 color) {
++    float g = Luma(color.rgb);
++    vec3 sepia = vec3(g * 1.07, g * 0.74, g * 0.43);
++    return vec4(mix(color.rgb, sepia, strength), color.a);
++}
++)"},
++    {"Flash", "白く光らせる", "色を重ねて光らせる（アニメーションで amount を動かすとヒット・選択の演出に）",
++     R"(// @param amount float 0 1 0.5 光らせる量
++// @param flash color 1 1 1 1 色
++vec4 effect(vec4 color) {
++    return vec4(mix(color.rgb, flash.rgb, amount * flash.a), color.a);
++}
++)"},
++    {"Shine", "光が流れる", "斜めの光が一定の間隔で流れる（レアなボタン・タイトルロゴ）",
++     R"(// @param shine color 1 1 1 0.8 光の色
++// @param width float 0.01 0.5 0.12 光の幅
++// @param speed float 0.05 3 0.8 速さ
++// @param interval float 0 5 1.5 間隔（秒）
++vec4 effect(vec4 color) {
++    vec2 uv = LocalUV();
++    float period = 1.0 / speed + interval;
++    float t = mod(uTime, period) * speed;
++    float pos = t * 1.7 - 0.35;
++    float k = 1.0 - smoothstep(0.0, width, abs(uv.x + uv.y * 0.35 - pos));
++    return vec4(mix(color.rgb, shine.rgb, k * shine.a), color.a);
++}
++)"},
++    {"Dissolve", "ディゾルブ", "まだらに消えていく（progress をアニメーションさせて出し入れ）",
++     R"(// @param progress float 0 1 0.4 消えた割合
++// @param edge color 1 0.55 0.1 1 縁の色
++// @param width float 0 0.3 0.08 縁の太さ
++// @param scale float 1 60 14 模様の細かさ
++vec4 effect(vec4 color) {
++    vec2 uv = LocalUV();
++    float n = Noise(uv * scale) * 0.7 + Noise(uv * scale * 2.7) * 0.3;
++    float cut = progress * (1.0 + width) - width;
++    if (n < cut) return vec4(0.0);
++    float e = (1.0 - smoothstep(cut, cut + width, n)) * step(0.001, progress);
++    return vec4(mix(color.rgb, edge.rgb, e), color.a);
++}
++)"},
++    {"Gradient", "グラデーション", "上から下（横にもできる）へ色を変える。文字に掛けると金色の見出しなどに",
++     R"(// @param top color 1 0.9 0.4 1 始まりの色
++// @param bottom color 1 0.45 0.15 1 終わりの色
++// @param angle float 0 1 0 向き（0: 縦 / 1: 横）
++vec4 effect(vec4 color) {
++    vec2 uv = LocalUV();
++    vec4 g = mix(top, bottom, mix(uv.y, uv.x, angle));
++    return vec4(color.rgb * g.rgb, color.a * g.a);
++}
++)"},
++    {"Rainbow", "虹色", "虹色が流れる",
++     R"(// @param strength float 0 1 1 強さ
++// @param speed float 0 3 0.5 速さ
++// @param scale float 0.1 4 1 縞の数
++vec4 effect(vec4 color) {
++    vec2 uv = LocalUV();
++    vec3 rainbow = clamp(HueShift(vec3(1.0, 0.15, 0.15), (uv.x + uv.y * 0.3) * scale - uTime * speed), 0.0, 1.0);
++    return vec4(mix(color.rgb, rainbow * (0.45 + 0.55 * Luma(color.rgb)), strength), color.a);
++}
++)"},
++    {"HueShift", "色相を回す", "色合いを変える（同じ画像で色違いを作る）",
++     R"(// @param shift float 0 1 0.3 色相のずれ
++// @param speed float 0 2 0 回る速さ
++vec4 effect(vec4 color) {
++    return vec4(clamp(HueShift(color.rgb, shift + uTime * speed), 0.0, 1.0), color.a);
++}
++)"},
++    {"Blink", "点滅", "ゆっくり点滅する（「ボタンを押してください」など）",
++     R"(// @param speed float 0 10 1.5 速さ（1 秒に何回）
++// @param minAlpha float 0 1 0.2 一番薄いとき
++vec4 effect(vec4 color) {
++    float k = 0.5 + 0.5 * cos(uTime * speed * 6.28318);
++    return vec4(color.rgb, color.a * mix(minAlpha, 1.0, k));
++}
++)"},
++    {"Scanlines", "走査線", "ブラウン管のような横線とちらつき（レトロな画面）",
++     R"(// @param strength float 0 1 0.35 線の濃さ
++// @param density float 20 800 240 線の数
++// @param flicker float 0 0.3 0.04 ちらつき
++vec4 effect(vec4 color) {
++    float line = 0.5 + 0.5 * sin(LocalUV().y * density * 3.14159);
++    float f = 1.0 - flicker * (0.5 + 0.5 * sin(uTime * 60.0));
++    return vec4(color.rgb * (1.0 - strength * line) * f, color.a);
++}
++)"},
++    {"Hologram", "ホログラム", "青く透けた立体映像の風（SF の画面）",
++     R"(// @param tint color 0.3 0.9 1 1 色
++// @param lines float 20 400 120 線の数
++// @param speed float 0 5 1.2 流れる速さ
++// @param glitch float 0 1 0.3 乱れ
++vec4 effect(vec4 color) {
++    vec2 uv = LocalUV();
++    float scan = 0.65 + 0.35 * sin(uv.y * lines - uTime * speed * 10.0);
++    float noise = Hash(vec2(floor(uv.y * 60.0), floor(uTime * 12.0)));
++    float a = color.a * scan * (1.0 - glitch * 0.6 * step(0.9, noise));
++    return vec4(tint.rgb * (0.4 + Luma(color.rgb)), a * tint.a);
++}
++)"},
++    {"Vignette", "ふちを暗く", "まわりを暗く（色を付けて光らせることもできる）",
++     R"(// @param strength float 0 1 0.7 濃さ
++// @param size float 0 1 0.35 明るい所の大きさ
++// @param tint color 0 0 0 1 ふちの色
++vec4 effect(vec4 color) {
++    float v = smoothstep(size * 0.7, size * 0.7 + 0.5, length(LocalUV() - 0.5));
++    return vec4(mix(color.rgb, tint.rgb, v * strength), color.a);
++}
++)"},
++    {"Wave", "波で揺らす（画像向け）", "画像を波のように揺らす（水面・熱気。文字には向かない）",
++     R"(// @param amount float 0 0.05 0.01 揺れの大きさ
++// @param frequency float 1 60 14 波の数
++// @param speed float 0 10 3 速さ
++vec4 effect(vec4 color) {
++    vec2 uv = vUV + vec2(sin(vUV.y * frequency + uTime * speed) * amount, 0.0);
++    return SampleTexture(uv) * vColor;
++}
++)"},
++};
++
++struct CacheEntry {
++    std::shared_ptr<UIShader> shader;
++    std::filesystem::file_time_type time{};
++    double checked = -100.0;
++};
++
++std::unordered_map<std::string, CacheEntry>& Cache() {
++    static std::unordered_map<std::string, CacheEntry> s_Cache;
++    return s_Cache;
++}
++
++const char* TypeSwizzle(UIShaderParam::Type t) {
++    switch (t) {
++    case UIShaderParam::Type::Float: return ".x";
++    case UIShaderParam::Type::Vec2: return ".xy";
++    case UIShaderParam::Type::Color: return "";
++    case UIShaderParam::Type::Toggle: return ".x";
++    }
++    return ".x";
++}
++
++} // namespace
++
++UIShader::~UIShader() = default;
++
++bool UIShader::IsValid() const { return m_Shader && m_Shader->IsValid(); }
++
++std::span<const UIShader::Preset> UIShader::GetPresets() { return kPresets; }
++
++std::string UIShader::NewShaderSource() {
++    return R"(// UI のシェーダー: effect() で色を変える。color はふだん描かれる色
++//   uTime（秒）・LocalUV()（ウィジェットの中の 0〜1）・SampleTexture(uv)・Luma(rgb)・HueShift(rgb, 0〜1)・Noise(vec2) が使える
++//   @param で調整できる値を作る（ウィジェットごとに変えられ、アニメーションもできる。最大 6 個）
++//     // @param 名前 float 最小 最大 既定値 表示名
++//     // @param 名前 vec2 最小 最大 x y 表示名
++//     // @param 名前 color r g b a 表示名
++//     // @param 名前 toggle 既定値 表示名
++// @param strength float 0 1 1 強さ
++vec4 effect(vec4 color) {
++    vec3 inverted = vec3(1.0) - color.rgb;
++    return vec4(mix(color.rgb, inverted, strength), color.a);
++}
++)";
++}
++
++std::vector<UIShaderParam> UIShader::ParseParams(std::string_view source) {
++    std::vector<UIShaderParam> out;
++    std::istringstream lines{std::string(source)};
++    std::string line;
++    while (std::getline(lines, line)) {
++        const size_t at = line.find("@param");
++        if (at == std::string::npos || line.find("//") == std::string::npos || line.find("//") > at) continue;
++        std::istringstream in(line.substr(at + 6));
++        UIShaderParam p;
++        std::string type;
++        if (!(in >> p.name >> type)) continue;
++        // GLSL の名前にできないもの（説明の「名前」など）・組み込み（gl_・uTime などの uXxx）と重なるものは使わない
++        if (!IsIdentifier(p.name) || p.name.starts_with("gl_")) continue;
++        if (p.name.size() > 1 && p.name[0] == 'u' && std::isupper(static_cast<unsigned char>(p.name[1]))) continue;
++        if (type == "float") p.type = UIShaderParam::Type::Float;
++        else if (type == "vec2") p.type = UIShaderParam::Type::Vec2;
++        else if (type == "color" || type == "vec4") p.type = UIShaderParam::Type::Color;
++        else if (type == "toggle" || type == "bool") p.type = UIShaderParam::Type::Toggle;
++        else continue;
++        // 数値を読めるだけ読む
++        std::vector<float> nums;
++        std::string word;
++        std::string label;
++        while (in >> word) {
++            char* end = nullptr;
++            const float v = std::strtof(word.c_str(), &end);
++            if (end && *end == '\0' && label.empty()) {
++                nums.push_back(v);
++            } else {
++                std::string rest;
++                std::getline(in, rest);
++                label = word + rest;
++                break;
++            }
++        }
++        auto num = [&](size_t i, float fallback) { return i < nums.size() ? nums[i] : fallback; };
++        switch (p.type) {
++        case UIShaderParam::Type::Float:
++            p.min = num(0, 0.0f);
++            p.max = num(1, 1.0f);
++            p.defaultValue = {num(2, p.min), 0.0f, 0.0f, 0.0f};
++            break;
++        case UIShaderParam::Type::Vec2:
++            p.min = num(0, 0.0f);
++            p.max = num(1, 1.0f);
++            p.defaultValue = {num(2, 0.0f), num(3, 0.0f), 0.0f, 0.0f};
++            break;
++        case UIShaderParam::Type::Color: p.defaultValue = {num(0, 1.0f), num(1, 1.0f), num(2, 1.0f), num(3, 1.0f)}; break;
++        case UIShaderParam::Type::Toggle: p.defaultValue = {num(0, 0.0f) >= 0.5f ? 1.0f : 0.0f, 0.0f, 0.0f, 0.0f}; break;
++        }
++        while (!label.empty() && (label.back() == '\r' || label.back() == ' ')) label.pop_back();
++        p.label = label.empty() ? p.name : label;
++        if (std::any_of(out.begin(), out.end(), [&](const UIShaderParam& o) { return o.name == p.name; })) continue;
++        p.slot = static_cast<int>(out.size());
++        out.push_back(std::move(p));
++        if (static_cast<int>(out.size()) >= kMaxParams) break;
++    }
++    return out;
++}
++
++void UIShader::Compile(std::string source) {
++    m_Source = std::move(source);
++    m_Params = ParseParams(m_Source);
++    // @param はふつうの変数にして、main の最初で値を入れる（#define だと .a などの名前とぶつかる）
++    std::string globals, assigns;
++    for (const UIShaderParam& p : m_Params) {
++        const char* type = p.type == UIShaderParam::Type::Float ? "float" : p.type == UIShaderParam::Type::Vec2 ? "vec2" : p.type == UIShaderParam::Type::Color ? "vec4" : "bool";
++        globals += std::format("{} {};\n", type, p.name);
++        if (p.type == UIShaderParam::Type::Toggle) assigns += std::format("    {} = uParams[{}].x > 0.5;\n", p.name, p.slot);
++        else assigns += std::format("    {} = uParams[{}]{};\n", p.name, p.slot, TypeSwizzle(p.type));
++    }
++    // #line で、エラーの行番号を .uishader の行に合わせる
++    const std::string fragment = Renderer2D::GetFragmentPrelude() + kHelpers + globals + "#line 1\n" + m_Source + "\n#line 10000\n" + kMainBegin + assigns + kMainEnd;
++    m_Shader = std::make_unique<Shader>(Renderer2D::GetVertexShaderSource(), fragment);
++    m_Error = m_Shader->GetErrorLog();
++    if (!m_Shader->IsValid() && m_Error.empty()) m_Error = "シェーダーを作れませんでした";
++    if (!m_Shader->IsValid()) Log::Warn("UI シェーダー {} のコンパイルに失敗しました", m_Name.empty() ? std::string("(文字列)") : m_Name);
++    ++m_Version;
++}
++
++std::shared_ptr<UIShader> UIShader::FromSource(std::string source, std::string name) {
++    std::shared_ptr<UIShader> s(new UIShader());
++    s->m_Name = std::move(name);
++    s->Compile(std::move(source));
++    return s;
++}
++
++std::shared_ptr<UIShader> UIShader::Get(std::string_view assetPath) {
++    if (assetPath.empty()) return nullptr;
++    auto& cache = Cache();
++    const std::string key(assetPath);
++    CacheEntry& e = cache[key];
++    const double now = Platform::GetTime();
++    // 書き換えられたかは 0.5 秒ごとに見る
++    if (e.shader && now - e.checked < 0.5) return e.shader;
++    e.checked = now;
++    const std::filesystem::path file = Assets::GetPath(assetPath);
++    std::error_code ec;
++    const auto time = std::filesystem::last_write_time(file, ec);
++    if (ec) {
++        if (e.shader) return e.shader; // 消えた・移動中なら前のものを使う
++        cache.erase(key);
++        return nullptr;
++    }
++    if (e.shader && time == e.time) return e.shader;
++    const auto text = FileSystem::ReadTextFile(file);
++    if (!text) return e.shader;
++    e.time = time;
++    const uint64_t version = e.shader ? e.shader->m_Version : 0;
++    e.shader = FromSource(*text, key);
++    e.shader->m_Version = version + 1;
++    return e.shader;
++}
++
++void UIShader::Reload(std::string_view assetPath) {
++    auto& cache = Cache();
++    if (auto it = cache.find(std::string(assetPath)); it != cache.end()) {
++        it->second.checked = -100.0;
++        it->second.time = {};
++    }
++}
++
++void UIShader::ClearCache() { Cache().clear(); }
++
++const UIShaderParam* UIShader::FindParam(std::string_view name) const {
++    for (const UIShaderParam& p : m_Params) {
++        if (p.name == name) return &p;
++    }
++    return nullptr;
++}
++
++void UIShader::Apply(const UI::Rect& screenRect, std::span<const Vec4> params, float time) {
++    if (!IsValid()) return;
++    // 前の四角形は前の値で描いてから値を変える
++    Renderer2D::Flush();
++    Renderer2D::SetShader(m_Shader.get());
++    m_Shader->Bind();
++    const Vec2 screen = UI::GetScreenSize();
++    m_Shader->SetFloat("uTime", time);
++    m_Shader->SetVec4("uRect", {screenRect.x, screen.y - screenRect.Bottom(), screenRect.w, screenRect.h});
++    m_Shader->SetVec2("uScreenSize", screen);
++    for (int i = 0; i < kMaxParams; ++i) {
++        const Vec4 v = i < static_cast<int>(params.size()) ? params[static_cast<size_t>(i)] : Vec4{0.0f, 0.0f, 0.0f, 0.0f};
++        m_Shader->SetVec4(std::format("uParams[{}]", i), v);
++    }
++}
++
++} // namespace Ruto
+diff --git a/Modules/Engine/src/WidgetPaint.cpp b/Modules/Engine/src/WidgetPaint.cpp
+index 992f6d3..21d0e6d 100644
+--- a/Modules/Engine/src/WidgetPaint.cpp
++++ b/Modules/Engine/src/WidgetPaint.cpp
+@@ -356,6 +356,10 @@ void UIImage::Paint(WidgetContext& ctx) {
+ void UIText::Paint(WidgetContext& ctx) {
+     const std::string resolved = ctx.ResolveText(text);
+     const float px = fontSize * m_ScreenScale.y;
++    if (UsesAnimation()) {
++        PaintAnimated(ctx, resolved, px); // テキストアニメーション（WidgetText.cpp）
++        return;
++    }
+     if (shadow) {
+         const UI::Rect sr{m_ScreenRect.x + shadowOffset.x * m_ScreenScale.x, m_ScreenRect.y + shadowOffset.y * m_ScreenScale.y, m_ScreenRect.w, m_ScreenRect.h};
+         ctx.DrawText(sr, resolved, font, px, ctx.Fade(shadowColor), align, verticalAlign, wrap);
+diff --git a/Modules/Engine/src/WidgetText.cpp b/Modules/Engine/src/WidgetText.cpp
+new file mode 100644
+index 0000000..8116943
+--- /dev/null
++++ b/Modules/Engine/src/WidgetText.cpp
+@@ -0,0 +1,463 @@
++// ウィジェット UI: テキストアニメーション
++//
++//   ・文字の出し方（reveal）: 1 文字ずつ（タイプライター）・フェード・ポップ・下から・上から落ちる・回転
++//   ・ずっと続く動き（effect）: 波・震え・虹色・脈打つ・揺れる・グリッチ
++//   ・タグ: <wave> <shake> <rainbow> <pulse> <swing> <glitch> <color=#RRGGBB(AA)> <alpha=0.5> <pause=0.5> <speed=2>
++//           閉じるときは </wave> など（</> で直前のタグを閉じる）。知らないタグはそのまま文字として出す
++//   ・1 文字ずつの音・出し終えたら UIEventType::TextRevealed
++//   文字は 1 つずつ四角形で描く（位置・回転・大きさ・色を文字ごとに変えられる）。
++
++#include "Ruto/Engine/Widgets.h"
++
++#include "Ruto/Audio/Audio.h"
++#include "Ruto/Core/Utf8.h"
++#include "Ruto/Engine/Assets.h"
++#include "Ruto/Graphics/Font.h"
++#include "Ruto/Graphics/Renderer2D.h"
++#include "Ruto/Platform/Platform.h"
++
++#include <algorithm>
++#include <cmath>
++#include <cstdlib>
++#include <string>
++#include <vector>
++
++namespace Ruto {
++
++namespace {
++
++constexpr double kShownAgainAfter = 0.25; // これより長く描かれなかったら「表示し直した」とみなす
++
++enum EffectBit : uint32_t {
++    kWave = 1u << 0,
++    kShake = 1u << 1,
++    kRainbow = 1u << 2,
++    kPulse = 1u << 3,
++    kSwing = 1u << 4,
++    kGlitch = 1u << 5,
++};
++
++uint32_t EffectBitOf(TextEffect e) {
++    switch (e) {
++    case TextEffect::Wave: return kWave;
++    case TextEffect::Shake: return kShake;
++    case TextEffect::Rainbow: return kRainbow;
++    case TextEffect::Pulse: return kPulse;
++    case TextEffect::Swing: return kSwing;
++    case TextEffect::Glitch: return kGlitch;
++    default: return 0;
++    }
++}
++
++uint32_t EffectBitOf(std::string_view tag) {
++    if (tag == "wave") return kWave;
++    if (tag == "shake") return kShake;
++    if (tag == "rainbow") return kRainbow;
++    if (tag == "pulse") return kPulse;
++    if (tag == "swing") return kSwing;
++    if (tag == "glitch") return kGlitch;
++    return 0;
++}
++
++struct Char {
++    uint32_t cp = 0;
++    std::string utf8;
++    uint32_t effects = 0;
++    bool hasColor = false;
++    Vec4 color{1.0f, 1.0f, 1.0f, 1.0f};
++    float alpha = 1.0f;
++    float pause = 0.0f;  // この文字の前に止まる秒
++    float speed = 1.0f;  // 出す速さの倍率
++};
++
++bool ParseHexColor(std::string_view s, Vec4& out) {
++    if (!s.empty() && s.front() == '#') s.remove_prefix(1);
++    if (s.size() != 6 && s.size() != 8) return false;
++    auto hex = [&](size_t i) -> int {
++        const std::string part(s.substr(i, 2));
++        char* end = nullptr;
++        const long v = std::strtol(part.c_str(), &end, 16);
++        return end && *end == '\0' ? static_cast<int>(v) : -1;
++    };
++    int c[4] = {hex(0), hex(2), hex(4), s.size() == 8 ? hex(6) : 255};
++    for (int v : c) {
++        if (v < 0) return false;
++    }
++    out = {c[0] / 255.0f, c[1] / 255.0f, c[2] / 255.0f, c[3] / 255.0f};
++    return true;
++}
++
++bool ParseNumber(std::string_view s, float& out) {
++    const std::string str(s);
++    char* end = nullptr;
++    out = std::strtof(str.c_str(), &end);
++    return end && *end == '\0' && !str.empty();
++}
++
++// 文字とタグを分ける
++std::vector<Char> Parse(std::string_view text, bool rich) {
++    std::vector<Char> out;
++    struct Open {
++        std::string name;
++        uint32_t bit = 0;
++        Vec4 color{};
++        float value = 1.0f;
++    };
++    std::vector<Open> stack;
++    float pendingPause = 0.0f;
++    auto current = [&](Char& c) {
++        for (const Open& o : stack) {
++            c.effects |= o.bit;
++            if (o.name == "color") {
++                c.hasColor = true;
++                c.color = o.color;
++            } else if (o.name == "alpha") {
++                c.alpha *= o.value;
++            } else if (o.name == "speed") {
++                c.speed *= o.value;
++            }
++        }
++    };
++    size_t i = 0;
++    while (i < text.size()) {
++        if (rich && text[i] == '<') {
++            const size_t close = text.find('>', i + 1);
++            if (close != std::string_view::npos && close - i < 48) {
++                std::string_view tag = text.substr(i + 1, close - i - 1);
++                bool handled = false;
++                if (!tag.empty() && tag.front() == '/') {
++                    // 閉じるタグ（</> なら直前のもの）
++                    const std::string_view name = tag.substr(1);
++                    for (size_t k = stack.size(); k-- > 0;) {
++                        if (name.empty() || stack[k].name == name) {
++                            stack.erase(stack.begin() + static_cast<std::ptrdiff_t>(k));
++                            handled = true;
++                            break;
++                        }
++                    }
++                } else {
++                    const size_t eq = tag.find('=');
++                    const std::string_view name = tag.substr(0, eq);
++                    const std::string_view value = eq == std::string_view::npos ? std::string_view() : tag.substr(eq + 1);
++                    float number = 0.0f;
++                    Vec4 color{};
++                    if (const uint32_t bit = EffectBitOf(name); bit && value.empty()) {
++                        stack.push_back({std::string(name), bit});
++                        handled = true;
++                    } else if (name == "color" && ParseHexColor(value, color)) {
++                        stack.push_back({"color", 0, color});
++                        handled = true;
++                    } else if ((name == "alpha" || name == "speed") && ParseNumber(value, number)) {
++                        stack.push_back({std::string(name), 0, {}, std::max(number, name == "speed" ? 0.01f : 0.0f)});
++                        handled = true;
++                    } else if (name == "pause" && ParseNumber(value, number)) {
++                        pendingPause += std::max(number, 0.0f);
++                        handled = true;
++                    }
++                }
++                if (handled) {
++                    i = close + 1;
++                    continue;
++                }
++            }
++        }
++        const size_t from = i;
++        Char c;
++        c.cp = Utf8::Next(text, i);
++        c.utf8 = std::string(text.substr(from, i - from));
++        current(c);
++        c.pause = pendingPause;
++        pendingPause = 0.0f;
++        out.push_back(std::move(c));
++    }
++    return out;
++}
++
++// 行に分ける（WrapLines と同じ決まり: 英語は単語の区切り、日本語はどこでも）。行 = 文字の番号の並び
++std::vector<std::vector<int>> Wrap(Font& font, const std::vector<Char>& chars, float maxWidth) {
++    std::vector<std::vector<int>> lines;
++    std::vector<int> line;
++    float width = 0.0f;
++    int lastSpace = -1; // line の中の位置
++    auto advance = [&](int idx) { return font.GetGlyph(chars[static_cast<size_t>(idx)].cp).advance; };
++    for (int i = 0; i < static_cast<int>(chars.size()); ++i) {
++        const uint32_t cp = chars[static_cast<size_t>(i)].cp;
++        if (cp == '\n') {
++            lines.push_back(std::move(line));
++            line.clear();
++            width = 0.0f;
++            lastSpace = -1;
++            continue;
++        }
++        if (cp == '\r') continue;
++        const float a = advance(i);
++        if (maxWidth > 0.0f && !line.empty() && width + a > maxWidth) {
++            if (cp != ' ' && lastSpace > 0) {
++                std::vector<int> rest(line.begin() + lastSpace + 1, line.end());
++                line.resize(static_cast<size_t>(lastSpace));
++                lines.push_back(std::move(line));
++                line = std::move(rest);
++                line.push_back(i);
++            } else {
++                lines.push_back(std::move(line));
++                line.clear();
++                if (cp != ' ') line.push_back(i);
++            }
++            width = 0.0f;
++            for (int k : line) width += advance(k);
++            lastSpace = -1;
++        } else {
++            line.push_back(i);
++            width += a;
++        }
++        if (cp == ' ' && !line.empty() && line.back() == i) lastSpace = static_cast<int>(line.size()) - 1;
++    }
++    lines.push_back(std::move(line));
++    return lines;
++}
++
++float Hash(float a, float b) {
++    const float h = std::sin(a * 127.1f + b * 311.7f) * 43758.5453f;
++    return h - std::floor(h);
++}
++
++Vec3 HueToRgb(float h) {
++    h = (h - std::floor(h)) * 6.0f;
++    const float x = 1.0f - std::abs(std::fmod(h, 2.0f) - 1.0f);
++    if (h < 1.0f) return {1.0f, x, 0.0f};
++    if (h < 2.0f) return {x, 1.0f, 0.0f};
++    if (h < 3.0f) return {0.0f, 1.0f, x};
++    if (h < 4.0f) return {0.0f, x, 1.0f};
++    if (h < 5.0f) return {x, 0.0f, 1.0f};
++    return {1.0f, 0.0f, x};
++}
++
++float EaseOutCubic(float t) { return 1.0f - std::pow(1.0f - t, 3.0f); }
++float EaseOutBack(float t) {
++    const float c1 = 1.70158f, c3 = c1 + 1.0f;
++    return 1.0f + c3 * std::pow(t - 1.0f, 3.0f) + c1 * std::pow(t - 1.0f, 2.0f);
++}
++float EaseOutBounce(float t) {
++    const float n1 = 7.5625f, d1 = 2.75f;
++    if (t < 1.0f / d1) return n1 * t * t;
++    if (t < 2.0f / d1) { t -= 1.5f / d1; return n1 * t * t + 0.75f; }
++    if (t < 2.5f / d1) { t -= 2.25f / d1; return n1 * t * t + 0.9375f; }
++    t -= 2.625f / d1;
++    return n1 * t * t + 0.984375f;
++}
++
++bool HasKnownTag(std::string_view text) {
++    return text.find('<') != std::string_view::npos && text.find('>') != std::string_view::npos;
++}
++
++} // namespace
++
++std::string UIText::StripTags(std::string_view text) {
++    if (!HasKnownTag(text)) return std::string(text);
++    std::string out;
++    for (const Char& c : Parse(text, true)) out += c.utf8;
++    return out;
++}
++
++bool UIText::UsesAnimation() const {
++    return effect != TextEffect::None || reveal != TextReveal::None || (richText && HasKnownTag(text));
++}
++
++void UIText::RestartReveal() {
++    m_RevealTime = 0.0f;
++    m_SoundCount = 0;
++    m_RevealDoneSent = false;
++    m_Revealing = reveal != TextReveal::None;
++}
++
++void UIText::SkipReveal() { m_SkipReveal = true; }
++
++void UIText::PaintAnimated(WidgetContext& ctx, const std::string& resolved, float px) {
++    // ---- 時間・出し直し ----
++    const double now = Platform::GetTime();
++    const bool shownAgain = now - m_LastPaint > kShownAgainAfter;
++    m_LastPaint = now;
++    if (resolved != m_RevealText || (shownAgain && revealOnShow)) {
++        m_RevealText = resolved;
++        RestartReveal();
++    }
++    const float dt = std::clamp(ctx.deltaTime, 0.0f, 0.25f);
++    m_EffectTime += dt;
++    if (revealAuto) m_RevealTime += dt;
++    if (m_SkipReveal) {
++        m_RevealTime = 1e6f;
++        m_SkipReveal = false;
++    }
++
++    const std::vector<Char> chars = Parse(resolved, richText);
++    auto f = ctx.GetFont(font, px);
++    if (!f || chars.empty()) {
++        m_Revealing = false;
++        return;
++    }
++
++    // ---- 1 文字ずつの出る時刻 ----
++    const int n = static_cast<int>(chars.size());
++    std::vector<float> start(static_cast<size_t>(n), 0.0f);
++    {
++        float t = revealDelay;
++        const float step = 1.0f / std::max(revealSpeed, 0.01f);
++        for (int i = 0; i < n; ++i) {
++            t += chars[static_cast<size_t>(i)].pause;
++            start[static_cast<size_t>(i)] = t;
++            if (chars[static_cast<size_t>(i)].cp != '\n') t += step / chars[static_cast<size_t>(i)].speed;
++        }
++    }
++    const bool revealing = reveal != TextReveal::None && !(ctx.designMode && revealAuto);
++    const float fade = std::max(revealFade, 0.0f);
++    // 文字 i の出かた（0: まだ / 1: 出きった）
++    auto progressOf = [&](int i) {
++        if (!revealing) return 1.0f;
++        float t;
++        if (revealAuto) {
++            t = m_RevealTime - start[static_cast<size_t>(i)];
++        } else {
++            // revealProgress（0〜1）で何文字目まで出すか（タイムラインで動かす）
++            t = (std::clamp(revealProgress, 0.0f, 1.0f) * static_cast<float>(n) - static_cast<float>(i)) * std::max(fade, 1e-3f);
++        }
++        if (t < 0.0f) return 0.0f;
++        if (reveal == TextReveal::Typewriter || fade <= 0.0f) return 1.0f;
++        return std::clamp(t / fade, 0.0f, 1.0f);
++    };
++
++    // ---- 出した文字の音・出し終えたとき ----
++    int shown = 0;
++    for (int i = 0; i < n; ++i) {
++        if (progressOf(i) > 0.0f) shown = i + 1;
++    }
++    const bool done = !revealing || (shown >= n && progressOf(n - 1) >= 1.0f);
++    m_Revealing = revealing && !done;
++    if (revealing && !ctx.designMode) {
++        if (!revealSound.empty() && shown > m_SoundCount) {
++            // 1 フレームに 1 回まで鳴らす（空白・改行では鳴らさない）
++            bool play = false;
++            for (int i = m_SoundCount; i < shown; ++i) {
++                const uint32_t cp = chars[static_cast<size_t>(i)].cp;
++                if (cp == ' ' || cp == '\n' || cp == 0x3000) continue;
++                if (i % std::max(revealSoundEvery, 1) == 0) play = true;
++            }
++            if (play) {
++                if (auto clip = Assets::GetAudioClip(revealSound)) Audio::PlayOneShot(clip);
++            }
++        }
++        if (done && !m_RevealDoneSent) ctx.Emit({UIEventType::TextRevealed, name, name, 1.0f, StripTags(resolved), this});
++    }
++    m_SoundCount = std::max(m_SoundCount, shown);
++    if (done) m_RevealDoneSent = true;
++
++    // ---- 並べる ----
++    const UI::Rect& R = m_ScreenRect;
++    const auto lines = Wrap(*f, chars, wrap ? R.w + 1.0f : -1.0f);
++    const float lh = f->GetLineHeight();
++    const float total = lh * static_cast<float>(lines.size());
++    float y = R.y;
++    if (lines.size() == 1 && verticalAlign == TextVAlign::Center) y = std::round(R.y + R.h * 0.5f + f->GetVisualCenter() - f->GetAscent());
++    else if (verticalAlign == TextVAlign::Center) y = R.y + (R.h - total) * 0.5f;
++    else if (verticalAlign == TextVAlign::Bottom) y = R.Bottom() - total;
++
++    const float s = m_ScreenScale.y;
++    const float strength = effectStrength * s;
++    const float time = m_EffectTime * effectSpeed;
++    const uint32_t baseEffects = EffectBitOf(effect);
++
++    struct Placed {
++        int index;
++        Vec2 center;
++        Vec2 size;
++        float rotation;
++        float scale;
++        Vec4 color;
++        Glyph glyph;
++    };
++    std::vector<Placed> placed;
++    placed.reserve(chars.size());
++    for (const auto& line : lines) {
++        float w = 0.0f;
++        for (int i : line) w += f->GetGlyph(chars[static_cast<size_t>(i)].cp).advance;
++        float x = R.x;
++        if (align == TextAlign::Center) x = R.x + (R.w - w) * 0.5f;
++        else if (align == TextAlign::Right) x = R.Right() - w;
++        x = std::round(x);
++        const float baseline = std::round(y + f->GetAscent());
++        for (int i : line) {
++            const Char& c = chars[static_cast<size_t>(i)];
++            const Glyph& g = f->GetGlyph(c.cp);
++            const float p = progressOf(i);
++            if (g.size.x > 0.0f && g.size.y > 0.0f && p > 0.0f) {
++                Placed pl{i, {x + g.offset.x + g.size.x * 0.5f, baseline + g.offset.y + g.size.y * 0.5f}, g.size, 0.0f, 1.0f, c.hasColor ? c.color : color, g};
++                pl.color.w *= c.alpha;
++                // 出かた
++                switch (reveal) {
++                case TextReveal::Fade: pl.color.w *= p; break;
++                case TextReveal::Pop:
++                    pl.scale = EaseOutBack(p);
++                    pl.color.w *= std::min(1.0f, p * 3.0f);
++                    break;
++                case TextReveal::Rise:
++                    pl.center.y += (1.0f - EaseOutCubic(p)) * lh * 0.6f;
++                    pl.color.w *= p;
++                    break;
++                case TextReveal::Drop:
++                    pl.center.y -= (1.0f - EaseOutBounce(p)) * lh;
++                    pl.color.w *= std::min(1.0f, p * 4.0f);
++                    break;
++                case TextReveal::Spin:
++                    pl.rotation = (1.0f - EaseOutCubic(p)) * kPi;
++                    pl.scale = EaseOutCubic(p);
++                    pl.color.w *= p;
++                    break;
++                default: break;
++                }
++                // ずっと続く動き
++                const uint32_t fx = baseEffects | c.effects;
++                const float fi = static_cast<float>(i);
++                if (fx & kWave) pl.center.y += std::sin(time * 6.0f - fi * 0.45f) * strength;
++                if (fx & kShake) {
++                    const float tick = std::floor(time * 24.0f);
++                    pl.center.x += (Hash(fi, tick) - 0.5f) * strength;
++                    pl.center.y += (Hash(fi + 31.0f, tick) - 0.5f) * strength;
++                }
++                if (fx & kPulse) pl.scale *= 1.0f + 0.15f * std::sin(time * 5.0f - fi * 0.3f) * (effectStrength / 6.0f);
++                if (fx & kSwing) pl.rotation += std::sin(time * 4.0f - fi * 0.5f) * 0.25f * (effectStrength / 6.0f);
++                if (fx & kRainbow) {
++                    const Vec3 rgb = HueToRgb(time * 0.4f + fi * 0.07f);
++                    pl.color = {rgb.x, rgb.y, rgb.z, pl.color.w};
++                }
++                if (fx & kGlitch) {
++                    const float tick = std::floor(time * 10.0f);
++                    if (Hash(fi, tick) > 0.86f) {
++                        pl.center.x += (Hash(fi + 7.0f, tick) - 0.5f) * strength * 2.0f;
++                        const Vec3 rgb = HueToRgb(Hash(fi + 3.0f, tick));
++                        pl.color = {pl.color.x * 0.4f + rgb.x * 0.6f, pl.color.y * 0.4f + rgb.y * 0.6f, pl.color.z * 0.4f + rgb.z * 0.6f, pl.color.w};
++                    }
++                }
++                placed.push_back(pl);
++            }
++            x += g.advance;
++        }
++        y += lh;
++    }
++
++    // ---- 描く（影 → 文字） ----
++    auto drawAll = [&](const Vec2& offset, const Vec4* override) {
++        for (const Placed& pl : placed) {
++            const Glyph& g = pl.glyph;
++            Vec4 tint = override ? Vec4{override->x, override->y, override->z, override->w * (pl.color.w / std::max(color.w, 1e-3f))} : pl.color;
++            if (!override && g.colored) tint = {1.0f, 1.0f, 1.0f, tint.w};
++            tint = ctx.Fade(tint);
++            if (tint.w <= 0.001f) continue;
++            const Mat4 m = Mat4::Translate({pl.center.x + offset.x, pl.center.y + offset.y, 0.0f}) * Mat4::RotateZ(pl.rotation) *
++                           Mat4::Scale({pl.size.x * pl.scale, pl.size.y * pl.scale, 1.0f});
++            Renderer2D::DrawTransformedQuad(m, tint, f->GetAtlas(g.page), g.uvMin, g.uvMax);
++        }
++    };
++    if (shadow) drawAll({shadowOffset.x * m_ScreenScale.x, shadowOffset.y * m_ScreenScale.y}, &shadowColor);
++    drawAll({0.0f, 0.0f}, nullptr);
++}
++
++} // namespace Ruto
+diff --git a/Modules/Engine/src/Widgets.cpp b/Modules/Engine/src/Widgets.cpp
+index 99811df..d84b5f5 100644
+--- a/Modules/Engine/src/Widgets.cpp
++++ b/Modules/Engine/src/Widgets.cpp
+@@ -6,6 +6,7 @@
+ #include "Ruto/Core/Log.h"
+ #include "Ruto/Engine/Assets.h"
+ #include "Ruto/Engine/SceneSerializer.h"
++#include "Ruto/Engine/UIShader.h"
+ 
+ #include <algorithm>
+ #include <cmath>
+@@ -21,6 +22,8 @@ const char* const kVAlign[] = {"Fill", "Top", "Center", "Bottom"};
+ const char* const kSizeRule[] = {"Auto", "Fill"};
+ const char* const kTextAlign[] = {"Left", "Center", "Right"};
+ const char* const kTextVAlign[] = {"Top", "Center", "Bottom"};
++const char* const kTextEffect[] = {"None", "Wave", "Shake", "Rainbow", "Pulse", "Swing", "Glitch"};
++const char* const kTextReveal[] = {"None", "Typewriter", "Fade", "Pop", "Rise", "Drop", "Spin"};
+ const char* const kProgressDir[] = {"LeftToRight", "RightToLeft", "BottomToTop", "TopToBottom"};
+ const char* const kToggleStyle[] = {"Switch", "Checkbox"};
+ 
+@@ -142,6 +145,31 @@ void Widget::ReflectCommon(PropertyVisitor& v) {
+     v.Property("clipChildren", clipChildren);
+     v.Property("tooltip", tooltip);
+     v.Property("visibleBind", visibleBind);
++    v.Header("シェーダー");
++    v.Asset("shader", shader, AssetType::UIShader);
++    if (!shader.empty()) {
++        // シェーダーを使うときだけ保存する（使わないウィジェットのファイルを大きくしない）
++        v.Property("shaderChildren", shaderChildren);
++        static const char* const kParamNames[kShaderParamCount] = {"shaderParam0", "shaderParam1", "shaderParam2", "shaderParam3", "shaderParam4", "shaderParam5"};
++        for (int i = 0; i < kShaderParamCount; ++i) v.Property(kParamNames[i], shaderParams[i]);
++    }
++}
++
++bool Widget::SetShaderParam(std::string_view param, const Vec4& value) {
++    auto sh = shader.empty() ? nullptr : UIShader::Get(shader);
++    const UIShaderParam* p = sh ? sh->FindParam(param) : nullptr;
++    if (!p || p->slot < 0 || p->slot >= kShaderParamCount) return false;
++    shaderParams[p->slot] = value;
++    return true;
++}
++
++void Widget::ResetShaderParams() {
++    auto sh = shader.empty() ? nullptr : UIShader::Get(shader);
++    if (!sh) return;
++    for (auto& p : shaderParams) p = {0.0f, 0.0f, 0.0f, 0.0f};
++    for (const UIShaderParam& p : sh->GetParams()) {
++        if (p.slot >= 0 && p.slot < kShaderParamCount) shaderParams[p.slot] = p.defaultValue;
++    }
+ }
+ 
+ Widget* Widget::AddChild(std::unique_ptr<Widget> child, int index) {
+@@ -505,6 +533,20 @@ void UIText::Reflect(PropertyVisitor& v) {
+     v.EnumField("align", align, kTextAlign);
+     v.EnumField("verticalAlign", verticalAlign, kTextVAlign);
+     v.Property("wrap", wrap);
++    v.Header("アニメーション");
++    v.EnumField("effect", effect, kTextEffect);
++    v.Property("effectStrength", effectStrength);
++    v.Property("effectSpeed", effectSpeed);
++    v.EnumField("reveal", reveal, kTextReveal);
++    v.Property("revealSpeed", revealSpeed);
++    v.Property("revealDelay", revealDelay);
++    v.Property("revealFade", revealFade);
++    v.Property("revealAuto", revealAuto);
++    v.Range("revealProgress", revealProgress, 0.0f, 1.0f);
++    v.Property("revealOnShow", revealOnShow);
++    v.Asset("revealSound", revealSound, AssetType::Audio);
++    v.Property("revealSoundEvery", revealSoundEvery);
++    v.Property("richText", richText);
+     v.Header("影");
+     v.Property("shadow", shadow);
+     v.Color("shadowColor", shadowColor);
+@@ -512,7 +554,8 @@ void UIText::Reflect(PropertyVisitor& v) {
+ }
+ 
+ Vec2 UIText::ComputeDesiredSize(WidgetContext& ctx, float maxWidth) {
+-    const std::string resolved = ctx.ResolveText(text);
++    std::string resolved = ctx.ResolveText(text);
++    if (richText) resolved = StripTags(resolved); // タグは文字の大きさに入れない
+     const Vec2 m = ctx.MeasureText(resolved, font, fontSize, wrap && maxWidth > 0.0f ? maxWidth : -1.0f);
+     return {std::ceil(m.x), std::ceil(m.y)};
+ }
+diff --git a/Modules/Graphics/include/Ruto/Graphics/Renderer2D.h b/Modules/Graphics/include/Ruto/Graphics/Renderer2D.h
+index 7546d11..ef304ca 100644
+--- a/Modules/Graphics/include/Ruto/Graphics/Renderer2D.h
++++ b/Modules/Graphics/include/Ruto/Graphics/Renderer2D.h
+@@ -4,11 +4,13 @@
+ 
+ #include <cstdint>
+ #include <memory>
++#include <string>
+ #include <string_view>
+ 
+ namespace Ruto {
+ 
+ class Font;
++class Shader;
+ class Texture;
+ 
+ // バッチ処理でスプライト（四角形）を描画する 2D レンダラ。
+@@ -50,6 +52,16 @@ public:
+     static void ResetStats();
+ 
+     static void Flush();
++
++    // ---- 自作のシェーダー（UI のシェーダーなど） ----
++    // これから積む四角形を描くシェーダーを変える（nullptr で標準に戻す）。それまでに積んだ分は先に描く。
++    // シェーダーは GetVertexShaderSource() の頂点シェーダーと、同じ入力（vColor・vUV・vTexIndex・uTextures）を使うこと
++    static void SetShader(Shader* shader);
++    static Shader* GetShader();
++    static const char* GetVertexShaderSource();
++    static int GetMaxTextureSlots();
++    // フラグメントシェーダーの始まり（#version・入力・uTextures・SampleTexture(uv) の関数）
++    static std::string GetFragmentPrelude();
+ };
+ 
+ } // namespace Ruto
+diff --git a/Modules/Graphics/include/Ruto/Graphics/Shader.h b/Modules/Graphics/include/Ruto/Graphics/Shader.h
+index 36be278..a6d7a9e 100644
+--- a/Modules/Graphics/include/Ruto/Graphics/Shader.h
++++ b/Modules/Graphics/include/Ruto/Graphics/Shader.h
+@@ -18,6 +18,8 @@ public:
+     Shader& operator=(const Shader&) = delete;
+ 
+     bool IsValid() const { return m_Program != 0; }
++    // コンパイル・リンクのエラー（成功したら空）。エディターでシェーダーを編集するときに表示する
++    const std::string& GetErrorLog() const { return m_ErrorLog; }
+     void Bind() const;
+ 
+     void SetInt(const std::string& name, int value);
+@@ -34,6 +36,7 @@ private:
+     int GetLocation(const std::string& name);
+ 
+     uint32_t m_Program = 0;
++    std::string m_ErrorLog;
+     std::unordered_map<std::string, int> m_LocationCache;
+ };
+ 
+diff --git a/Modules/Graphics/src/Renderer2D.cpp b/Modules/Graphics/src/Renderer2D.cpp
+index 3f70cb0..fa6f61d 100644
+--- a/Modules/Graphics/src/Renderer2D.cpp
++++ b/Modules/Graphics/src/Renderer2D.cpp
+@@ -32,6 +32,8 @@ struct QuadVertex {
+ 
+ struct Renderer2DData {
+     std::unique_ptr<Shader> shader;
++    Shader* current = nullptr; // 今使っているシェーダー（nullptr なら標準）
++    Mat4 viewProjection;
+     GLuint vao = 0, vbo = 0, ibo = 0;
+     std::vector<QuadVertex> vertices;
+     std::array<std::shared_ptr<Texture>, kMaxTextureSlots> textures;
+@@ -63,7 +65,7 @@ void main() {
+ )";
+ 
+ // sampler 配列を動的なインデックスで参照するのは GLSL 3.3 では未定義動作なので switch で分岐する
+-std::string BuildFragmentSource() {
++std::string BuildFragmentPrelude() {
+     std::string src = std::format(R"(#version 330 core
+ in vec4 vColor;
+ in vec2 vUV;
+@@ -73,20 +75,38 @@ uniform sampler2D uTextures[{}];
+ 
+ out vec4 FragColor;
+ 
+-void main() {{
+-    vec4 texColor = vec4(1.0);
++// 今描いている四角形のテクスチャを uv で読む
++vec4 SampleTexture(vec2 uv) {{
+     switch (vTexIndex) {{
+ )", kMaxTextureSlots);
+     for (uint32_t i = 0; i < kMaxTextureSlots; ++i)
+-        src += std::format("        case {0}: texColor = texture(uTextures[{0}], vUV); break;\n", i);
++        src += std::format("        case {0}: return texture(uTextures[{0}], uv);\n", i);
+     src += R"(    }
+-    FragColor = texColor * vColor;
+-    if (FragColor.a <= 0.001) discard;
++    return vec4(1.0);
+ }
+ )";
+     return src;
+ }
+ 
++std::string BuildFragmentSource() {
++    return BuildFragmentPrelude() + R"(
++void main() {
++    FragColor = SampleTexture(vUV) * vColor;
++    if (FragColor.a <= 0.001) discard;
++}
++)";
++}
++
++void BindShader(Shader& shader) {
++    shader.Bind();
++    shader.SetMat4("uViewProjection", s_Data->viewProjection);
++    std::array<int, kMaxTextureSlots> samplers{};
++    for (uint32_t i = 0; i < kMaxTextureSlots; ++i) samplers[i] = static_cast<int>(i);
++    shader.SetIntArray("uTextures", samplers.data(), static_cast<int>(kMaxTextureSlots));
++}
++
++Shader& CurrentShader() { return s_Data->current ? *s_Data->current : *s_Data->shader; }
++
+ } // namespace
+ 
+ void Renderer2D::Init() {
+@@ -156,8 +176,9 @@ void Renderer2D::BeginScene(const Mat4& viewProjection, bool flipV) {
+     glEnable(GL_BLEND);
+     glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+ 
+-    s_Data->shader->Bind();
+-    s_Data->shader->SetMat4("uViewProjection", viewProjection);
++    s_Data->viewProjection = viewProjection;
++    s_Data->current = nullptr;
++    BindShader(*s_Data->shader);
+ }
+ 
+ void Renderer2D::EndScene() {
+@@ -173,7 +194,7 @@ void Renderer2D::Flush() {
+ 
+     for (uint32_t i = 0; i < s_Data->textureCount; ++i) s_Data->textures[i]->Bind(i);
+ 
+-    s_Data->shader->Bind();
++    CurrentShader().Bind();
+     glBindVertexArray(s_Data->vao);
+     auto quadCount = static_cast<GLsizei>(s_Data->vertices.size() / 4);
+     glDrawElements(GL_TRIANGLES, quadCount * 6, GL_UNSIGNED_INT, nullptr);
+@@ -265,6 +286,19 @@ float Renderer2D::DrawText(Font& font, std::string_view utf8, const Vec2& positi
+     return std::max(maxX, x) - std::round(position.x);
+ }
+ 
++void Renderer2D::SetShader(Shader* shader) {
++    if (shader && !shader->IsValid()) shader = nullptr;
++    if (shader == s_Data->current) return;
++    Flush();
++    s_Data->current = shader;
++    BindShader(CurrentShader());
++}
++
++Shader* Renderer2D::GetShader() { return s_Data->current; }
++const char* Renderer2D::GetVertexShaderSource() { return kVertexSource; }
++int Renderer2D::GetMaxTextureSlots() { return static_cast<int>(kMaxTextureSlots); }
++std::string Renderer2D::GetFragmentPrelude() { return BuildFragmentPrelude(); }
++
+ void Renderer2D::SetScissor(int x, int y, int width, int height) {
+     Flush();
+     glEnable(GL_SCISSOR_TEST);
+diff --git a/Modules/Graphics/src/Shader.cpp b/Modules/Graphics/src/Shader.cpp
+index 325f847..9ab1143 100644
+--- a/Modules/Graphics/src/Shader.cpp
++++ b/Modules/Graphics/src/Shader.cpp
+@@ -9,7 +9,7 @@ namespace Ruto {
+ 
+ namespace {
+ 
+-GLuint CompileStage(GLenum type, std::string_view source) {
++GLuint CompileStage(GLenum type, std::string_view source, std::string& errorLog) {
+     GLuint shader = glCreateShader(type);
+     const GLchar* src = source.data();
+     GLint length = static_cast<GLint>(source.size());
+@@ -24,6 +24,7 @@ GLuint CompileStage(GLenum type, std::string_view source) {
+         std::string log(static_cast<size_t>(logLength > 0 ? logLength : 1), '\0');
+         glGetShaderInfoLog(shader, logLength, nullptr, log.data());
+         Log::Error("{} shader compile error:\n{}", type == GL_VERTEX_SHADER ? "Vertex" : "Fragment", log);
++        errorLog += log.c_str();
+         glDeleteShader(shader);
+         return 0;
+     }
+@@ -33,8 +34,8 @@ GLuint CompileStage(GLenum type, std::string_view source) {
+ } // namespace
+ 
+ Shader::Shader(std::string_view vertexSource, std::string_view fragmentSource) {
+-    GLuint vs = CompileStage(GL_VERTEX_SHADER, vertexSource);
+-    GLuint fs = CompileStage(GL_FRAGMENT_SHADER, fragmentSource);
++    GLuint vs = CompileStage(GL_VERTEX_SHADER, vertexSource, m_ErrorLog);
++    GLuint fs = CompileStage(GL_FRAGMENT_SHADER, fragmentSource, m_ErrorLog);
+     if (!vs || !fs) {
+         if (vs) glDeleteShader(vs);
+         if (fs) glDeleteShader(fs);
+@@ -56,6 +57,7 @@ Shader::Shader(std::string_view vertexSource, std::string_view fragmentSource) {
+         std::string log(static_cast<size_t>(logLength > 0 ? logLength : 1), '\0');
+         glGetProgramInfoLog(program, logLength, nullptr, log.data());
+         Log::Error("Shader link error:\n{}", log);
++        m_ErrorLog += log.c_str();
+         glDeleteProgram(program);
+         return;
+     }
+-- 
+2.43.0
+

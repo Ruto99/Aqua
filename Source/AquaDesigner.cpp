@@ -1,9 +1,10 @@
 // デザイナー: パレット・階層・キャンバス・詳細（スロット・プロパティ・スタイル）
 //
-//   キャンバス: 選択・移動・8 方向のリサイズ・アンカー表示・吸い付き（親と兄弟の端・中央）・解像度の切り替え・
-//               ホイールで拡大・中ボタンで移動・プレビュー（実際に操作して確かめる）
+//   キャンバス: 選択（Shift + クリックで一緒に選ぶ）・移動（一緒に選んだものもまとめて）・8 方向のリサイズ・アンカー表示・
+//               吸い付き（親と兄弟の端・中央）・解像度の切り替え・ホイールで拡大・中ボタンで移動・
+//               プレビュー（実際に操作して確かめる）
 //   アセットのドラッグ: 画像 → Image を作る / 画像・ボタン・枠に入れる、フォント → テキストに、音 → ボタンのクリック音、
-//                     UI（.aqua）→ 部品（ユーザーウィジェット）として入れる
+//                     UI（.aqua）→ 部品（ユーザーウィジェット）として入れる、シェーダー（.uishader）→ そのウィジェットに掛ける
 
 #include "AquaApp.h"
 
@@ -18,6 +19,7 @@
 #include <algorithm>
 #include <cmath>
 #include <format>
+#include <functional>
 #include <set>
 
 namespace AquaTool {
@@ -38,24 +40,100 @@ bool IsImageExt(const std::string& e) { return e == ".png" || e == ".jpg" || e =
 bool IsFontExt(const std::string& e) { return e == ".ttf" || e == ".otf" || e == ".ttc" || e == ".bdf" || e == ".fnt" || e == ".rfont"; }
 bool IsAudioExt(const std::string& e) { return e == ".wav" || e == ".ogg"; }
 bool IsUIExt(const std::string& e) { return e == ".aqua" || e == ".rui"; }
+bool IsShaderExt(const std::string& e) { return e == ".uishader"; }
+
+// テキストの入力欄で選んでいた範囲（タグを入れるボタンが使う。バイトの位置）
+//   ボタンを押した瞬間は、まだ使っている入力欄がそのクリックでカーソルを動かしてしまうので、
+//   マウスを押していないフレームの範囲を覚えておく
+struct TextSelection {
+    ImGuiID field = 0;
+    int start = 0, end = 0;
+};
+TextSelection s_TextSelection;
+
+void RememberTextSelection(ImGuiID field) {
+    if (!ImGui::IsItemActive() || ImGui::IsMouseDown(ImGuiMouseButton_Left)) return;
+    if (ImGuiInputTextState* st = ImGui::GetInputTextState(field)) {
+        const int a = st->GetSelectionStart(), b = st->GetSelectionEnd();
+        s_TextSelection = {field, std::min(a, b), std::max(a, b)};
+        if (a == b) s_TextSelection.start = s_TextSelection.end = st->GetCursorPos();
+    }
+}
+
+// 選んだ所をタグで囲む（何も選んでいなければカーソルの所、入力欄を使っていなければ全体を囲む）
+void InsertTag(std::string& text, ImGuiID field, const std::string& open, const std::string& close) {
+    const int size = static_cast<int>(text.size());
+    int a = 0, b = size;
+    if (s_TextSelection.field == field) {
+        a = std::clamp(s_TextSelection.start, 0, size);
+        b = std::clamp(s_TextSelection.end, 0, size);
+    }
+    if (close.empty()) a = b; // <pause> などは囲まずに入れる
+    if (!close.empty()) text.insert(static_cast<size_t>(b), "</" + close + ">");
+    text.insert(static_cast<size_t>(a), "<" + open + ">");
+    // 入れたタグの後ろを次の位置にする（続けて押しても入れ子にならないように）
+    const int added = static_cast<int>(open.size()) + 2 + (close.empty() ? 0 : static_cast<int>(close.size()) + 3);
+    s_TextSelection.start = s_TextSelection.end = b + added;
+}
 
 // 詳細パネルの入力欄
 class DesignerVisitor final : public PropertyVisitor {
 public:
     explicit DesignerVisitor(Project& project) : m_Project(project) {}
     bool changed = false;
+    Widget* target = nullptr;                                // 今編集しているウィジェット
+    std::function<void(const std::string&)> onEditShader;    // シェーダーの「編集」ボタン
 
     void Property(std::string_view n, bool& v) override { if (Row(n)) changed |= ImGui::Checkbox(Id(n), &v); }
     void Property(std::string_view n, int& v) override { if (Row(n)) changed |= ImGui::DragInt(Id(n), &v, 0.2f); }
     void Property(std::string_view n, float& v) override { if (Row(n)) changed |= ImGui::DragFloat(Id(n), &v, 0.5f, 0.0f, 0.0f, "%.2f"); }
     void Property(std::string_view n, Vec2& v) override { if (Row(n)) changed |= DragVec(Id(n), &v.x, 2, 0.5f, 0.0f, "%.1f"); }
     void Property(std::string_view n, Vec3& v) override { if (Row(n)) changed |= DragVec(Id(n), &v.x, 3, 0.5f, 0.0f, "%.1f"); }
-    void Property(std::string_view n, Vec4& v) override { if (Row(n)) changed |= DragVec(Id(n), &v.x, 4, 0.5f, 0.0f, "%.0f"); }
+    void Property(std::string_view n, Vec4& v) override {
+        if (const int slot = ShaderParamSlot(n); slot >= 0) {
+            ShaderParamRow(slot, v);
+            return;
+        }
+        if (Row(n)) changed |= DragVec(Id(n), &v.x, 4, 0.5f, 0.0f, "%.0f");
+    }
     void Property(std::string_view n, std::string& v) override {
         if (!Row(n)) return;
+        const bool richText = n == "text" && target && std::string_view(target->GetTypeName()) == "UIText";
         if (n == "text") changed |= ImGui::InputTextMultiline(Id(n), &v, {-FLT_MIN, ImGui::GetTextLineHeight() * 2.6f});
         else changed |= ImGui::InputText(Id(n), &v);
-        if (n == "text" && ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) ImGui::SetTooltip("{変数名} で変数の値を表示（{score:1} なら小数 1 桁）");
+        const ImGuiID field = ImGui::GetItemID();
+        if (richText) RememberTextSelection(field);
+        if (n == "text" && ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) ImGui::SetTooltip("{変数名} で変数の値を表示（{score:1} なら小数 1 桁）%s", richText ? "\n<wave>…</wave> などのタグで文字ごとに動かせる（下のボタンで選んだ所を囲む）" : "");
+        if (richText) {
+            // タグを入れる（選んだ所を囲む / カーソルの所に入れる）
+            struct TagButton {
+                const char* label;
+                const char* open;
+                const char* close;
+                const char* tip;
+            };
+            static const TagButton kTags[] = {
+                {"波", "wave", "wave", "<wave> 波のように上下する"}, {"震え", "shake", "shake", "<shake> ぶるぶる震える"},
+                {"虹", "rainbow", "rainbow", "<rainbow> 虹色に変わる"}, {"脈", "pulse", "pulse", "<pulse> 大きくなったり小さくなったり"},
+                {"揺れ", "swing", "swing", "<swing> 左右に傾く"}, {"乱れ", "glitch", "glitch", "<glitch> ときどきずれて色が乱れる"},
+                {"色", "color=#ffcc33", "color", "<color=#RRGGBB> 色を変える（#の後を書き換える）"}, {"薄く", "alpha=0.5", "alpha", "<alpha=0.5> 薄くする"},
+                {"止める", "pause=0.5", "", "<pause=0.5> 1 文字ずつ出すとき、ここで 0.5 秒止まる"},
+                {"速さ", "speed=0.5", "speed", "<speed=0.5> 1 文字ずつ出す速さを変える（0.5 でゆっくり）"},
+            };
+            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {4.0f, 1.0f});
+            const float rowRight = ImGui::GetCursorScreenPos().x + ImGui::GetContentRegionAvail().x;
+            for (size_t i = 0; i < std::size(kTags); ++i) {
+                // 入るなら同じ行に並べる
+                const float next = ImGui::CalcTextSize(kTags[i].label).x + ImGui::GetStyle().FramePadding.x * 2.0f;
+                if (i > 0 && ImGui::GetItemRectMax().x + 3.0f + next <= rowRight) ImGui::SameLine(0.0f, 3.0f);
+                if (ImGui::SmallButton(kTags[i].label)) {
+                    InsertTag(v, field, kTags[i].open, kTags[i].close);
+                    changed = true;
+                }
+                if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) ImGui::SetTooltip("%s", kTags[i].tip);
+            }
+            ImGui::PopStyleVar();
+        }
         if ((n == "bind" || n == "visibleBind") && ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
             ImGui::SetTooltip("スクリプトの SetVariable(\"名前\", 値) と連動します%s", n == "visibleBind" ? "（!名前 で逆）" : "");
     }
@@ -65,10 +143,10 @@ public:
     void Color(std::string_view n, Vec4& v) override { if (Row(n)) changed |= ColorField(Id(n), &v.x, true); }
     void Enum(std::string_view n, int& v, std::span<const char* const> options) override {
         if (!Row(n)) return;
-        const char* preview = v >= 0 && v < static_cast<int>(options.size()) ? options[static_cast<size_t>(v)] : "?";
-        if (ImGui::BeginCombo(Id(n), preview)) {
+        const std::string preview = v >= 0 && v < static_cast<int>(options.size()) ? EnumOptionLabelJa(n, options[static_cast<size_t>(v)]) : "?";
+        if (ImGui::BeginCombo(Id(n), preview.c_str())) {
             for (size_t i = 0; i < options.size(); ++i) {
-                if (ImGui::Selectable(options[i], static_cast<int>(i) == v)) {
+                if (ImGui::Selectable(EnumOptionLabelJa(n, options[i]).c_str(), static_cast<int>(i) == v)) {
                     v = static_cast<int>(i);
                     changed = true;
                 }
@@ -84,7 +162,9 @@ public:
             ImGui::SameLine(0.0f, 4.0f);
             ImGui::SetNextItemWidth(-FLT_MIN);
         }
-        const char* empty = type == AssetType::Font ? "(システムのフォント)" : "(なし)";
+        const char* empty = type == AssetType::Font ? "(システムのフォント)" : type == AssetType::UIShader ? "(なし: ふつうに描く)" : "(なし)";
+        const std::string before = path;
+        if (type == AssetType::UIShader) ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::GetFrameHeight() - 4.0f);
         if (ImGui::BeginCombo(Id(n), path.empty() ? empty : path.c_str(), ImGuiComboFlags_HeightLarge)) {
             if (ImGui::Selectable(empty, path.empty())) {
                 path.clear();
@@ -109,6 +189,15 @@ public:
             }
             ImGui::EndDragDropTarget();
         }
+        if (type == AssetType::UIShader) {
+            // シェーダーを変えたら、値をそのシェーダーの既定値にする
+            if (path != before && target) {
+                target->shader = path;
+                target->ResetShaderParams();
+            }
+            ImGui::SameLine(0.0f, 4.0f);
+            if (IconButton(path.empty() ? ICON_FA_PLUS : ICON_FA_PEN_TO_SQUARE, path.empty() ? "新しいシェーダーを作る（シェーダーのパネル）" : "このシェーダーを編集する") && onEditShader) onEditShader(path);
+        }
     }
     void Header(std::string_view title) override {
         if (m_Table) EndPropertyTable();
@@ -128,13 +217,71 @@ public:
     }
 
 private:
-    bool Row(std::string_view n) {
+    bool Row(std::string_view n) { return RowLabel(PropertyLabelJa(n), PropertyHelp(n)); }
+    // 詳しい説明（ラベルにかざすと出る）
+    static const char* PropertyHelp(std::string_view n) {
+        static const std::pair<const char*, const char*> kHelp[] = {
+            {"effect", "文字がずっと動き続ける（一部だけ動かすときはテキストの中で <wave>…</wave> などのタグを使う）"},
+            {"effectStrength", "動きの大きさ（基準解像度の単位）"},
+            {"reveal", "文字の出し方。編集中は全部出し、プレビュー（P）とゲームでは実際に出す"},
+            {"revealSpeed", "1 秒に出す文字の数"},
+            {"revealDelay", "表示してから出し始めるまでの秒"},
+            {"revealFade", "1 文字が出きるまでの秒（ふわっと・ポップなど）"},
+            {"revealAuto", "オフにすると「出した割合」の分だけ出す（アニメーションのタイムラインで動かせる）"},
+            {"revealProgress", "自動で出さないとき、何割の文字を出すか（0〜1）"},
+            {"revealOnShow", "表示し直すたび・文字が変わるたびに最初から出す"},
+            {"revealSound", "文字を出すときに鳴らす音（会話の「ピピピ」）"},
+            {"revealSoundEvery", "何文字ごとに音を鳴らすか"},
+            {"richText", "<wave> <shake> <rainbow> <pulse> <swing> <glitch> <color=#RRGGBB> <alpha=0.5> <pause=0.5> <speed=2> を使う"},
+            {"shader", "UI のシェーダー（.uishader）。シェーダーのパネルで作る・編集する"},
+            {"shaderChildren", "子のウィジェットにも同じシェーダーを掛ける"},
+        };
+        for (const auto& [k, v] : kHelp) {
+            if (n == k) return v;
+        }
+        return nullptr;
+    }
+    bool RowLabel(const std::string& label, const char* tooltip = nullptr) {
         if (!m_Table) {
             m_Table = BeginPropertyTable(std::format("{}#{}", m_Id, m_Index++).c_str());
             if (!m_Table) return false;
         }
-        PropertyLabel(PropertyLabelJa(n));
+        PropertyLabel(label, tooltip);
         return true;
+    }
+    // シェーダーの @param（使っていない番号は出さない）
+    void ShaderParamRow(int slot, Vec4& v) {
+        auto sh = target && !target->shader.empty() ? UIShader::Get(target->shader) : nullptr;
+        const UIShaderParam* p = nullptr;
+        if (sh) {
+            for (const UIShaderParam& q : sh->GetParams()) {
+                if (q.slot == slot) p = &q;
+            }
+        }
+        if (!p) return;
+        const std::string tip = std::format("シェーダーの {}（アニメーションで動かせます。右クリックで既定値）", p->name);
+        if (!RowLabel(p->label, tip.c_str())) return;
+        const std::string id = std::format("##sp{}", slot);
+        switch (p->type) {
+        case UIShaderParam::Type::Float: changed |= ImGui::SliderFloat(id.c_str(), &v.x, p->min, p->max, "%.3f"); break;
+        case UIShaderParam::Type::Vec2: changed |= ImGui::DragFloat2(id.c_str(), &v.x, std::max((p->max - p->min) / 200.0f, 0.001f), p->min, p->max, "%.3f"); break;
+        case UIShaderParam::Type::Color: changed |= ColorField(id.c_str(), &v.x, true); break;
+        case UIShaderParam::Type::Toggle: {
+            bool on = v.x > 0.5f;
+            if (ImGui::Checkbox(id.c_str(), &on)) {
+                v.x = on ? 1.0f : 0.0f;
+                changed = true;
+            }
+            break;
+        }
+        }
+        if (ImGui::BeginPopupContextItem((id + "menu").c_str())) {
+            if (ImGui::MenuItem(ICON_FA_ROTATE_LEFT "  既定値に戻す")) {
+                v = p->defaultValue;
+                changed = true;
+            }
+            ImGui::EndPopup();
+        }
     }
     const char* Id(std::string_view n) {
         m_IdBuffer = "##" + std::string(n);
@@ -178,6 +325,14 @@ Widget* App::AddWidget(Document& doc, const std::string& type, Widget* parent, i
         if (Widget* pd = doc.view ? Resolve(doc.view->GetRoot(), PathOf(parent)) : nullptr) pos = {pd->GetRect().w * 0.5f, pd->GetRect().h * 0.5f};
         if (canvasPos) pos = *canvasPos;
         w->slot.position = {std::round(pos.x), std::round(pos.y)};
+        if (type == "UICapture") {
+            // キャプチャー（ポーズなどの背景）: 親いっぱいに広げて、一番奥に置く
+            w->slot.anchorMin = {0.0f, 0.0f};
+            w->slot.anchorMax = {1.0f, 1.0f};
+            w->slot.size = {0.0f, 0.0f};
+            w->slot.position = {0.0f, 0.0f};
+            if (index < 0) index = 0;
+        }
     } else if (type == "UIText") {
         w->slot.hAlign = HAlign::Fill;
     }
@@ -185,6 +340,7 @@ Widget* App::AddWidget(Document& doc, const std::string& type, Widget* parent, i
     Widget* raw = parent->AddChild(std::move(w), index);
     doc.ui.selection = PathOf(raw);
     doc.ui.hasSelection = true;
+    doc.ui.extraSelection.clear();
     doc.Changed();
     return raw;
 }
@@ -214,6 +370,7 @@ void App::DuplicateWidget(Document& doc, const WidgetPath& path) {
     Widget* parent = w->GetParent();
     Widget* raw = parent->AddChild(std::move(copy), parent->IndexOf(w) + 1);
     doc.ui.selection = PathOf(raw);
+    doc.ui.extraSelection.clear();
     doc.Changed();
 }
 
@@ -284,6 +441,7 @@ void App::PasteWidget(Document& doc) {
     Widget* raw = target->AddChild(std::move(w), index);
     doc.ui.selection = PathOf(raw);
     doc.ui.hasSelection = true;
+    doc.ui.extraSelection.clear();
     doc.Changed();
 }
 
@@ -353,6 +511,15 @@ bool App::DropAsset(Document& doc, const std::string& assetPath, Widget* target,
         }
         Notify("音はボタンに落としてください（クリックの音になります）", true);
         return false;
+    }
+    if (IsShaderExt(ext)) {
+        // シェーダー: 落としたウィジェットに掛ける（ルートなら UI 全体）
+        target->shader = assetPath;
+        target->ResetShaderParams();
+        select(target);
+        doc.Changed();
+        Notify(std::format("{} にシェーダーを掛けました", target->name));
+        return true;
     }
     if (IsUIExt(ext)) {
         if (assetPath == doc.output) {
@@ -432,6 +599,15 @@ void App::DrawDocumentArea() {
         doc->ui.focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
         if (doc->ui.focused) HandleDesignerKeys(*doc);
         if (doc->ui.hasSelection && !Resolve(doc->asset->root.get(), doc->ui.selection)) doc->ui.hasSelection = false;
+        // 一緒に選んでいるもの: 消えたもの・最初に選んだものと同じものは外す
+        {
+            Widget* primary = doc->ui.hasSelection ? Resolve(doc->asset->root.get(), doc->ui.selection) : nullptr;
+            if (!primary) doc->ui.extraSelection.clear();
+            std::erase_if(doc->ui.extraSelection, [&](const std::string& name) {
+                Widget* w = doc->asset->root->Find(name);
+                return !w || w == primary || !w->GetParent();
+            });
+        }
         // マウスを離していて入力中でもなければ確定（元に戻すの単位）・保存・書き出し
         const bool idle = !ImGui::IsAnyItemActive() && !ImGui::IsMouseDown(ImGuiMouseButton_Left);
         if (doc->HasPending() && idle) doc->Commit();
@@ -479,7 +655,10 @@ void App::HandleDesignerKeys(Document& doc) {
         if (doc.view) doc.view->SetAsset(doc.asset);
     }
     if (!io.KeyCtrl && pressed(ImGuiKey_G)) doc.ui.showGrid = !doc.ui.showGrid;
-    if (pressed(ImGuiKey_Escape)) doc.ui.hasSelection = false;
+    if (pressed(ImGuiKey_Escape)) {
+        doc.ui.hasSelection = false;
+        doc.ui.extraSelection.clear();
+    }
     if (doc.ui.keySelected && pressed(ImGuiKey_Delete)) {
         if (WidgetAnimation* a = doc.ui.animation >= 0 && doc.ui.animation < static_cast<int>(asset.animations.size()) ? &asset.animations[static_cast<size_t>(doc.ui.animation)] : nullptr) {
             if (doc.ui.keyTrack >= 0 && doc.ui.keyTrack < static_cast<int>(a->tracks.size())) {
@@ -573,7 +752,7 @@ void App::DrawToolbar(Document& doc) {
     } else if (doc.ui.preview) {
         ImGui::TextDisabled("ボタン・スライダー・キーボード / ゲームパッドのフォーカス移動を試せます");
     } else {
-        ImGui::TextDisabled("ドラッグで移動・四隅でリサイズ・ホイールで拡大・中ボタンで移動");
+        ImGui::TextDisabled("ドラッグで移動・四隅でリサイズ・Shift + クリックで一緒に選ぶ・ホイールで拡大・中ボタンで移動");
     }
 }
 
@@ -633,7 +812,8 @@ void App::DrawHierarchy(Document& doc) {
 
 void App::DrawHierarchyNode(Document& doc, Widget& w, WidgetPath& path) {
     WidgetAsset& asset = *doc.asset;
-    const bool selected = doc.ui.hasSelection && doc.ui.selection == path;
+    const bool selected = (doc.ui.hasSelection && doc.ui.selection == path) ||
+                          (w.GetParent() && std::find(doc.ui.extraSelection.begin(), doc.ui.extraSelection.end(), w.name) != doc.ui.extraSelection.end());
     ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_FramePadding;
     if (selected) flags |= ImGuiTreeNodeFlags_Selected;
     bool hasChildren = false;
@@ -649,8 +829,13 @@ void App::DrawHierarchyNode(Document& doc, Widget& w, WidgetPath& path) {
     ImGui::PopStyleVar();
     const ImRect itemRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
     if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
-        doc.ui.selection = path;
-        doc.ui.hasSelection = true;
+        if (ImGui::GetIO().KeyCtrl || ImGui::GetIO().KeyShift) {
+            ToggleExtraSelection(doc, path); // 一緒に選ぶ（整列パネルで揃える）
+        } else {
+            doc.ui.selection = path;
+            doc.ui.hasSelection = true;
+            doc.ui.extraSelection.clear();
+        }
     }
     if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left) && w.GetParent()) {
         doc.ui.renaming = path;
@@ -832,6 +1017,8 @@ UI::Rect App::Snap(Document& doc, Widget& w, const UI::Rect& rect, int handle) {
     addRect(parent->GetRect());
     for (const auto& c : parent->children) {
         if (c.get() == &w || c->generated || !c->IsVisible()) continue;
+        // まとめて動かしているものには吸い付かない（一緒に動くので）
+        if (std::find(doc.ui.extraSelection.begin(), doc.ui.extraSelection.end(), c->name) != doc.ui.extraSelection.end()) continue;
         addRect(c->GetRect());
     }
 
@@ -992,10 +1179,22 @@ void App::DrawCanvas(Document& doc) {
             if (handleHover >= 0) {
                 ui.drag = DesignerState::Drag::Resize;
                 ui.handle = handleHover;
+            } else if (io.KeyShift && hoverDoc) {
+                // Shift + クリック: 一緒に選ぶ / 外す（整列パネルで揃える）
+                ToggleExtraSelection(doc, DesignPathOf(hoverDoc));
             } else {
                 Widget* target = hoverDoc;
                 // 選択中のものの中をクリックしたら、そのまま動かせる（重なっていても）
                 if (selDoc && selDoc->GetScreenRect().Contains(mousePx) && target && target->IsDescendantOf(selDoc) && !io.KeyCtrl) target = selDoc;
+                // 一緒に選んでいるものをクリックしたときは、そのまま（まとめて選んだまま）
+                const bool inGroup = target && std::find(ui.extraSelection.begin(), ui.extraSelection.end(), target->name) != ui.extraSelection.end();
+                if (inGroup && selAsset) {
+                    // クリックしたものを最初に（今までの最初のものは一緒に選んだ側へ）
+                    std::erase(ui.extraSelection, target->name);
+                    ui.extraSelection.push_back(selAsset->name);
+                } else if (target != selDoc) {
+                    ui.extraSelection.clear();
+                }
                 if (target) {
                     ui.selection = DesignPathOf(target);
                     ui.hasSelection = true;
@@ -1009,6 +1208,15 @@ void App::DrawCanvas(Document& doc) {
             if (ui.drag != DesignerState::Drag::None && selAsset && selDoc) {
                 ui.dragSlot = selAsset->slot;
                 ui.dragRect = selDoc->GetRect();
+            }
+            // 一緒に選んでいるものも、まとめて動かす
+            ui.dragGroup.clear();
+            if (ui.drag == DesignerState::Drag::Move && docRoot) {
+                for (const std::string& name : ui.extraSelection) {
+                    Widget* ea = asset.root->Find(name);
+                    Widget* ev = ea && IsCanvasChild(*ea) ? Resolve(docRoot, PathOf(ea)) : nullptr;
+                    if (ev && ev->GetParent()) ui.dragGroup.push_back({name, ea->slot, ev->GetRect(), ev->GetParent()->GetRect()});
+                }
             }
         }
         if (active && ImGui::IsMouseDown(ImGuiMouseButton_Left) && (ui.drag == DesignerState::Drag::Move || ui.drag == DesignerState::Drag::Resize) && selAsset && selDoc) {
@@ -1039,6 +1247,16 @@ void App::DrawCanvas(Document& doc) {
                 slot.autoSize = selAsset->slot.autoSize;
                 SetSlotRect(slot, parentDoc ? parentDoc->GetRect() : UI::Rect{0, 0, res.x, res.y}, r);
                 selAsset->slot = slot;
+                if (ui.drag == DesignerState::Drag::Move) {
+                    const float mx = r.x - ui.dragRect.x, my = r.y - ui.dragRect.y; // 吸い付いた後の動き
+                    for (const DesignerState::GroupDrag& g : ui.dragGroup) {
+                        Widget* ea = asset.root->Find(g.name);
+                        if (!ea) continue;
+                        WidgetSlot gs = g.slot;
+                        SetSlotRect(gs, g.parent, {g.rect.x + mx, g.rect.y + my, g.rect.w, g.rect.h});
+                        ea->slot = gs;
+                    }
+                }
                 doc.Changed();
                 ImGui::SetTooltip("位置 %.0f, %.0f   大きさ %.0f × %.0f", r.x, r.y, r.w, r.h);
             }
@@ -1117,6 +1335,15 @@ void App::DrawCanvas(Document& doc) {
         if (hoverDoc && hoverDoc != selDoc) {
             const ImRect r = toScreen(hoverDoc->GetScreenRect());
             dl->AddRect(r.Min, r.Max, IM_COL32(120, 180, 255, 140), 0.0f, 0, 1.0f);
+        }
+        // 一緒に選んでいるもの（整列の対象）
+        for (const std::string& name : ui.extraSelection) {
+            Widget* ea = asset.root->Find(name);
+            Widget* ew = ea && docRoot ? Resolve(docRoot, PathOf(ea)) : nullptr;
+            if (!ew) continue;
+            const ImRect r = toScreen(ew->GetScreenRect());
+            dl->AddRect(r.Min, r.Max, ToU32(Theme::kAccent), 0.0f, 0, 1.5f);
+            dl->AddRectFilled(r.Min, r.Max, IM_COL32(90, 160, 255, 28));
         }
         if (selDoc) {
             const ImRect r = toScreen(selDoc->GetScreenRect());
@@ -1434,12 +1661,76 @@ void App::DrawDetails(Document& doc) {
         ImGui::Spacing();
         ImGui::TextColored({0.95f, 0.35f, 0.35f, 1.0f}, ICON_FA_CIRCLE "  録画中: 数値を変えると「%s」の %.2f 秒にキーが打たれます", anim->name.c_str(), ui.animTime);
     }
+    // テキストの演出のプリセット（いくつかの値をまとめて入れる）
+    if (auto* text = dynamic_cast<UIText*>(target)) {
+        ImGui::Spacing();
+        ImGui::SetNextItemWidth(-FLT_MIN);
+        if (ImGui::BeginCombo("##text-preset", ICON_FA_WAND_MAGIC_SPARKLES "  テキストの演出（プリセット）")) {
+            struct TextPreset {
+                const char* label;
+                TextReveal reveal;
+                TextEffect effect;
+                float revealSpeed, revealFade, strength;
+            };
+            static const TextPreset kPresets[] = {
+                {"会話（1 文字ずつ）", TextReveal::Typewriter, TextEffect::None, 28.0f, 0.0f, 6.0f},
+                {"ふわっと出す", TextReveal::Fade, TextEffect::None, 22.0f, 0.25f, 6.0f},
+                {"ポップに出す", TextReveal::Pop, TextEffect::None, 18.0f, 0.3f, 6.0f},
+                {"下から浮かぶ", TextReveal::Rise, TextEffect::None, 20.0f, 0.35f, 6.0f},
+                {"落ちて弾む", TextReveal::Drop, TextEffect::None, 14.0f, 0.5f, 6.0f},
+                {"回りながら出る", TextReveal::Spin, TextEffect::None, 16.0f, 0.35f, 6.0f},
+                {"波打つタイトル", TextReveal::Pop, TextEffect::Wave, 14.0f, 0.3f, 8.0f},
+                {"震える（警告・怒り）", TextReveal::None, TextEffect::Shake, 30.0f, 0.0f, 4.0f},
+                {"虹色（レア）", TextReveal::None, TextEffect::Rainbow, 30.0f, 0.0f, 6.0f},
+                {"脈打つ（注目）", TextReveal::None, TextEffect::Pulse, 30.0f, 0.0f, 6.0f},
+                {"グリッチ（ノイズ）", TextReveal::None, TextEffect::Glitch, 30.0f, 0.0f, 8.0f},
+                {"演出なし", TextReveal::None, TextEffect::None, 30.0f, 0.18f, 6.0f},
+            };
+            for (const TextPreset& p : kPresets) {
+                if (ImGui::Selectable(p.label)) {
+                    text->reveal = p.reveal;
+                    text->effect = p.effect;
+                    text->revealSpeed = p.revealSpeed;
+                    text->revealFade = p.revealFade;
+                    text->effectStrength = p.strength;
+                    text->revealAuto = true;
+                    doc.Changed();
+                }
+            }
+            ImGui::EndCombo();
+        }
+        if (text->reveal != TextReveal::None && !ui.preview) {
+            if (ImGui::Button(ICON_FA_CIRCLE_PLAY "  出し方をプレビューで見る（P）", {-FLT_MIN, 0.0f})) {
+                ui.preview = true;
+                if (doc.view) doc.view->SetAsset(doc.asset); // 作り直して最初から出す
+            }
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) ImGui::SetTooltip("編集中は全部の文字を出しています。プレビューでは実際の出し方で出します");
+        }
+    }
+
     DesignerVisitor v(m_Project);
+    v.target = target;
+    v.onEditShader = [this](const std::string& path) { OpenShaderEditor(path); };
     v.Begin("props");
     target->Reflect(v);
     v.Header("共通");
     target->ReflectCommon(v);
     v.End();
+    // シェーダーの状態（読めない・コンパイルできない・値を既定に戻す）
+    if (!target->shader.empty()) {
+        auto sh = UIShader::Get(target->shader);
+        if (!sh) {
+            ImGui::TextColored(Theme::kError, ICON_FA_TRIANGLE_EXCLAMATION "  シェーダーが見つかりません: %s", target->shader.c_str());
+        } else if (!sh->IsValid()) {
+            ImGui::PushTextWrapPos(0.0f);
+            ImGui::TextColored(Theme::kError, ICON_FA_TRIANGLE_EXCLAMATION "  シェーダーにエラーがあるので、ふつうに描いています");
+            ImGui::PopTextWrapPos();
+            if (ImGui::SmallButton(ICON_FA_PEN_TO_SQUARE " シェーダーを直す")) OpenShaderEditor(target->shader);
+        } else if (ImGui::SmallButton(ICON_FA_ROTATE_LEFT " シェーダーの値を既定に戻す")) {
+            target->ResetShaderParams();
+            v.changed = true;
+        }
+    }
     if (v.changed) {
         if (recording) {
             for (const auto& info : WidgetProperties::List(*target)) {
@@ -1462,6 +1753,15 @@ void App::DrawDetails(Document& doc) {
     if (auto* uw = dynamic_cast<UIUserWidget*>(w); uw && !uw->asset.empty()) {
         ImGui::Spacing();
         if (ImGui::Button(ICON_FA_PUZZLE_PIECE "  この部品の UI を開く", {-FLT_MIN, 0.0f})) OpenDocument(Assets::GetPath(uw->asset));
+    }    if (std::string_view(w->GetTypeName()) == "UICapture") {
+        // キャプチャー: 撮った画面はゲームのメモリ（テクスチャ）に持つだけで、ファイルには保存しない
+        ImGui::Spacing();
+        ImGui::PushTextWrapPos(0.0f);
+        ImGui::TextDisabled(ICON_FA_CAMERA "  ゲームでは、このウィジェットより先に描かれた画面（ゲーム・後ろの UI）を撮ってここに貼ります。"
+                            "撮った画面はメモリに持つだけで、ファイルには保存しません。キャンバスでは見本を表示し、プレビュー（P）で実際に撮れます。");
+        ImGui::TextDisabled("スクリプトで撮り直す: if (auto* c = dynamic_cast<UICapture*>(ui->Find(AquaUI::%s::Widgets::%s))) c->Capture();",
+                            ToIdentifier(doc.GetTitle()).c_str(), ToIdentifier(w->name).c_str());
+        ImGui::PopTextWrapPos();
     }
 }
 
@@ -1505,7 +1805,8 @@ void App::RenderDocument(Document& doc) {
     doc.view->RefreshUserWidgets(); // 部品の UI がほかのタブで書き出されたら作り直す
     doc.view->Paint();
     for (const UIEvent& e : doc.view->TakeEvents()) {
-        const char* kind = e.type == UIEventType::Click ? "クリック" : e.type == UIEventType::ValueChanged ? "値の変更" : e.type == UIEventType::Submit ? "決定" : nullptr;
+        const char* kind = e.type == UIEventType::Click ? "クリック" : e.type == UIEventType::ValueChanged ? "値の変更" : e.type == UIEventType::Submit ? "決定"
+                         : e.type == UIEventType::TextRevealed ? "テキストを出し終えた" : nullptr;
         if (!kind) continue;
         ui.lastEvent = e.type == UIEventType::ValueChanged ? std::format("{}: {}  {}", kind, e.widget, e.text.empty() ? std::format("{:.2f}", e.value) : e.text)
                                                            : std::format("{}: {}（OnUIEvent の message: \"{}\"）", kind, e.widget, e.message);

@@ -4,8 +4,8 @@
 //
 //   左:   プロジェクト（UI の一覧）・アセット（画像・フォント・音・UI）・パレット・階層
 //   中央: 文書のタブ + 見たままのキャンバス、下にアニメーションのタイムライン
-//   右:   詳細（スロット・プロパティ・スタイル）・スタイル・変数（プレビュー用の値）
-//   下:   ログ・状態（書き出し・RutoEditor との連携）
+//   右:   詳細（スロット・プロパティ・スタイル）・スタイル・変数（プレビュー用の値）・整列
+//   下:   アニメーション・アセット・シェーダー（UI のシェーダーを書く）・ログ
 //
 // 編集すると Assets/**/*.aqua がすぐ書き出され、RutoEditor・実行中のゲームに反映される。
 
@@ -98,6 +98,19 @@ private:
     // ---- アニメーション（AquaAnimation.cpp） ----
     void DrawAnimations(Document& doc);
 
+    // ---- シェーダー（AquaShaderPanel.cpp）: .uishader を書く・見本から作る・ウィジェットに掛ける ----
+    void DrawShaderPanel();
+    void OpenShaderEditor(const std::string& assetPath); // 空なら新しく作る
+    void LoadShaderForEdit(const std::string& assetPath);
+    bool SaveShader();
+    std::string CreateShader(const std::string& name, const std::string& source);
+    void ApplyShaderToSelection(const std::string& assetPath);
+
+    // ---- 整列（AquaArrange.cpp）: 選んだウィジェットを揃える・等間隔にする・格子に並べる ----
+    void DrawArrangePanel(Document& doc);
+    std::vector<Widget*> ArrangeTargets(Document& doc, bool* children = nullptr);
+    void ToggleExtraSelection(Document& doc, const WidgetPath& path);
+
     StartupOptions m_Options;
     Project m_Project;
     std::unique_ptr<Ruto::Aqua::LinkHost> m_Link;
@@ -128,6 +141,33 @@ private:
     std::deque<LogLine> m_Log;
     int m_LogSink = -1;
     bool m_LogScroll = false;
+
+    // シェーダーの編集
+    std::string m_ShaderPath;                  // Assets からの相対パス
+    std::string m_ShaderText;                  // 編集中の中身
+    std::string m_ShaderSavedText;             // ファイルの中身
+    std::shared_ptr<UIShader> m_ShaderCheck;   // 編集中の中身をコンパイルしたもの（エラーの表示）
+    std::vector<UIShaderParam> m_ShaderSavedParams; // 保存したときの @param（値を名前で引き継ぐ）
+    double m_ShaderEditTime = -1.0;            // 最後に書き換えた時刻（少し待ってからコンパイルする）
+    bool m_ShaderLive = true;                  // コンパイルできたらすぐ保存してキャンバスに反映する
+    bool m_ShaderHelp = false;
+    bool m_FocusShaderPanel = false;
+    bool m_OpenNewShader = false;
+    std::string m_NewShaderName;
+    int m_NewShaderPreset = -1;                // -1: 空のひな形
+    bool m_NewShaderApply = true;
+    int m_ShaderJumpLine = -1;                 // エラーの行へカーソルを動かす
+    int m_ShaderCursorLine = 1;
+
+    // 整列
+    int m_ArrangeRelative = 0;         // 0: 選んだものの範囲 / 1: 親 / 2: 最初に選んだもの
+    int m_ArrangeColumns = 3;
+    float m_ArrangeGap[2] = {16.0f, 16.0f};
+    float m_ArrangeSpacing = 16.0f;
+    float m_ArrangeMargin = 0.0f;
+    int m_ArrangeOrder = 0;            // 0: 今の位置の順 / 1: 階層の順
+    int m_ArrangeCellSize = 0;         // 0: そのまま / 1: 一番大きいものに揃える
+    int m_ArrangeOrigin = 0;           // 0: 今の範囲の左上 / 1: 親の左上（余白付き）/ 2: 親の中央
 
     // ポップアップ
     bool m_OpenNewPopup = false;

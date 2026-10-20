@@ -25,6 +25,7 @@ const char* WidgetIcon(std::string_view type) {
     if (type == "UIBorder") return ICON_FA_SQUARE;
     if (type == "UIText") return ICON_FA_FONT;
     if (type == "UIImage") return ICON_FA_IMAGE;
+    if (type == "UICapture") return ICON_FA_CAMERA;
     if (type == "UIButton") return ICON_FA_HAND_POINTER;
     if (type == "UIProgressBar") return ICON_FA_BATTERY_HALF;
     if (type == "UISpacer") return ICON_FA_ARROWS_LEFT_RIGHT;
@@ -84,11 +85,94 @@ std::string PropertyLabelJa(std::string_view n) {
         {"cellHeight", "マスの高さ（0 で自動）"}, {"showScrollbar", "スクロールバー"}, {"scrollbarColor", "スクロールバーの色"},
         {"widthOverride", "幅（0 で自動）"}, {"heightOverride", "高さ（0 で自動）"}, {"minSize", "最小の大きさ"}, {"maxSize", "最大の大きさ"},
         {"asset", "UI アセット"}, {"scrollOffset", "スクロール位置"},
+        {"timing", "撮るとき"}, {"area", "撮る範囲"}, {"blur", "ぼかし"}, {"blockInput", "マウスを受け止める"},
+        {"previewTexture", "デザイン中の見本（ゲームでは使わない）"},
+        {"shader", "シェーダー"}, {"shaderChildren", "子にも掛ける"},
+        {"effect", "動き"}, {"effectStrength", "動きの大きさ"}, {"effectSpeed", "動きの速さ"},
+        {"reveal", "出し方"}, {"revealSpeed", "出す速さ"}, {"revealDelay", "待ち時間"},
+        {"revealFade", "1 文字の時間"}, {"revealAuto", "自動で出す"}, {"revealProgress", "出した割合"},
+        {"revealOnShow", "毎回出し直す"}, {"revealSound", "文字の音"}, {"revealSoundEvery", "音の間隔"},
+        {"richText", "タグを使う"},
     };
     for (const auto& [k, v] : kNames) {
         if (n == k) return v;
     }
     return PrettyName(n);
+}
+
+std::string EnumOptionLabelJa(std::string_view property, std::string_view option) {
+    struct Entry {
+        const char* property;
+        const char* option;
+        const char* label;
+    };
+    static const Entry kLabels[] = {
+        // キャプチャー
+        {"timing", "OnShow", "表示したときに撮る（止めた画面）"},
+        {"timing", "EveryFrame", "毎フレーム撮る（動く画面）"},
+        {"timing", "Script", "スクリプトの Capture() で撮る"},
+        {"area", "Screen", "画面全体"},
+        {"area", "Behind", "このウィジェットの後ろだけ"},
+        // 共通の選択肢
+        {"visibility", "Visible", "表示する"},
+        {"visibility", "Collapsed", "隠す（場所も取らない）"},
+        {"visibility", "Hidden", "隠す（場所は取る）"},
+        {"visibility", "HitTestInvisible", "表示する（自分も子もクリックを通す）"},
+        {"visibility", "SelfHitTestInvisible", "表示する（自分だけクリックを通す）"},
+        {"align", "Left", "左"}, {"align", "Center", "中央"}, {"align", "Right", "右"},
+        {"verticalAlign", "Top", "上"}, {"verticalAlign", "Center", "中央"}, {"verticalAlign", "Bottom", "下"},
+        {"direction", "LeftToRight", "左から右"}, {"direction", "RightToLeft", "右から左"},
+        {"direction", "BottomToTop", "下から上"}, {"direction", "TopToBottom", "上から下"},
+        {"toggleStyle", "Switch", "スイッチ"}, {"toggleStyle", "Checkbox", "チェックボックス"},
+        // テキストの動き
+        {"effect", "None", "なし"},
+        {"effect", "Wave", "波"},
+        {"effect", "Shake", "震え"},
+        {"effect", "Rainbow", "虹色"},
+        {"effect", "Pulse", "脈打つ"},
+        {"effect", "Swing", "揺れる"},
+        {"effect", "Glitch", "グリッチ"},
+        // テキストの出し方
+        {"reveal", "None", "すぐ全部出す"},
+        {"reveal", "Typewriter", "1 文字ずつ（タイプライター）"},
+        {"reveal", "Fade", "1 文字ずつふわっと"},
+        {"reveal", "Pop", "1 文字ずつポップ"},
+        {"reveal", "Rise", "下から浮かぶ"},
+        {"reveal", "Drop", "上から落ちて弾む"},
+        {"reveal", "Spin", "回りながら出る"},
+    };
+    for (const Entry& e : kLabels) {
+        if (property == e.property && option == e.option) return e.label;
+    }
+    return std::string(option);
+}
+
+int ShaderParamSlot(std::string_view property) {
+    constexpr std::string_view prefix = "shaderParam";
+    if (!property.starts_with(prefix) || property.size() != prefix.size() + 1) return -1;
+    const char c = property.back();
+    return c >= '0' && c < '0' + Widget::kShaderParamCount ? c - '0' : -1;
+}
+
+std::string AnimPropertyLabel(Widget& w, const std::string& property, const std::string& channel) {
+    const int slot = ShaderParamSlot(property);
+    if (slot < 0) return channel.empty() ? PropertyLabelJa(property) : PropertyLabelJa(property) + "." + channel;
+    auto sh = w.shader.empty() ? nullptr : UIShader::Get(w.shader);
+    if (!sh) return {};
+    for (const UIShaderParam& p : sh->GetParams()) {
+        if (p.slot != slot) continue;
+        // 使う成分だけ（float・トグルは x、vec2 は x / y、色は r g b a）
+        static const char* const kColor[] = {"赤", "緑", "青", "不透明度"};
+        const int ch = channel.empty() ? 0 : channel == "x" ? 0 : channel == "y" ? 1 : channel == "z" ? 2 : 3;
+        const bool single = p.type == UIShaderParam::Type::Float || p.type == UIShaderParam::Type::Toggle;
+        if (single && ch > 0) return {};
+        if (p.type == UIShaderParam::Type::Vec2 && ch > 1) return {};
+        const std::string base = "シェーダー: " + p.label;
+        if (single) return base;
+        if (p.type == UIShaderParam::Type::Color) return base + "（" + kColor[ch] + "）";
+        return base + "." + channel;
+    }
+    return {};
 }
 
 Widget* Resolve(Widget* root, const WidgetPath& path) {

@@ -176,11 +176,26 @@ void App::DrawAnimations(Document& doc) {
         Widget* docSel = doc.view ? Resolve(doc.view->GetRoot(), ui.selection) : nullptr;
         std::string lastProp;
         for (const auto& info : WidgetProperties::List(*sel)) {
-            if (info.property != lastProp) {
-                lastProp = info.property;
-                ImGui::TextDisabled("%s", PropertyLabelJa(info.property).c_str());
+            // オン / オフの設定・回数はアニメーションしない
+            static const char* const kSkip[] = {"richText", "revealAuto", "revealOnShow", "revealSoundEvery", "shaderChildren"};
+            if (std::any_of(std::begin(kSkip), std::end(kSkip), [&](const char* k) { return info.property == k; })) continue;
+            std::string label;
+            if (ShaderParamSlot(info.property) >= 0) {
+                // シェーダーの値: @param の名前で、使う成分だけ
+                label = AnimPropertyLabel(*sel, info.property, info.channel);
+                if (label.empty()) continue;
+                if (lastProp != "shader") {
+                    lastProp = "shader";
+                    ImGui::TextDisabled("%s", PropertyLabelJa("shader").c_str());
+                }
+                label = "    " + label;
+            } else {
+                if (info.property != lastProp) {
+                    lastProp = info.property;
+                    ImGui::TextDisabled("%s", PropertyLabelJa(info.property).c_str());
+                }
+                label = "    " + (info.channel.empty() ? PropertyLabelJa(info.property) : info.channel);
             }
-            const std::string label = "    " + (info.channel.empty() ? PropertyLabelJa(info.property) : info.channel);
             if (ImGui::MenuItem(label.c_str(), nullptr, anim->FindTrack(sel->name, info.path) != nullptr)) {
                 float v = 0.0f;
                 if (!(docSel && WidgetProperties::Get(*docSel, info.path, v))) WidgetProperties::Get(*sel, info.path, v);
@@ -209,7 +224,19 @@ void App::DrawAnimations(Document& doc) {
         const bool exists = asset.root->Find(t.widget) != nullptr;
         rdl->AddRectFilled({rowsOrigin.x, y}, {rowsOrigin.x + labelW, y + rowH}, ToU32(ti % 2 ? Theme::kPanel : Theme::kFrame));
         rdl->AddLine({rowsOrigin.x, y + rowH - 0.5f}, {rowsOrigin.x + area.x, y + rowH - 0.5f}, ToU32(Theme::kBorder));
-        const std::string label = std::format("{}  ·  {}", t.widget, t.curve.property);
+        std::string propLabel = t.curve.property;
+        if (Widget* tw = asset.root->Find(t.widget)) {
+            // shaderParam0.x などは @param の表示名にする
+            std::string prop = t.curve.property, ch;
+            if (const size_t dot = prop.rfind('.'); dot != std::string::npos && prop.size() - dot == 2) {
+                ch = prop.substr(dot + 1);
+                prop = prop.substr(0, dot);
+            }
+            if (ShaderParamSlot(prop) >= 0) {
+                if (std::string l = AnimPropertyLabel(*tw, prop, ch); !l.empty()) propLabel = l;
+            }
+        }
+        const std::string label = std::format("{}  ·  {}", t.widget, propLabel);
         rdl->PushClipRect({rowsOrigin.x, y}, {rowsOrigin.x + labelW - 4.0f, y + rowH}, true);
         rdl->AddText({rowsOrigin.x + 6.0f, y + (rowH - ImGui::GetTextLineHeight()) * 0.5f}, ToU32(exists ? Theme::kText : Theme::kWarning), label.c_str());
         rdl->PopClipRect();

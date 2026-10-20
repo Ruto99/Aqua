@@ -390,6 +390,30 @@ void App::DrawUI() {
     ImGui::End();
     if (ImGui::Begin(ICON_FA_IMAGES "  アセット###Assets")) DrawAssetsPanel();
     ImGui::End();
+    // 後から足したパネルは、前のレイアウト（Layout.ini）で開いても既定の場所にドッキングする
+    auto dockWith = [](const char* existing) {
+        if (ImGuiWindow* w = ImGui::FindWindowByName(existing); w && w->DockId) ImGui::SetNextWindowDockID(w->DockId, ImGuiCond_FirstUseEver);
+    };
+    dockWith("###Assets");
+    if (m_FocusShaderPanel) {
+        if (ImGuiWindow* w = ImGui::FindWindowByName("###Shader")) {
+            if (w->DockNode && w->DockNode->TabBar) w->DockNode->TabBar->NextSelectedTabId = w->TabId;
+            ImGui::FocusWindow(w);
+        }
+        m_FocusShaderPanel = false;
+    }
+    if (ImGui::Begin(ICON_FA_FILL_DRIP "  シェーダー###Shader")) DrawShaderPanel();
+    ImGui::End();
+    dockWith("###Details");
+    if (ImGui::Begin(ICON_FA_TABLE_CELLS "  整列###Arrange")) {
+        if (Document* doc = ActiveDocument()) {
+            DrawArrangePanel(*doc);
+            if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows)) HandleDesignerKeys(*doc);
+        } else {
+            ImGui::TextDisabled("UI を開くと、選んだウィジェットを揃えたり並べたりできます");
+        }
+    }
+    ImGui::End();
     if (ImGui::Begin(ICON_FA_TERMINAL "  ログ###Log")) DrawLogPanel();
     ImGui::End();
     if (m_DefaultTabsFrames > 0 && --m_DefaultTabsFrames == 0) {
@@ -587,8 +611,10 @@ void App::BuildDefaultLayout(ImGuiID id) {
     ImGui::DockBuilderDockWindow("###Details", right);
     ImGui::DockBuilderDockWindow("###Styles", right);
     ImGui::DockBuilderDockWindow("###Variables", right);
+    ImGui::DockBuilderDockWindow("###Arrange", right);
     ImGui::DockBuilderDockWindow("###Animation", bottom);
     ImGui::DockBuilderDockWindow("###Assets", bottom);
+    ImGui::DockBuilderDockWindow("###Shader", bottom);
     ImGui::DockBuilderDockWindow("###Log", bottom);
     ImGui::DockBuilderFinish(id);
     m_DefaultTabsFrames = 4; // 窓とタブができてから、最初に見せるタブを選ぶ

@@ -101,6 +101,9 @@ struct SnapGuide {
 struct DesignerState {
     WidgetPath selection;
     bool hasSelection = false;
+    // 一緒に選んでいるウィジェットの名前（Shift / Ctrl + クリックで足す。整列パネルで使う）
+    // 名前は文書の中で重ならないので、編集で木の形が変わっても指す先がずれない
+    std::vector<std::string> extraSelection;
     WidgetPath hover;
     bool hasHover = false;
 
@@ -119,6 +122,13 @@ struct DesignerState {
     WidgetSlot dragSlot;
     UI::Rect dragRect;
     std::vector<SnapGuide> guides;
+    struct GroupDrag {
+        std::string name;
+        WidgetSlot slot;  // ドラッグを始めたときのスロット
+        UI::Rect rect;    // ドラッグを始めたときの矩形
+        UI::Rect parent;  // 親の矩形
+    };
+    std::vector<GroupDrag> dragGroup; // 一緒に選んでいるもの（まとめて動かす）
 
     WidgetPath renaming;
     bool isRenaming = false;
