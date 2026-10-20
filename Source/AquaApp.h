@@ -5,7 +5,7 @@
 //   左:   レイアウト（Body・パーツの一覧）・パレット（パーツも）・階層
 //   中央: 文書のタブ + 見たままのキャンバス、下にアニメーションのタイムライン
 //   右:   詳細（スロット・プロパティ・スタイル）・スタイル・変数（プレビュー用の値）・整列
-//   下:   アニメーション・アセット・シェーダー（UI のシェーダーを書く）・ログ
+//   下:   アニメーション（文字アニメーションも）・アセット・シェーダー（UI のシェーダーを書く）・ログ
 //
 // 編集すると .aqua がすぐ書き出され、ゲームのプロジェクト（か、ライブラリの送り先）の RutoEditor・実行中のゲームに反映される。
 
@@ -92,7 +92,8 @@ private:
     // パーツ（UIUserWidget）の上書き: 中のウィジェットを選んで、置いた先だけ値を変える
     void DrawPartOverrides(Document& doc, UIUserWidget& uw);
     void DrawWidgetMenu(Document& doc, const WidgetPath& path);
-    void HandleDesignerKeys(Document& doc);
+    // timeline: アニメーションのパネルから（キーのコピー・削除などはパネルが扱うので、ウィジェットには効かせない）
+    void HandleDesignerKeys(Document& doc, bool timeline = false);
     Widget* AddWidget(Document& doc, const std::string& type, Widget* parent, int index = -1, const Vec2* canvasPos = nullptr);
     void DeleteWidget(Document& doc, const WidgetPath& path);
     void DuplicateWidget(Document& doc, const WidgetPath& path);
@@ -108,6 +109,11 @@ private:
 
     // ---- アニメーション（AquaAnimation.cpp） ----
     void DrawAnimations(Document& doc);
+
+    // ---- 文字アニメーション（AquaTextAnim.cpp）: テキストの「自作」の出し方・動きをキーフレームで作る ----
+    //   アニメーションのパネルの右側に描く（一覧で「文字アニメーション」を選んだとき）
+    void DrawTextAnimPanel(Document& doc);
+    void OpenTextAnimEditor(int slot); // 0: 出し方 / 1: 動き（アニメーションのパネルを前に出す）
 
     // ---- シェーダー（AquaShaderPanel.cpp）: .uishader を書く・見本から作る・ウィジェットに掛ける ----
     void DrawShaderPanel();
@@ -172,6 +178,22 @@ private:
     bool m_NewShaderApply = true;
     int m_ShaderJumpLine = -1;                 // エラーの行へカーソルを動かす
     int m_ShaderCursorLine = 1;
+
+    // コピーしたキー（ウィジェットのアニメーション・文字アニメーション）
+    KeyClipboard m_KeyClipboard;
+    // 文字アニメーション
+    int m_TextAnimSlot = 0;            // 0: 出し方 / 1: 動き
+    float m_TextAnimTime = 0.0f;       // 見本の時刻
+    bool m_TextAnimPlaying = true;
+    float m_TextAnimDir = 1.0f;        // 1: 再生 / -1: 逆再生
+    bool m_TextAnimLoop = true;
+    float m_TextAnimZoom = 400.0f;     // 1 秒の幅（ピクセル）
+    KeySelection m_TextKeySel;         // 選んでいるキー（行はチャンネルの番号）
+    std::string m_TextKeyOwner;        // 選んだキーのテキストと出し方 / 動き（変わったら選択を外す）
+    std::string m_TextAnimSample;      // 見本の文字（空ならテキストの文字）
+    std::string m_TextAnimSaveName;
+    bool m_AnimTextMode = false;       // アニメーションのパネルで文字アニメーションを編集している
+    bool m_FocusAnimPanel = false;
 
     // パーツの上書きで編集している中のウィジェット（名前）
     std::string m_OverrideTarget;

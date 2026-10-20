@@ -103,7 +103,7 @@ std::string PropertyLabelJa(std::string_view n) {
         {"reveal", "出し方"}, {"revealSpeed", "出す速さ"}, {"revealDelay", "待ち時間"},
         {"revealFade", "1 文字の時間"}, {"revealAuto", "自動で出す"}, {"revealProgress", "出した割合"},
         {"revealOnShow", "毎回出し直す"}, {"revealSound", "文字の音"}, {"revealSoundEvery", "音の間隔"},
-        {"richText", "タグを使う"},
+        {"richText", "タグを使う"}, {"customReveal", "自作の出し方"}, {"customEffect", "自作の動き"},
     };
     for (const auto& [k, v] : kNames) {
         if (n == k) return v;
@@ -143,6 +143,7 @@ std::string EnumOptionLabelJa(std::string_view property, std::string_view option
         {"effect", "Pulse", "脈打つ"},
         {"effect", "Swing", "揺れる"},
         {"effect", "Glitch", "グリッチ"},
+        {"effect", "Custom", "自作（文字アニメーション）"},
         // テキストの出し方
         {"reveal", "None", "すぐ全部出す"},
         {"reveal", "Typewriter", "1 文字ずつ（タイプライター）"},
@@ -151,6 +152,7 @@ std::string EnumOptionLabelJa(std::string_view property, std::string_view option
         {"reveal", "Rise", "下から浮かぶ"},
         {"reveal", "Drop", "上から落ちて弾む"},
         {"reveal", "Spin", "回りながら出る"},
+        {"reveal", "Custom", "自作（文字アニメーション）"},
     };
     for (const Entry& e : kLabels) {
         if (property == e.property && option == e.option) return e.label;

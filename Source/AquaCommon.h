@@ -9,6 +9,10 @@
 #error "RutoEngine の SDK が古いです。RutoEngine で EnginePatches/*.patch を git am で当て、Setup.bat で SDK を作り直してください"
 #endif
 #include <Ruto/Engine/UIShader.h>
+// 自作の文字アニメーション・アニメーションの一時停止 / 逆再生（EnginePatches/0009）
+#if !defined(RUTO_UI_CHAR_ANIMATION)
+#error "RutoEngine の SDK が古いです（文字アニメーション・逆再生がありません）。ApplyEnginePatches.bat を実行して SDK を作り直してください"
+#endif
 
 #include <imgui.h>
 

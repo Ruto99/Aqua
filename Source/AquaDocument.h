@@ -17,6 +17,7 @@
 //   送り先はライブラリごとに覚え、以後は編集するたびに送る。
 
 #include "AquaCommon.h"
+#include "AquaKeys.h"
 
 #include <Ruto/Aqua/AquaLink.h>
 
@@ -207,12 +208,15 @@ struct DesignerState {
     int animation = -1;
     float animTime = 0.0f;
     bool animPlaying = false;
+    bool animReverse = false;   // 逆再生（時刻が戻っていく）
+    bool animLoop = true;       // 端まで来たら繰り返す（オフなら止まる）
     bool animRecording = false;
     float animZoom = 200.0f;
     bool keySelected = false;
     int keyTrack = -1;
     float keyTime = 0.0f;
     bool keyDragging = false;
+    KeySelection animKeys;      // タイムラインで選んでいるキー（いくつでも）
     std::string renamingAnim;
     bool isRenamingAnim = false;
     // カーブ表示（トラックの値をグラフで見て、キーを上下左右に動かす）

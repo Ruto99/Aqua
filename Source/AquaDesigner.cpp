@@ -97,6 +97,7 @@ public:
     bool changed = false;
     Widget* target = nullptr;                                // 今編集しているウィジェット
     std::function<void(const std::string&)> onEditShader;    // シェーダーの「編集」ボタン
+    std::function<void(int)> onEditTextAnim;                 // 文字アニメーションの「編集」ボタン（0: 出し方 / 1: 動き）
 
     void Property(std::string_view n, bool& v) override { if (Row(n)) changed |= ImGui::Checkbox(Id(n), &v); }
     void Property(std::string_view n, int& v) override { if (Row(n)) changed |= ImGui::DragInt(Id(n), &v, 0.2f); }
@@ -112,6 +113,19 @@ public:
     }
     void Property(std::string_view n, std::string& v) override {
         if (n == "overrides") return; // パーツの上書き（専用の欄で編集する）
+        if (n == "customReveal" || n == "customEffect") {
+            // 自作の文字アニメーション（JSON）は「文字アニメーション」のパネルで編集する
+            if (!Row(n)) return;
+            const TextCharAnimation a = TextCharAnimation::Parse(v);
+            int keys = 0;
+            for (const TimelineCurve& c : a.curves) keys += static_cast<int>(c.keys.size());
+            const std::string label = keys > 0 ? std::format(ICON_FA_PEN_TO_SQUARE "  編集（キー {} 個・{:.2f} 秒）##{}", keys, a.GetDuration(), n)
+                                               : std::format(ICON_FA_PLUS "  作る##{}", n);
+            if (ImGui::Button(label.c_str(), {-FLT_MIN, 0.0f}) && onEditTextAnim) onEditTextAnim(n == "customReveal" ? 0 : 1);
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
+                ImGui::SetTooltip("アニメーションのパネルの「文字アニメーション」で、1 文字の動きをキーフレームで作る\n%s", n == "customReveal" ? "出し方を「自作」にすると使われる" : "動きを「自作」にするか、テキストの中の <custom>…</custom> で使われる");
+            return;
+        }
         if (!Row(n)) return;
         const bool richText = n == "text" && target && std::string_view(target->GetTypeName()) == "UIText";
         if (n == "text") changed |= ImGui::InputTextMultiline(Id(n), &v, {-FLT_MIN, ImGui::GetTextLineHeight() * 2.6f});
@@ -152,6 +166,7 @@ public:
                 {"色", "color=#ffcc33", "color", "<color=#RRGGBB> 色を変える（#の後を書き換える）"}, {"薄く", "alpha=0.5", "alpha", "<alpha=0.5> 薄くする"},
                 {"止める", "pause=0.5", "", "<pause=0.5> 1 文字ずつ出すとき、ここで 0.5 秒止まる"},
                 {"速さ", "speed=0.5", "speed", "<speed=0.5> 1 文字ずつ出す速さを変える（0.5 でゆっくり）"},
+                {"自作", "custom", "custom", "<custom> 文字アニメーションのパネルで作った「動き」"},
             };
             ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {4.0f, 1.0f});
             const float rowRight = ImGui::GetCursorScreenPos().x + ImGui::GetContentRegionAvail().x;
@@ -265,7 +280,9 @@ private:
             {"revealOnShow", "表示し直すたび・文字が変わるたびに最初から出す"},
             {"revealSound", "文字を出すときに鳴らす音（会話の「ピピピ」）"},
             {"revealSoundEvery", "何文字ごとに音を鳴らすか"},
-            {"richText", "<wave> <shake> <rainbow> <pulse> <swing> <glitch> <color=#RRGGBB> <alpha=0.5> <pause=0.5> <speed=2> を使う"},
+            {"richText", "<wave> <shake> <rainbow> <pulse> <swing> <glitch> <custom> <color=#RRGGBB> <alpha=0.5> <pause=0.5> <speed=2> を使う"},
+            {"customReveal", "出し方が「自作」のときの動き（文字アニメーションのパネルで作る）"},
+            {"customEffect", "動きが「自作」のとき・<custom> で囲んだ所の動き（文字アニメーションのパネルで作る）"},
             {"shader", "UI のシェーダー（.uishader）。シェーダーのパネルで作る・編集する"},
             {"shaderChildren", "子のウィジェットにも同じシェーダーを掛ける"},
         };
@@ -674,13 +691,13 @@ void App::DrawDocumentArea() {
     if (closeIndex >= 0) CloseDocument(static_cast<size_t>(closeIndex));
 }
 
-void App::HandleDesignerKeys(Document& doc) {
+void App::HandleDesignerKeys(Document& doc, bool timeline) {
     const ImGuiIO& io = ImGui::GetIO();
     if (io.WantTextInput || ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopupId)) return;
     WidgetAsset& asset = *doc.asset;
     auto pressed = [](ImGuiKey k, bool repeat = false) { return ImGui::IsKeyPressed(k, repeat); };
-    if (doc.ui.hasSelection) {
-        if (pressed(ImGuiKey_Delete) && !doc.ui.keySelected) DeleteWidget(doc, doc.ui.selection);
+    if (doc.ui.hasSelection && !timeline) {
+        if (pressed(ImGuiKey_Delete)) DeleteWidget(doc, doc.ui.selection);
         if (io.KeyCtrl && pressed(ImGuiKey_D)) DuplicateWidget(doc, doc.ui.selection);
         if (io.KeyCtrl && pressed(ImGuiKey_C)) CopyWidget(doc, doc.ui.selection);
         if (io.KeyCtrl && pressed(ImGuiKey_X) && !doc.ui.selection.empty()) {
@@ -693,7 +710,7 @@ void App::HandleDesignerKeys(Document& doc) {
             if (Widget* w = Resolve(asset.root.get(), doc.ui.selection)) doc.ui.renameBuffer = w->name;
         }
         // 矢印キーで 1 ずつ（Shift で 10）動かす
-        if (Widget* w = Resolve(asset.root.get(), doc.ui.selection); w && IsCanvasChild(*w) && !doc.ui.keySelected && !io.KeyCtrl) {
+        if (Widget* w = Resolve(asset.root.get(), doc.ui.selection); w && IsCanvasChild(*w) && !io.KeyCtrl) {
             const float step = io.KeyShift ? 10.0f : 1.0f;
             Vec2 d{0.0f, 0.0f};
             if (pressed(ImGuiKey_LeftArrow, true)) d.x -= step;
@@ -706,26 +723,16 @@ void App::HandleDesignerKeys(Document& doc) {
             }
         }
     }
-    if (io.KeyCtrl && pressed(ImGuiKey_V)) PasteWidget(doc);
+    if (io.KeyCtrl && pressed(ImGuiKey_V) && !timeline) PasteWidget(doc);
     if (!io.KeyCtrl && pressed(ImGuiKey_F)) doc.ui.zoom = 0.0f;
     if (!io.KeyCtrl && pressed(ImGuiKey_P)) {
         doc.ui.preview = !doc.ui.preview;
         if (doc.view) doc.view->SetAsset(doc.asset);
     }
     if (!io.KeyCtrl && pressed(ImGuiKey_G)) doc.ui.showGrid = !doc.ui.showGrid;
-    if (pressed(ImGuiKey_Escape)) {
+    if (pressed(ImGuiKey_Escape) && !timeline) {
         doc.ui.hasSelection = false;
         doc.ui.extraSelection.clear();
-    }
-    if (doc.ui.keySelected && pressed(ImGuiKey_Delete)) {
-        if (WidgetAnimation* a = doc.ui.animation >= 0 && doc.ui.animation < static_cast<int>(asset.animations.size()) ? &asset.animations[static_cast<size_t>(doc.ui.animation)] : nullptr) {
-            if (doc.ui.keyTrack >= 0 && doc.ui.keyTrack < static_cast<int>(a->tracks.size())) {
-                auto& keys = a->tracks[static_cast<size_t>(doc.ui.keyTrack)].curve.keys;
-                if (const int ki = a->tracks[static_cast<size_t>(doc.ui.keyTrack)].curve.FindKey(doc.ui.keyTime); ki >= 0) keys.erase(keys.begin() + ki);
-                doc.ui.keySelected = false;
-                doc.Changed();
-            }
-        }
     }
 }
 
@@ -1832,6 +1839,7 @@ void App::DrawPartOverrides(Document& doc, UIUserWidget& uw) {
     DesignerVisitor v(m_Project);
     v.target = edited.get();
     v.onEditShader = [this](const std::string& path) { OpenShaderEditor(path); };
+    v.onEditTextAnim = [this](int slot) { OpenTextAnimEditor(slot); };
     v.Begin("override");
     edited->Reflect(v);
     v.Header("共通");
@@ -2012,6 +2020,7 @@ void App::DrawDetails(Document& doc) {
     DesignerVisitor v(m_Project);
     v.target = target;
     v.onEditShader = [this](const std::string& path) { OpenShaderEditor(path); };
+    v.onEditTextAnim = [this](int slot) { OpenTextAnimEditor(slot); };
     v.Begin("props");
     target->Reflect(v);
     v.Header("共通");
@@ -2093,7 +2102,7 @@ void App::RenderDocument(Document& doc) {
     doc.view->interactive = ui.preview;
     doc.view->navigation = true;
     const WidgetAnimation* anim = ui.animation >= 0 && ui.animation < static_cast<int>(doc.asset->animations.size()) ? &doc.asset->animations[static_cast<size_t>(ui.animation)] : nullptr;
-    doc.view->previewAnimation = anim && !ui.preview ? anim->name : std::string();
+    doc.view->previewAnimation = anim && !ui.preview && !m_AnimTextMode ? anim->name : std::string();
     doc.view->previewTime = ui.animTime;
     // プレビュー用の変数（変数のパネルで入れた値。プレビューで変わった値はそのまま）
     for (const auto& [name, value] : doc.previewVariables) {
@@ -2118,7 +2127,7 @@ void App::RenderDocument(Document& doc) {
     for (auto& [vw, opacity] : hiddenNow) vw->opacity = opacity;
     for (const UIEvent& e : doc.view->TakeEvents()) {
         const char* kind = e.type == UIEventType::Click ? "クリック" : e.type == UIEventType::ValueChanged ? "値の変更" : e.type == UIEventType::Submit ? "決定"
-                         : e.type == UIEventType::TextRevealed ? "テキストを出し終えた" : nullptr;
+                         : e.type == UIEventType::TextRevealed ? "テキストを出し終えた" : e.type == UIEventType::TextHidden ? "テキストを消し終えた" : nullptr;
         if (!kind) continue;
         ui.lastEvent = e.type == UIEventType::ValueChanged ? std::format("{}: {}  {}", kind, e.widget, e.text.empty() ? std::format("{:.2f}", e.value) : e.text)
                                                            : std::format("{}: {}（OnUIEvent の message: \"{}\"）", kind, e.widget, e.message);

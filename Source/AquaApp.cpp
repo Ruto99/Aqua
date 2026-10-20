@@ -457,10 +457,18 @@ void App::DrawUI() {
         if (Document* doc = ActiveDocument()) DrawVariablesPanel(*doc);
     }
     ImGui::End();
+    // 文字アニメーションの「作る / 編集」で、アニメーションのタブを前に出す
+    if (m_FocusAnimPanel) {
+        if (ImGuiWindow* w = ImGui::FindWindowByName("###Animation")) {
+            if (w->DockNode && w->DockNode->TabBar) w->DockNode->TabBar->NextSelectedTabId = w->TabId;
+            ImGui::FocusWindow(w);
+        }
+        m_FocusAnimPanel = false;
+    }
     if (ImGui::Begin(ICON_FA_WAND_MAGIC_SPARKLES "  アニメーション###Animation", nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse)) {
         if (Document* doc = ActiveDocument()) {
             DrawAnimations(*doc);
-            if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows)) HandleDesignerKeys(*doc); // キーの削除など
+            if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows)) HandleDesignerKeys(*doc, true); // P・F など（キーの操作はパネルの中）
         }
     }
     ImGui::End();
@@ -499,7 +507,7 @@ void App::DrawUI() {
     if (ImGui::Begin(ICON_FA_TERMINAL "  ログ###Log")) DrawLogPanel();
     ImGui::End();
     if (m_DefaultTabsFrames > 0 && --m_DefaultTabsFrames == 0) {
-        for (const char* name : {"###Palette", "###Details", "###Animation", "###Canvas"}) {
+        for (const char* name : {"###Project", "###Details", "###Animation", "###Canvas"}) {
             ImGuiWindow* w = ImGui::FindWindowByName(name);
             if (!w) continue;
             if (w->DockNode && w->DockNode->TabBar) w->DockNode->TabBar->NextSelectedTabId = w->TabId;
@@ -736,20 +744,23 @@ void App::BuildDefaultLayout(ImGuiID id) {
     ImGui::DockBuilderRemoveNode(id);
     ImGui::DockBuilderAddNode(id, ImGuiDockNodeFlags_DockSpace);
     ImGui::DockBuilderSetNodeSize(id, vp->Size);
-    // 左: 部品（パレット・プロジェクト）／中央: キャンバス／右: 階層の下に詳細／下: アニメーションなど
+    // 基本のレイアウト
+    // 左: レイアウト一覧・パレット／中央: キャンバス／右: 階層の下に詳細・スタイル・変数・整列・グループ／
+    // 下: アニメーション（文字アニメーションも）・アセット・シェーダー・ログ
     ImGuiID center = id;
     const ImGuiID left = ImGui::DockBuilderSplitNode(center, ImGuiDir_Left, 0.15f, nullptr, &center);
     ImGuiID right = ImGui::DockBuilderSplitNode(center, ImGuiDir_Right, 0.27f, nullptr, &center);
     const ImGuiID bottom = ImGui::DockBuilderSplitNode(center, ImGuiDir_Down, 0.30f, nullptr, &center);
     const ImGuiID rightTop = ImGui::DockBuilderSplitNode(right, ImGuiDir_Up, 0.36f, nullptr, &right);
-    ImGui::DockBuilderDockWindow("###Palette", left);
     ImGui::DockBuilderDockWindow("###Project", left);
+    ImGui::DockBuilderDockWindow("###Palette", left);
     ImGui::DockBuilderDockWindow("###Hierarchy", rightTop);
     ImGui::DockBuilderDockWindow("###Canvas", center);
     ImGui::DockBuilderDockWindow("###Details", right);
     ImGui::DockBuilderDockWindow("###Styles", right);
     ImGui::DockBuilderDockWindow("###Variables", right);
     ImGui::DockBuilderDockWindow("###Arrange", right);
+    ImGui::DockBuilderDockWindow("###Groups", right);
     ImGui::DockBuilderDockWindow("###Animation", bottom);
     ImGui::DockBuilderDockWindow("###Assets", bottom);
     ImGui::DockBuilderDockWindow("###Shader", bottom);

@@ -20,7 +20,7 @@ RutoEngine とは別のアプリで、**RutoEngine のプロジェクトが無�
 
 RutoEngine の SDK（ビルド済みのエンジン）をリンクして作る。先に RutoEngine の `Setup.bat` で SDK を作っておく。
 
-**エンジンのパッチ**: キャプチャー・テキストアニメーション・UI のシェーダー・Null / Bounding ペイン・回転・頂点カラー・ユーザーデータ・パーツの上書き・アニメーションの区間・グループ・コマ送り・文字間 / 行間・白黒カラーは RutoEngine 側の実装が要る。**`ApplyEnginePatches.bat` をダブルクリック**すると、`EnginePatches` のパッチを番号の順に RutoEngine へ `git am` で当て、`Setup.bat` で SDK を作り直す。
+**エンジンのパッチ**: キャプチャー・テキストアニメーション・UI のシェーダー・Null / Bounding ペイン・回転・頂点カラー・ユーザーデータ・パーツの上書き・アニメーションの区間・グループ・コマ送り・文字間 / 行間・白黒カラー・自作の文字アニメーション・アニメーションの一時停止 / 逆再生は RutoEngine 側の実装が要る。**`ApplyEnginePatches.bat` をダブルクリック**すると、`EnginePatches` のパッチを番号の順に RutoEngine へ `git am` で当て、`Setup.bat` で SDK を作り直す。
 
 - 当て済みのパッチは飛ばすので、何度実行してもよい（パッチが増えたときもこれを実行する）。
 - RutoEngine にコミットしていない変更があると、パッチを当てる前に止まる（先にコミットするか stash する）。
@@ -31,7 +31,7 @@ RutoEngine の SDK（ビルド済みのエンジン）をリンクして作る�
 
 ```bat
 cd ..\RutoEngine
-git am -3 ..\Aqua\EnginePatches\0001-UICapture.patch ..\Aqua\EnginePatches\0002-TextAnimation-UIShader.patch ..\Aqua\EnginePatches\0003-Fix-duplicate-glGetIntegerv.patch ..\Aqua\EnginePatches\0004-NullPane.patch ..\Aqua\EnginePatches\0005-Rotation-VertexColors-BoundingPane-UserData.patch ..\Aqua\EnginePatches\0006-PartOverrides.patch ..\Aqua\EnginePatches\0007-AnimSections-Groups-TextureFrames.patch ..\Aqua\EnginePatches\0008-TextSpacing-BlackWhite.patch
+git am -3 ..\Aqua\EnginePatches\0001-UICapture.patch ..\Aqua\EnginePatches\0002-TextAnimation-UIShader.patch ..\Aqua\EnginePatches\0003-Fix-duplicate-glGetIntegerv.patch ..\Aqua\EnginePatches\0004-NullPane.patch ..\Aqua\EnginePatches\0005-Rotation-VertexColors-BoundingPane-UserData.patch ..\Aqua\EnginePatches\0006-PartOverrides.patch ..\Aqua\EnginePatches\0007-AnimSections-Groups-TextureFrames.patch ..\Aqua\EnginePatches\0008-TextSpacing-BlackWhite.patch ..\Aqua\EnginePatches\0009-CustomTextAnimation-PauseReverse.patch
 Setup.bat
 ```
 
@@ -127,7 +127,7 @@ Aqua は 2 種類のフォルダ（ワークスペース）を開ける。
 | キャンバス | 見たままの編集。8 方向のリサイズ、**親・兄弟の端と中央への吸い付き**（Alt で無効、Ctrl で 10 刻み）、アンカー表示、解像度の切り替え、ホイールで拡大、プレビュー（P。実際に操作して確かめる） |
 | 詳細・スタイル | スロット（アンカーのプリセット・余白・揃え・Auto / Fill）・プロパティ・スタイルの作成 / 反映 / 名前の変更 / 削除 |
 | 変数 | テキストの `{変数}` や「変数と連動」に入る値を入れて見た目を確かめる（スライダーで 0〜1 も試せる） |
-| アニメーション | ウィジェットアニメーションのタイムライン（録画・キーの移動・補間） |
+| アニメーション | ウィジェットアニメーションのタイムライン（録画・キーの移動・補間・**再生 / 逆再生 / 一時停止**・繰り返し）と、**文字アニメーション**（テキストの 1 文字の動きをキーフレームで作る）。左の一覧で切り替え、同じタイムライン・再生ボタン・キーの編集で扱う |
 | アセット | 画像・フォント・音・UI・シェーダーのサムネイル。キャンバスへドラッグ: 画像 → Image（画像・ボタン・枠に落とすと差し替え）、フォント → テキスト、音 → ボタンのクリック音、UI → 部品（ユーザーウィジェット）、シェーダー → そのウィジェットに掛ける |
 | シェーダー | **UI のシェーダー（`.uishader`）を書く**。見本（グレースケール・セピア・白く光らせる・光が流れる・ディゾルブ・グラデーション・虹色・色相・点滅・走査線・ホログラム・ふちを暗く・波）から作る、書くと少し待ってコンパイル、エラーを行ごとに表示（クリックでその行へ）、コンパイルできたらすぐ保存してキャンバスに反映（書きながら反映）、`@param` を足す・消す・並べ替えてもウィジェットの値を名前で引き継ぐ |
 | 整列 | **選んだウィジェットを自動で揃える・並べる**。左 / 中央 / 右・上 / 中央 / 下に揃える（選んだものの範囲・親・最初に選んだものに対して）、等間隔に並べる、決めた間隔で詰める、幅・高さを揃える、横一列 / 縦一列 / 格子（列の数・間隔・並べる順・置く場所・ます目の大きさ）。キャンバスで Shift + クリック・階層で Ctrl + クリックで一緒に選ぶ（まとめてドラッグもできる）。入れ物（Canvas Panel）だけを選ぶと、その子すべてが対象 |
@@ -161,6 +161,33 @@ UI のシェーダーの `LocalUV()` などは回っていない四角形を基�
 | **コマ送り** | 画像の「コマの画像」に画像を 1 行に 1 つ書くと（「+ 画像をコマに足す」でも）、その中の「今のコマ」番目を描く。「今のコマ」にコンスタントのキーを打つとパラパラ漫画、「自動で送る速さ」を入れると自動で繰り返す |
 
 区間・グループの名前もスクリプト用のヘッダー（`Animations`・`Groups`）に出る。
+
+### 再生・逆再生・一時停止
+
+アニメーションのパネルの ⏮（最初へ）・◀（逆再生）・▶（再生）・⏭（最後へ）・🔁（繰り返す）。Space で再生 / 一時停止、Shift+Space で逆再生。
+プレビュー（P）中は、ボタンがゲームと同じ再生（下のスクリプトの関数）を呼ぶので、そのまま確かめられる。
+
+### キーの編集（アニメーション・文字アニメーション共通）
+
+トラック（行）はパネルの高さに合わせて詰めて、いつもすべて表示する。
+
+| 操作 | 内容 |
+|---|---|
+| 選ぶ | クリック・Ctrl / Shift + クリックで足す / 外す・空いた所をドラッグで囲む・Ctrl+A ですべて・行の名前をダブルクリックでその行のすべて・Esc で外す |
+| 動かす | 選んだキーをまとめてドラッグ・← → で 1 コマ（Shift で 10 コマ） |
+| コピー・貼り付け | Ctrl+C / Ctrl+X / Ctrl+V（今の時刻に、間隔を保って貼る。1 つの行だけコピーしてキーを選んでいれば、その行に貼る。別のアニメーションにも貼れる）・Ctrl+D で複製・Delete で削除 |
+| 打つ | 空いた所をダブルクリックで、その時刻の値でキーを打つ |
+| 移動 | `,` / `.` で前 / 次のキーへ・Home / End で最初 / 最後へ |
+| 右クリック | 値・補間（選んだキーすべて）・コピー / 切り取り / 貼り付け / 複製・**時間を反転**（逆の動きを作る）・削除 |
+
+```cpp
+ui->PlayAnimation(AquaUI::Menu::Animations::In);         // 再生
+ui->PlayAnimationReverse(AquaUI::Menu::Animations::In);  // 最後から最初へ逆に（閉じるときなど）
+ui->ReverseAnimation(AquaUI::Menu::Animations::In);      // 再生中なら今の時刻から向きを変える。止まっていれば最後から逆に
+ui->PauseAnimation(AquaUI::Menu::Animations::In);        // 一時停止（名前を省くと再生中のすべて）
+ui->ResumeAnimation();                                    // 続ける
+ui->GetDocument().SetAnimationSpeed("In", 0.5f);          // 速さ・時刻も変えられる（SetAnimationTime / GetAnimationTime）
+```
 
 ### 文字の並び・白黒カラー
 
@@ -211,17 +238,37 @@ if (auto* c = dynamic_cast<UICapture*>(ui->Find(AquaUI::Pause::Widgets::Backgrou
 | 動き | 波 / 震え / 虹色 / 脈打つ / 揺れる / グリッチ。大きさ・速さ |
 | 文字の音 | 文字を出すときに鳴らす音（会話の「ピピピ」）と、何文字ごとに鳴らすか |
 | 自動で出す | オフにすると「出した割合」（0〜1）の分だけ出す。アニメーションのタイムラインで動かせる |
-| タグ | 文字の中に `<wave>` `<shake>` `<rainbow>` `<pulse>` `<swing>` `<glitch>` `<color=#ff8800>` `<alpha=0.5>` `<pause=0.5>`（止める）`<speed=2>`（出す速さ）。詳細のボタンで、選んだ所をタグで囲める |
+| タグ | 文字の中に `<wave>` `<shake>` `<rainbow>` `<pulse>` `<swing>` `<glitch>` `<custom>`（自作の動き）`<color=#ff8800>` `<alpha=0.5>` `<pause=0.5>`（止める）`<speed=2>`（出す速さ）。詳細のボタンで、選んだ所をタグで囲める |
+| 自作 | 出し方・動きを「自作（文字アニメーション）」にすると、アニメーションのパネルの「文字アニメーション」で作った動きになる |
 
 - 「テキストの演出（プリセット）」で、会話・ポップ・波打つタイトル・警告の震え・レアの虹色などをまとめて設定できる
 - 編集中のキャンバスでは文字を全部出し（動きは見える）、プレビュー（P）とゲームで実際に出す
-- 出し終えると `UIEventType::TextRevealed` のイベント（OnUIEvent）が来る
+- 出し終えると `UIEventType::TextRevealed`、`HideText` で消し終えると `UIEventType::TextHidden` のイベント（OnUIEvent）が来る
 
 ```cpp
 ui->SkipText(AquaUI::Talk::Widgets::Message);          // すぐ全部出す（会話を送るとき）
 if (!ui->IsTextRevealing(AquaUI::Talk::Widgets::Message)) NextLine();
 ui->RestartText(AquaUI::Talk::Widgets::Message);       // 最初から出し直す
+ui->PauseText(AquaUI::Talk::Widgets::Message);         // 一時停止（PauseText(名前, false) で続ける）
+ui->HideText(AquaUI::Talk::Widgets::Message);          // 逆再生: 出し方を逆にたどって、後ろの文字から消す
+ui->ShowText(AquaUI::Talk::Widgets::Message);          // 今の所からまた出す
 ```
+
+### 文字アニメーション（自作の出し方・動き）
+
+アニメーションのパネルで、テキストを選んで左の一覧の「文字アニメーション」から「出し方」「動き」を選ぶ（詳細の「自作の出し方」「自作の動き」の「作る / 編集」でも開く）と、右側でテキストの 1 文字の動きをキーフレームで作れる。
+再生ボタン・キーの編集（コピー / 貼り付けなど）はふつうのアニメーションと同じ。
+作ったものはそのテキストに保存され（`.aqs` / `.aqua`）、ゲームでも同じに動く。
+
+| | 内容 |
+|---|---|
+| 出し方（出るとき） | 1 文字ずつ順に動き出す動き。文字が動き出す間隔はテキストの「出す速さ」。逆再生（`HideText`）では同じ動きを逆にたどって消える |
+| 動き（ずっと） | 長さで繰り返す動き。「文字ごとのずれ」で隣の文字と動きをずらす（波のように）。テキストの中の `<custom>…</custom>` だけに掛けることもできる |
+| 行（チャンネル） | 横 / 縦のずれ（1 で 1 文字分）・大きさ・横 / 縦の大きさ・回転（度）・不透明度・色（赤・緑・青を掛ける） |
+| キー | 行の空いた所をダブルクリックで打つ・ドラッグで時刻を動かす（0.01 秒刻み、Alt で自由）・右クリックで値と補間（なめらか / まっすぐ / 段）・Delete で削除 |
+| 中心 | 回転・拡大の中心（文字の上 / 中央 / 下） |
+| 見本 | 左の欄に、選んだテキストの文字（か入れた見本の文字）で動きを表示。上の ⏮ ◀ ▶ ⏭ 🔁 と Space / Shift+Space で再生・逆再生・一時停止。目盛りをドラッグでその時刻を見る |
+| ひな形・保存 | 「ひな形・保存したもの」から作り始める（跳ねて出る・滑り込む・ぼよん・ゆらゆら・ドキドキなど）。💾 で名前を付けて保存すると、ほかのテキスト・レイアウトでも使える（`%APPDATA%\Ruto\RutoEngine\Aqua\TextAnimations.json`） |
 
 ### UI のシェーダー（詳細の「シェーダー」）
 
