@@ -611,6 +611,8 @@ std::unique_ptr<Document> Document::Open(Project& project, const fs::path& file,
         if (const Project::SourceInfo* info = project.FindSourceInfo(doc->output)) doc->kind = info->kind;
         doc->kind = ParseLayoutKind((*json)["kind"].AsString(), doc->kind);
         for (const auto& [k, v] : (*json)["preview"]["variables"].Items()) doc->previewVariables[k] = v.AsString();
+        for (const Json& n : (*json)["editor"]["locked"].Elements()) doc->lockedWidgets.insert(n.AsString());
+        for (const Json& n : (*json)["editor"]["hidden"].Elements()) doc->editorHidden.insert(n.AsString());
         if (wasJson) {
             // 以前の JSON の編集用ファイルは、開いたときに XML に書き直す
             doc->asset->path = doc->output;
@@ -666,6 +668,13 @@ std::unique_ptr<Document> Document::Open(Project& project, const fs::path& file,
         project.Refresh(true);
     }
     return doc;
+}
+
+bool Document::IsLocked(const Widget& w) const {
+    for (const Widget* p = &w; p; p = p->GetParent()) {
+        if (!p->name.empty() && lockedWidgets.contains(p->name)) return true;
+    }
+    return false;
 }
 
 std::string Document::GetTitle() const {
@@ -742,6 +751,13 @@ bool Document::Save() {
     Json vars = Json::MakeObject();
     for (const auto& [k, v] : previewVariables) vars[k] = v;
     j["preview"]["variables"] = std::move(vars);
+    if (!lockedWidgets.empty() || !editorHidden.empty()) {
+        Json locked = Json::MakeArray(), hidden = Json::MakeArray();
+        for (const std::string& n : lockedWidgets) locked.Push(n);
+        for (const std::string& n : editorHidden) hidden.Push(n);
+        j["editor"]["locked"] = std::move(locked);
+        j["editor"]["hidden"] = std::move(hidden);
+    }
     if (!WriteSourceFile(sourcePath, j)) {
         m_SaveError = "保存できません: " + FileSystem::ToUtf8(sourcePath);
         Log::Error("{}", m_SaveError);

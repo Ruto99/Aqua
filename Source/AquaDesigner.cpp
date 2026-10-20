@@ -487,6 +487,9 @@ void App::RenameWidget(Document& doc, Widget& w, std::string name) {
             if (m == w.name) m = name;
         }
     }
+    for (std::set<std::string>* names : {&doc.lockedWidgets, &doc.editorHidden}) {
+        if (names->erase(w.name)) names->insert(name);
+    }
     for (WidgetAnimation& a : asset.animations) {
         for (WidgetAnimTrack& t : a.tracks) {
             if (t.widget == w.name) t.widget = name;
@@ -912,20 +915,25 @@ void App::DrawHierarchyNode(Document& doc, Widget& w, WidgetPath& path) {
     WidgetAsset& asset = *doc.asset;
     const bool selected = (doc.ui.hasSelection && doc.ui.selection == path) ||
                           (w.GetParent() && std::find(doc.ui.extraSelection.begin(), doc.ui.extraSelection.end(), w.name) != doc.ui.extraSelection.end());
-    ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_FramePadding;
+    // AllowOverlap: 行の右の鍵・目のボタンを押せるように（行より後に置いたボタンが優先）
+    ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_FramePadding |
+                               ImGuiTreeNodeFlags_AllowOverlap;
     if (selected) flags |= ImGuiTreeNodeFlags_Selected;
     bool hasChildren = false;
     for (const auto& c : w.children) hasChildren |= !c->generated;
     if (!hasChildren) flags |= ImGuiTreeNodeFlags_Leaf;
     ImGui::PushID(PathKey(path).c_str());
     const bool renaming = doc.ui.isRenaming && doc.ui.renaming == path;
-    const std::string label = std::string(WidgetIcon(w.GetTypeName())) + "  " + (renaming ? std::string() : (w.name.empty() ? TypeLabel(w.GetTypeName()) : w.name));
+    const bool editorHidden = doc.editorHidden.contains(w.name);
+    const std::string label = std::string(WidgetIcon(w.GetTypeName())) + "  " + (renaming ? std::string() : (w.name.empty() ? TypeLabel(w.GetTypeName()) : w.name)) +
+                              (editorHidden && !renaming ? "  " ICON_FA_EYE_LOW_VISION : "");
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {4.0f, 2.0f});
-    ImGui::PushStyleColor(ImGuiCol_Text, w.visibility == WidgetVisibility::Collapsed || w.visibility == WidgetVisibility::Hidden ? Theme::kTextDim : Theme::kText);
+    ImGui::PushStyleColor(ImGuiCol_Text, w.visibility == WidgetVisibility::Collapsed || w.visibility == WidgetVisibility::Hidden || editorHidden ? Theme::kTextDim : Theme::kText);
     const bool open = ImGui::TreeNodeEx("##node", flags, "%s", label.c_str());
     ImGui::PopStyleColor();
     ImGui::PopStyleVar();
     const ImRect itemRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
+    if (ImGui::IsItemHovered() && ImGui::IsMouseReleased(ImGuiMouseButton_Right)) ImGui::OpenPopup("node-menu"); // 行の右クリック（後ろのボタンではなく）
     if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
         if (ImGui::GetIO().KeyCtrl || ImGui::GetIO().KeyShift) {
             ToggleExtraSelection(doc, path); // 一緒に選ぶ（整列パネルで揃える）
@@ -944,7 +952,21 @@ void App::DrawHierarchyNode(Document& doc, Widget& w, WidgetPath& path) {
         doc.ui.hover = path;
         doc.ui.hasHover = true;
     }
-    // 表示・非表示の切り替え（目のアイコン）
+    // 編集のときだけのロック（鍵のアイコン）と、表示・非表示の切り替え（目のアイコン）
+    if (w.GetParent()) {
+        const bool locked = doc.lockedWidgets.contains(w.name);
+        ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - ImGui::GetFrameHeight() * 2.1f);
+        ImGui::PushStyleColor(ImGuiCol_Button, {0, 0, 0, 0});
+        ImGui::PushStyleColor(ImGuiCol_Border, {0, 0, 0, 0});
+        ImGui::PushStyleColor(ImGuiCol_Text, locked ? Theme::kCoral : ImVec4(Theme::kTextDim.x, Theme::kTextDim.y, Theme::kTextDim.z, 0.35f));
+        if (ImGui::SmallButton(locked ? ICON_FA_LOCK "##lock" : ICON_FA_LOCK_OPEN "##lock")) {
+            if (locked) doc.lockedWidgets.erase(w.name);
+            else doc.lockedWidgets.insert(w.name);
+            doc.Save();
+        }
+        ImGui::PopStyleColor(3);
+        if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) ImGui::SetTooltip("ロック: キャンバスで選べない・動かせない（編集のときだけ。ゲームには関係ない）");
+    }
     if (w.GetParent()) {
         const bool hidden = w.visibility == WidgetVisibility::Collapsed || w.visibility == WidgetVisibility::Hidden;
         ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - ImGui::GetFrameHeight());
@@ -1017,7 +1039,7 @@ void App::DrawHierarchyNode(Document& doc, Widget& w, WidgetPath& path) {
         }
         ImGui::EndDragDropTarget();
     }
-    if (ImGui::BeginPopupContextItem("node-menu")) {
+    if (ImGui::BeginPopup("node-menu")) {
         doc.ui.selection = path;
         doc.ui.hasSelection = true;
         DrawWidgetMenu(doc, path);
@@ -1042,6 +1064,22 @@ void App::DrawWidgetMenu(Document& doc, const WidgetPath& path) {
     const bool isRoot = w->GetParent() == nullptr;
     ImGui::TextColored(WidgetIconColor(w->GetTypeName()), "%s  %s", WidgetIcon(w->GetTypeName()), w->name.c_str());
     ImGui::Separator();
+    if (!isRoot) {
+        const bool locked = doc.lockedWidgets.contains(w->name);
+        if (ImGui::MenuItem(locked ? ICON_FA_LOCK_OPEN "  ロックを外す" : ICON_FA_LOCK "  ロック（キャンバスで選べなくする）")) {
+            if (locked) doc.lockedWidgets.erase(w->name);
+            else doc.lockedWidgets.insert(w->name);
+            doc.Save();
+        }
+        const bool hidden = doc.editorHidden.contains(w->name);
+        if (ImGui::MenuItem(hidden ? ICON_FA_EYE "  編集中も表示する" : ICON_FA_EYE_LOW_VISION "  編集中だけ隠す（ゲームでは表示）")) {
+            if (hidden) doc.editorHidden.erase(w->name);
+            else doc.editorHidden.insert(w->name);
+            doc.Save();
+            if (doc.view) doc.view->SetAsset(doc.asset);
+        }
+        ImGui::Separator();
+    }
     if (w->CanAddChild() && ImGui::BeginMenu(ICON_FA_PLUS "  子を追加")) {
         for (const WidgetTypeInfo& info : WidgetRegistry::GetAll()) {
             if (ImGui::MenuItem((std::string(WidgetIcon(info.name)) + "  " + info.label).c_str())) AddWidget(doc, info.name, w);
@@ -1255,6 +1293,14 @@ void App::DrawCanvas(Document& doc) {
     // ホバー
     Widget* hoverDoc = nullptr;
     if (hovered && docRoot && !ui.preview && ui.drag == DesignerState::Drag::None) hoverDoc = doc.view->HitTest(mousePx, false);
+    // ロックしたもの（と、その中）はキャンバスで選ばない: ロックされていない親にする
+    if (hoverDoc && !ui.hasHover) {
+        while (hoverDoc) {
+            Widget* a = Resolve(asset.root.get(), DesignPathOf(hoverDoc));
+            if (!a || !doc.IsLocked(*a)) break;
+            hoverDoc = hoverDoc->GetParent();
+        }
+    }
     if (hoverDoc && hoverDoc == docRoot) hoverDoc = nullptr;
     if (ui.hasHover) {
         // 階層でホバー中のもの
@@ -1264,7 +1310,7 @@ void App::DrawCanvas(Document& doc) {
 
     Widget* selDoc = ui.hasSelection ? Resolve(docRoot, ui.selection) : nullptr;
     Widget* selAsset = ui.hasSelection ? Resolve(asset.root.get(), ui.selection) : nullptr;
-    const bool canTransform = selAsset && selDoc && IsCanvasChild(*selAsset) && !ui.preview;
+    const bool canTransform = selAsset && selDoc && IsCanvasChild(*selAsset) && !ui.preview && !doc.IsLocked(*selAsset);
 
     // リサイズのつまみ（8 方向）
     int handleHover = -1;
@@ -1316,7 +1362,7 @@ void App::DrawCanvas(Document& doc) {
                 }
                 selAsset = ui.hasSelection ? Resolve(asset.root.get(), ui.selection) : nullptr;
                 selDoc = ui.hasSelection ? Resolve(docRoot, ui.selection) : nullptr;
-                if (selAsset && selDoc && IsCanvasChild(*selAsset)) ui.drag = DesignerState::Drag::Move;
+                if (selAsset && selDoc && IsCanvasChild(*selAsset) && !doc.IsLocked(*selAsset)) ui.drag = DesignerState::Drag::Move;
             }
             if (ui.drag != DesignerState::Drag::None && selAsset && selDoc) {
                 ui.dragSlot = selAsset->slot;
@@ -2059,7 +2105,17 @@ void App::RenderDocument(Document& doc) {
     const Vec2 res = preset == 0 ? doc.asset->referenceResolution : Vec2{presets[static_cast<size_t>(preset)].w, presets[static_cast<size_t>(preset)].h};
     doc.view->Update({0.0f, 0.0f, static_cast<float>(w), static_cast<float>(h)}, ImGui::GetIO().DeltaTime, ui.screenZoom * CanvasScale(*doc.asset, res));
     doc.view->RefreshUserWidgets(); // 部品の UI がほかのタブで書き出されたら作り直す
+    std::vector<std::pair<Widget*, float>> hiddenNow; // 編集中だけ隠すもの（描いたら元の不透明度に戻す）
+    if (!ui.preview) {
+        for (const std::string& name : doc.editorHidden) {
+            if (Widget* vw = doc.view->Find(name)) {
+                hiddenNow.emplace_back(vw, vw->opacity);
+                vw->opacity = 0.0f;
+            }
+        }
+    }
     doc.view->Paint();
+    for (auto& [vw, opacity] : hiddenNow) vw->opacity = opacity;
     for (const UIEvent& e : doc.view->TakeEvents()) {
         const char* kind = e.type == UIEventType::Click ? "クリック" : e.type == UIEventType::ValueChanged ? "値の変更" : e.type == UIEventType::Submit ? "決定"
                          : e.type == UIEventType::TextRevealed ? "テキストを出し終えた" : nullptr;

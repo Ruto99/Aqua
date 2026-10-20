@@ -215,6 +215,10 @@ struct DesignerState {
     bool keyDragging = false;
     std::string renamingAnim;
     bool isRenamingAnim = false;
+    // カーブ表示（トラックの値をグラフで見て、キーを上下左右に動かす）
+    bool curveView = false;
+    int curveTrack = -1;
+    int curveKey = -1;      // ドラッグしているキー
     std::string animRenameBuffer;
 
     // プレビューで起きたイベント
@@ -248,6 +252,10 @@ public:
     LayoutKind kind = LayoutKind::Body;
     std::shared_ptr<WidgetAsset> asset;
     std::map<std::string, std::string> previewVariables; // プレビュー用の変数の値（.aqs に保存）
+    // 編集のときだけの状態（.aqs に保存し、書き出す .aqua・ゲームには入らない）
+    std::set<std::string> lockedWidgets;  // ロック: キャンバスで選べない・動かせない
+    std::set<std::string> editorHidden;   // 編集中だけ隠す（キャンバスに描かない）
+    bool IsLocked(const Widget& w) const;  // 自分か祖先がロックされているか
     DesignerState ui;
     std::string clipboard;
 
