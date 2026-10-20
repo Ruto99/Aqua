@@ -427,6 +427,7 @@ SAMPLES = [
     ("Transform", "変形と頂点カラー", "回転・四隅の色・Bounding ペイン・ユーザーデータ"),
     ("Overrides", "パーツの上書き", "同じパーツを置いた先ごとに、名前・ゲージ・色を変える"),
     ("AnimExtras", "区間・グループ・コマ送り", "In / Idle / Out の区間、まとめて動かすグループ、パラパラ漫画"),
+    ("TextExtras", "文字の並びと白黒カラー", "文字間・行間・枠に合わせて縮小・行ごとのグラデーション・色の補間"),
 ]
 
 
@@ -1362,6 +1363,76 @@ def make_anim_extras():
     )
 
 
+# ---------------------------------------------------------------------------
+# 文字の並びと白黒カラー
+# ---------------------------------------------------------------------------
+
+
+def make_text_extras():
+    spacing_card = card(
+        "SpacingCard",
+        "文字間・行間",
+        [
+            text("Tight", "AQUA 詰める（-6）", 40, TEXT, letterSpacing=-6),
+            text("Normal", "AQUA ふつう（0）", 40, TEXT),
+            text("Wide", "AQUA 広げる（14）", 40, TEXT, letterSpacing=14),
+            hbox("LineRow", [
+                border("Line0Box", text("Line0", "行間 0\n二行目\n三行目", 26, TEXT), PANEL_LIGHT, 12, (16, 10, 16, 10), shadow=False),
+                border("Line1Box", text("Line1", "行間 18\n二行目\n三行目", 26, TEXT, lineSpacing=18), PANEL_LIGHT, 12, (16, 10, 16, 10), shadow=False),
+            ], spacing=16),
+        ],
+        slot=at(60, 190, 0, 0, auto=True),
+        width=520,
+    )
+
+    long_text = "とても長い名前のアイテム・エクスカリバー改"
+
+    def fit_box(name, label, shrink):
+        return vbox(name + "Col", [
+            border(name, text(name + "Text", long_text, 34, TEXT, shrinkToFit=shrink), PANEL_LIGHT, 12, (12, 8, 12, 8), shadow=False,
+                   slot=box(), common={"clipChildren": True}),
+            text(name + "Label", label, 20, DIM),
+        ], spacing=6)
+
+    fit_card = card(
+        "FitCard",
+        "縮小・行ごとのグラデーション",
+        [
+            widget("UISizeBox", "FitOffSize", {"widthOverride": 420, "heightOverride": 90}, children=[fit_box("FitOff", "縮小なし（はみ出して切れる）", False)]),
+            widget("UISizeBox", "FitOnSize", {"widthOverride": 420, "heightOverride": 90}, children=[fit_box("FitOn", "枠に合わせて縮小（shrinkToFit）", True)]),
+            text("GradText", "グラデーションの\n見出し", 52, [1, 1, 1, 1], gradient=True, gradientTop=list(GOLD), gradientBottom=list(CORAL)),
+            note("FitNote", "グラデーションは行ごとに上から下へ混ぜる（頂点カラーは文字全体の四隅）"),
+        ],
+        slot=at(0, 190, 0, 0, anchor=(0.5, 0), pivot=(0.5, 0), auto=True),
+        width=440,
+    )
+
+    def bw(name, tex, black, white):
+        return widget("UIImage", name, {"texture": tex, "color": [1, 1, 1, 1], "size": [110, 110]}, slot=box(v="Center"),
+                      common={"blackWhiteEnabled": True, "blackColor": list(black), "whiteColor": list(white)})
+
+    bw_card = card(
+        "BlackWhiteCard",
+        "白黒カラー（色の補間）",
+        [
+            hbox("BwRow1", [
+                widget("UIImage", "BwOriginal", {"texture": "@Checker", "color": [1, 1, 1, 1], "size": [110, 110]}, slot=box(v="Center")),
+                bw("BwNavyAqua", "@Checker", [0.05, 0.12, 0.2, 1], AQUA),
+                bw("BwCoralGold", "@Checker", CORAL, GOLD),
+            ], spacing=16),
+            hbox("BwRow2", [
+                widget("UIImage", "BwSoft", {"texture": "@SoftCircle", "color": [1, 1, 1, 1], "size": [110, 110]}, slot=box(v="Center")),
+                bw("BwSoftAqua", "@SoftCircle", [0, 0, 0, 0], AQUA),
+                bw("BwSoftGlow", "@SoftCircle", [0.6, 0.1, 0.4, 0], GOLD),
+            ], spacing=16),
+            note("BwNote", "左が元の画像。黒い所を「黒の色」、白い所を「白の色」にして間を混ぜる。同じ画像から色違いを作れる"),
+        ],
+        slot=at(-60, 190, 0, 0, anchor=(1, 0), pivot=(1, 0), auto=True),
+        width=420,
+    )
+    return document(page("文字の並びと白黒カラー", "LayoutEditor 風の機能 その 4", [spacing_card, fit_card, bw_card]))
+
+
 UIS = {
     "Menu": make_menu,
     "TextAnimation": make_text_animation,
@@ -1376,6 +1447,7 @@ UIS = {
     "Transform": make_transform,
     "Overrides": make_overrides,
     "AnimExtras": make_anim_extras,
+    "TextExtras": make_text_extras,
 }
 
 

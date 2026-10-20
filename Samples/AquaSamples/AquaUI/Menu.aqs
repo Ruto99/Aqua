@@ -32,6 +32,7 @@
         <string key="tooltip"/>
         <string key="visibleBind"/>
         <string key="shader"/>
+        <bool key="blackWhiteEnabled">false</bool>
         <bool key="vertexColorsEnabled">false</bool>
         <string key="userData"/>
       </object>
@@ -132,6 +133,7 @@
               <number>0</number>
               <number>0</number>
             </array>
+            <bool key="blackWhiteEnabled">false</bool>
             <bool key="vertexColorsEnabled">false</bool>
             <string key="userData"/>
           </object>
@@ -256,6 +258,7 @@
               <number>0</number>
               <number>0</number>
             </array>
+            <bool key="blackWhiteEnabled">false</bool>
             <bool key="vertexColorsEnabled">false</bool>
             <string key="userData"/>
           </object>
@@ -272,6 +275,10 @@
             <string key="align">Center</string>
             <string key="verticalAlign">Center</string>
             <bool key="wrap">false</bool>
+            <number key="letterSpacing">0</number>
+            <number key="lineSpacing">0</number>
+            <bool key="shrinkToFit">false</bool>
+            <bool key="gradient">false</bool>
             <string key="effect">None</string>
             <number key="effectStrength">6</number>
             <number key="effectSpeed">1</number>
@@ -357,6 +364,7 @@
             <string key="tooltip"/>
             <string key="visibleBind"/>
             <string key="shader"/>
+            <bool key="blackWhiteEnabled">false</bool>
             <bool key="vertexColorsEnabled">false</bool>
             <string key="userData"/>
           </object>
@@ -373,6 +381,10 @@
             <string key="align">Center</string>
             <string key="verticalAlign">Center</string>
             <bool key="wrap">false</bool>
+            <number key="letterSpacing">0</number>
+            <number key="lineSpacing">0</number>
+            <bool key="shrinkToFit">false</bool>
+            <bool key="gradient">false</bool>
             <string key="effect">None</string>
             <number key="effectStrength">4</number>
             <number key="effectSpeed">1</number>
@@ -458,6 +470,7 @@
             <string key="tooltip"/>
             <string key="visibleBind"/>
             <string key="shader"/>
+            <bool key="blackWhiteEnabled">false</bool>
             <bool key="vertexColorsEnabled">false</bool>
             <string key="userData"/>
           </object>
@@ -535,6 +548,7 @@
                 <string key="tooltip"/>
                 <string key="visibleBind"/>
                 <string key="shader"/>
+                <bool key="blackWhiteEnabled">false</bool>
                 <bool key="vertexColorsEnabled">false</bool>
                 <string key="userData"/>
               </object>
@@ -650,6 +664,7 @@
                     <string key="tooltip"/>
                     <string key="visibleBind"/>
                     <string key="shader"/>
+                    <bool key="blackWhiteEnabled">false</bool>
                     <bool key="vertexColorsEnabled">false</bool>
                     <string key="userData"/>
                   </object>
@@ -724,6 +739,7 @@
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="blackWhiteEnabled">false</bool>
                         <bool key="vertexColorsEnabled">false</bool>
                         <string key="userData"/>
                       </object>
@@ -795,6 +811,7 @@
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
                             <bool key="vertexColorsEnabled">false</bool>
                             <string key="userData"/>
                           </object>
@@ -811,6 +828,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -896,6 +917,7 @@
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
                             <bool key="vertexColorsEnabled">false</bool>
                             <string key="userData"/>
                           </object>
@@ -912,6 +934,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -997,6 +1023,7 @@
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
                             <bool key="vertexColorsEnabled">false</bool>
                             <string key="userData"/>
                           </object>
@@ -1013,6 +1040,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">true</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -1105,6 +1136,7 @@
                 <string key="tooltip"/>
                 <string key="visibleBind"/>
                 <string key="shader"/>
+                <bool key="blackWhiteEnabled">false</bool>
                 <bool key="vertexColorsEnabled">false</bool>
                 <string key="userData"/>
               </object>
@@ -1220,6 +1252,7 @@
                     <string key="tooltip"/>
                     <string key="visibleBind"/>
                     <string key="shader"/>
+                    <bool key="blackWhiteEnabled">false</bool>
                     <bool key="vertexColorsEnabled">false</bool>
                     <string key="userData"/>
                   </object>
@@ -1294,6 +1327,7 @@
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="blackWhiteEnabled">false</bool>
                         <bool key="vertexColorsEnabled">false</bool>
                         <string key="userData"/>
                       </object>
@@ -1365,6 +1399,7 @@
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
                             <bool key="vertexColorsEnabled">false</bool>
                             <string key="userData"/>
                           </object>
@@ -1381,6 +1416,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -1466,6 +1505,7 @@
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
                             <bool key="vertexColorsEnabled">false</bool>
                             <string key="userData"/>
                           </object>
@@ -1482,6 +1522,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -1567,6 +1611,7 @@
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
                             <bool key="vertexColorsEnabled">false</bool>
                             <string key="userData"/>
                           </object>
@@ -1583,6 +1628,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">true</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -1675,6 +1724,7 @@
                 <string key="tooltip"/>
                 <string key="visibleBind"/>
                 <string key="shader"/>
+                <bool key="blackWhiteEnabled">false</bool>
                 <bool key="vertexColorsEnabled">false</bool>
                 <string key="userData"/>
               </object>
@@ -1790,6 +1840,7 @@
                     <string key="tooltip"/>
                     <string key="visibleBind"/>
                     <string key="shader"/>
+                    <bool key="blackWhiteEnabled">false</bool>
                     <bool key="vertexColorsEnabled">false</bool>
                     <string key="userData"/>
                   </object>
@@ -1864,6 +1915,7 @@
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="blackWhiteEnabled">false</bool>
                         <bool key="vertexColorsEnabled">false</bool>
                         <string key="userData"/>
                       </object>
@@ -1935,6 +1987,7 @@
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
                             <bool key="vertexColorsEnabled">false</bool>
                             <string key="userData"/>
                           </object>
@@ -1951,6 +2004,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -2036,6 +2093,7 @@
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
                             <bool key="vertexColorsEnabled">false</bool>
                             <string key="userData"/>
                           </object>
@@ -2052,6 +2110,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -2137,6 +2199,7 @@
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
                             <bool key="vertexColorsEnabled">false</bool>
                             <string key="userData"/>
                           </object>
@@ -2153,6 +2216,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">true</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -2245,6 +2312,7 @@
                 <string key="tooltip"/>
                 <string key="visibleBind"/>
                 <string key="shader"/>
+                <bool key="blackWhiteEnabled">false</bool>
                 <bool key="vertexColorsEnabled">false</bool>
                 <string key="userData"/>
               </object>
@@ -2360,6 +2428,7 @@
                     <string key="tooltip"/>
                     <string key="visibleBind"/>
                     <string key="shader"/>
+                    <bool key="blackWhiteEnabled">false</bool>
                     <bool key="vertexColorsEnabled">false</bool>
                     <string key="userData"/>
                   </object>
@@ -2434,6 +2503,7 @@
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="blackWhiteEnabled">false</bool>
                         <bool key="vertexColorsEnabled">false</bool>
                         <string key="userData"/>
                       </object>
@@ -2505,6 +2575,7 @@
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
                             <bool key="vertexColorsEnabled">false</bool>
                             <string key="userData"/>
                           </object>
@@ -2521,6 +2592,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -2606,6 +2681,7 @@
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
                             <bool key="vertexColorsEnabled">false</bool>
                             <string key="userData"/>
                           </object>
@@ -2622,6 +2698,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -2707,6 +2787,7 @@
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
                             <bool key="vertexColorsEnabled">false</bool>
                             <string key="userData"/>
                           </object>
@@ -2723,6 +2804,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">true</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -2815,6 +2900,7 @@
                 <string key="tooltip"/>
                 <string key="visibleBind"/>
                 <string key="shader"/>
+                <bool key="blackWhiteEnabled">false</bool>
                 <bool key="vertexColorsEnabled">false</bool>
                 <string key="userData"/>
               </object>
@@ -2930,6 +3016,7 @@
                     <string key="tooltip"/>
                     <string key="visibleBind"/>
                     <string key="shader"/>
+                    <bool key="blackWhiteEnabled">false</bool>
                     <bool key="vertexColorsEnabled">false</bool>
                     <string key="userData"/>
                   </object>
@@ -3004,6 +3091,7 @@
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="blackWhiteEnabled">false</bool>
                         <bool key="vertexColorsEnabled">false</bool>
                         <string key="userData"/>
                       </object>
@@ -3075,6 +3163,7 @@
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
                             <bool key="vertexColorsEnabled">false</bool>
                             <string key="userData"/>
                           </object>
@@ -3091,6 +3180,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -3176,6 +3269,7 @@
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
                             <bool key="vertexColorsEnabled">false</bool>
                             <string key="userData"/>
                           </object>
@@ -3192,6 +3286,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -3277,6 +3375,7 @@
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
                             <bool key="vertexColorsEnabled">false</bool>
                             <string key="userData"/>
                           </object>
@@ -3293,6 +3392,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">true</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -3385,6 +3488,7 @@
                 <string key="tooltip"/>
                 <string key="visibleBind"/>
                 <string key="shader"/>
+                <bool key="blackWhiteEnabled">false</bool>
                 <bool key="vertexColorsEnabled">false</bool>
                 <string key="userData"/>
               </object>
@@ -3500,6 +3604,7 @@
                     <string key="tooltip"/>
                     <string key="visibleBind"/>
                     <string key="shader"/>
+                    <bool key="blackWhiteEnabled">false</bool>
                     <bool key="vertexColorsEnabled">false</bool>
                     <string key="userData"/>
                   </object>
@@ -3574,6 +3679,7 @@
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="blackWhiteEnabled">false</bool>
                         <bool key="vertexColorsEnabled">false</bool>
                         <string key="userData"/>
                       </object>
@@ -3645,6 +3751,7 @@
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
                             <bool key="vertexColorsEnabled">false</bool>
                             <string key="userData"/>
                           </object>
@@ -3661,6 +3768,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -3746,6 +3857,7 @@
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
                             <bool key="vertexColorsEnabled">false</bool>
                             <string key="userData"/>
                           </object>
@@ -3762,6 +3874,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -3847,6 +3963,7 @@
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
                             <bool key="vertexColorsEnabled">false</bool>
                             <string key="userData"/>
                           </object>
@@ -3863,6 +3980,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">true</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -3955,6 +4076,7 @@
                 <string key="tooltip"/>
                 <string key="visibleBind"/>
                 <string key="shader"/>
+                <bool key="blackWhiteEnabled">false</bool>
                 <bool key="vertexColorsEnabled">false</bool>
                 <string key="userData"/>
               </object>
@@ -4070,6 +4192,7 @@
                     <string key="tooltip"/>
                     <string key="visibleBind"/>
                     <string key="shader"/>
+                    <bool key="blackWhiteEnabled">false</bool>
                     <bool key="vertexColorsEnabled">false</bool>
                     <string key="userData"/>
                   </object>
@@ -4144,6 +4267,7 @@
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="blackWhiteEnabled">false</bool>
                         <bool key="vertexColorsEnabled">false</bool>
                         <string key="userData"/>
                       </object>
@@ -4215,6 +4339,7 @@
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
                             <bool key="vertexColorsEnabled">false</bool>
                             <string key="userData"/>
                           </object>
@@ -4231,6 +4356,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -4316,6 +4445,7 @@
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
                             <bool key="vertexColorsEnabled">false</bool>
                             <string key="userData"/>
                           </object>
@@ -4332,6 +4462,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -4417,6 +4551,7 @@
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
                             <bool key="vertexColorsEnabled">false</bool>
                             <string key="userData"/>
                           </object>
@@ -4433,6 +4568,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">true</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -4525,6 +4664,7 @@
                 <string key="tooltip"/>
                 <string key="visibleBind"/>
                 <string key="shader"/>
+                <bool key="blackWhiteEnabled">false</bool>
                 <bool key="vertexColorsEnabled">false</bool>
                 <string key="userData"/>
               </object>
@@ -4640,6 +4780,7 @@
                     <string key="tooltip"/>
                     <string key="visibleBind"/>
                     <string key="shader"/>
+                    <bool key="blackWhiteEnabled">false</bool>
                     <bool key="vertexColorsEnabled">false</bool>
                     <string key="userData"/>
                   </object>
@@ -4714,6 +4855,7 @@
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="blackWhiteEnabled">false</bool>
                         <bool key="vertexColorsEnabled">false</bool>
                         <string key="userData"/>
                       </object>
@@ -4785,6 +4927,7 @@
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
                             <bool key="vertexColorsEnabled">false</bool>
                             <string key="userData"/>
                           </object>
@@ -4801,6 +4944,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -4886,6 +5033,7 @@
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
                             <bool key="vertexColorsEnabled">false</bool>
                             <string key="userData"/>
                           </object>
@@ -4902,6 +5050,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -4987,6 +5139,7 @@
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
                             <bool key="vertexColorsEnabled">false</bool>
                             <string key="userData"/>
                           </object>
@@ -5003,6 +5156,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">true</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -5095,6 +5252,7 @@
                 <string key="tooltip"/>
                 <string key="visibleBind"/>
                 <string key="shader"/>
+                <bool key="blackWhiteEnabled">false</bool>
                 <bool key="vertexColorsEnabled">false</bool>
                 <string key="userData"/>
               </object>
@@ -5210,6 +5368,7 @@
                     <string key="tooltip"/>
                     <string key="visibleBind"/>
                     <string key="shader"/>
+                    <bool key="blackWhiteEnabled">false</bool>
                     <bool key="vertexColorsEnabled">false</bool>
                     <string key="userData"/>
                   </object>
@@ -5284,6 +5443,7 @@
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="blackWhiteEnabled">false</bool>
                         <bool key="vertexColorsEnabled">false</bool>
                         <string key="userData"/>
                       </object>
@@ -5355,6 +5515,7 @@
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
                             <bool key="vertexColorsEnabled">false</bool>
                             <string key="userData"/>
                           </object>
@@ -5371,6 +5532,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -5456,6 +5621,7 @@
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
                             <bool key="vertexColorsEnabled">false</bool>
                             <string key="userData"/>
                           </object>
@@ -5472,6 +5638,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -5557,6 +5727,7 @@
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
                             <bool key="vertexColorsEnabled">false</bool>
                             <string key="userData"/>
                           </object>
@@ -5573,6 +5744,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">true</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -5665,6 +5840,7 @@
                 <string key="tooltip"/>
                 <string key="visibleBind"/>
                 <string key="shader"/>
+                <bool key="blackWhiteEnabled">false</bool>
                 <bool key="vertexColorsEnabled">false</bool>
                 <string key="userData"/>
               </object>
@@ -5780,6 +5956,7 @@
                     <string key="tooltip"/>
                     <string key="visibleBind"/>
                     <string key="shader"/>
+                    <bool key="blackWhiteEnabled">false</bool>
                     <bool key="vertexColorsEnabled">false</bool>
                     <string key="userData"/>
                   </object>
@@ -5854,6 +6031,7 @@
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="blackWhiteEnabled">false</bool>
                         <bool key="vertexColorsEnabled">false</bool>
                         <string key="userData"/>
                       </object>
@@ -5925,6 +6103,7 @@
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
                             <bool key="vertexColorsEnabled">false</bool>
                             <string key="userData"/>
                           </object>
@@ -5941,6 +6120,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -6026,6 +6209,7 @@
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
                             <bool key="vertexColorsEnabled">false</bool>
                             <string key="userData"/>
                           </object>
@@ -6042,6 +6226,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -6127,6 +6315,7 @@
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
                             <bool key="vertexColorsEnabled">false</bool>
                             <string key="userData"/>
                           </object>
@@ -6143,6 +6332,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">true</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -6235,6 +6428,7 @@
                 <string key="tooltip"/>
                 <string key="visibleBind"/>
                 <string key="shader"/>
+                <bool key="blackWhiteEnabled">false</bool>
                 <bool key="vertexColorsEnabled">false</bool>
                 <string key="userData"/>
               </object>
@@ -6350,6 +6544,7 @@
                     <string key="tooltip"/>
                     <string key="visibleBind"/>
                     <string key="shader"/>
+                    <bool key="blackWhiteEnabled">false</bool>
                     <bool key="vertexColorsEnabled">false</bool>
                     <string key="userData"/>
                   </object>
@@ -6424,6 +6619,7 @@
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="blackWhiteEnabled">false</bool>
                         <bool key="vertexColorsEnabled">false</bool>
                         <string key="userData"/>
                       </object>
@@ -6495,6 +6691,7 @@
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
                             <bool key="vertexColorsEnabled">false</bool>
                             <string key="userData"/>
                           </object>
@@ -6511,6 +6708,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -6596,6 +6797,7 @@
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
                             <bool key="vertexColorsEnabled">false</bool>
                             <string key="userData"/>
                           </object>
@@ -6612,6 +6814,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -6697,6 +6903,7 @@
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
                             <bool key="vertexColorsEnabled">false</bool>
                             <string key="userData"/>
                           </object>
@@ -6713,6 +6920,598 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">true</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
+                            <string key="effect">None</string>
+                            <number key="effectStrength">6</number>
+                            <number key="effectSpeed">1</number>
+                            <string key="reveal">None</string>
+                            <number key="revealSpeed">30</number>
+                            <number key="revealDelay">0</number>
+                            <number key="revealFade">0.18000000715255737</number>
+                            <bool key="revealAuto">true</bool>
+                            <number key="revealProgress">1</number>
+                            <bool key="revealOnShow">true</bool>
+                            <string key="revealSound"/>
+                            <number key="revealSoundEvery">2</number>
+                            <bool key="richText">true</bool>
+                            <bool key="shadow">false</bool>
+                            <array key="shadowColor">
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0.6000000238418579</number>
+                            </array>
+                            <array key="shadowOffset">
+                              <number>2</number>
+                              <number>2</number>
+                            </array>
+                          </object>
+                          <object key="slot">
+                            <array key="anchorMin">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="anchorMax">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="pivot">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="position">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="size">
+                              <number>200</number>
+                              <number>60</number>
+                            </array>
+                            <bool key="autoSize">false</bool>
+                            <number key="zOrder">0</number>
+                            <array key="padding">
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <string key="hAlign">Fill</string>
+                            <string key="vAlign">Fill</string>
+                            <string key="sizeRule">Auto</string>
+                            <number key="fillWeight">1</number>
+                          </object>
+                          <array key="children"/>
+                        </object>
+                      </array>
+                    </object>
+                  </array>
+                </object>
+              </array>
+            </object>
+            <object>
+              <string key="type">UIButton</string>
+              <string key="name">OpenTextExtras</string>
+              <string key="style">MenuCard</string>
+              <object key="common">
+                <string key="visibility">Visible</string>
+                <bool key="enabled">true</bool>
+                <number key="opacity">1</number>
+                <array key="translation">
+                  <number>0</number>
+                  <number>0</number>
+                </array>
+                <array key="renderScale">
+                  <number>1</number>
+                  <number>1</number>
+                </array>
+                <number key="rotation">0</number>
+                <array key="transformOrigin">
+                  <number>0.5</number>
+                  <number>0.5</number>
+                </array>
+                <bool key="clipChildren">false</bool>
+                <string key="tooltip"/>
+                <string key="visibleBind"/>
+                <string key="shader"/>
+                <bool key="blackWhiteEnabled">false</bool>
+                <bool key="vertexColorsEnabled">false</bool>
+                <string key="userData"/>
+              </object>
+              <object key="properties">
+                <string key="text"/>
+                <number key="fontSize">26</number>
+                <array key="textColor">
+                  <number>0.8669999837875366</number>
+                  <number>0.9369999766349792</number>
+                  <number>0.9449999928474426</number>
+                  <number>1</number>
+                </array>
+                <string key="clickMessage">open:UI/TextExtras.aqua</string>
+                <string key="clickSound"/>
+                <array key="normalColor">
+                  <number>0.0860000029206276</number>
+                  <number>0.16500000655651093</number>
+                  <number>0.20000000298023224</number>
+                  <number>0.9200000166893005</number>
+                </array>
+                <array key="hoveredColor">
+                  <number>0.11999999731779099</number>
+                  <number>0.30000001192092896</number>
+                  <number>0.33000001311302185</number>
+                  <number>1</number>
+                </array>
+                <array key="pressedColor">
+                  <number>0.07000000029802322</number>
+                  <number>0.20000000298023224</number>
+                  <number>0.2199999988079071</number>
+                  <number>1</number>
+                </array>
+                <array key="disabledColor">
+                  <number>0.3499999940395355</number>
+                  <number>0.3700000047683716</number>
+                  <number>0.41999998688697815</number>
+                  <number>0.6000000238418579</number>
+                </array>
+                <string key="texture"/>
+                <number key="cornerRadius">18</number>
+                <array key="borderColor">
+                  <number>0.19599999487400055</number>
+                  <number>0.8510000109672546</number>
+                  <number>0.800000011920929</number>
+                  <number>0.3499999940395355</number>
+                </array>
+                <number key="borderThickness">1.5</number>
+                <bool key="shadow">true</bool>
+                <array key="contentPadding">
+                  <number>26</number>
+                  <number>16</number>
+                  <number>26</number>
+                  <number>16</number>
+                </array>
+                <number key="hoverScale">1.0399999618530273</number>
+              </object>
+              <object key="slot">
+                <array key="anchorMin">
+                  <number>0</number>
+                  <number>0</number>
+                </array>
+                <array key="anchorMax">
+                  <number>0</number>
+                  <number>0</number>
+                </array>
+                <array key="pivot">
+                  <number>0</number>
+                  <number>0</number>
+                </array>
+                <array key="position">
+                  <number>0</number>
+                  <number>0</number>
+                </array>
+                <array key="size">
+                  <number>200</number>
+                  <number>60</number>
+                </array>
+                <bool key="autoSize">false</bool>
+                <number key="zOrder">0</number>
+                <array key="padding">
+                  <number>0</number>
+                  <number>0</number>
+                  <number>0</number>
+                  <number>0</number>
+                </array>
+                <string key="hAlign">Fill</string>
+                <string key="vAlign">Fill</string>
+                <string key="sizeRule">Auto</string>
+                <number key="fillWeight">1</number>
+              </object>
+              <array key="children">
+                <object>
+                  <string key="type">UISizeBox</string>
+                  <string key="name">CardTextExtrasSize</string>
+                  <object key="common">
+                    <string key="visibility">Visible</string>
+                    <bool key="enabled">true</bool>
+                    <number key="opacity">1</number>
+                    <array key="translation">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <array key="renderScale">
+                      <number>1</number>
+                      <number>1</number>
+                    </array>
+                    <number key="rotation">0</number>
+                    <array key="transformOrigin">
+                      <number>0.5</number>
+                      <number>0.5</number>
+                    </array>
+                    <bool key="clipChildren">false</bool>
+                    <string key="tooltip"/>
+                    <string key="visibleBind"/>
+                    <string key="shader"/>
+                    <bool key="blackWhiteEnabled">false</bool>
+                    <bool key="vertexColorsEnabled">false</bool>
+                    <string key="userData"/>
+                  </object>
+                  <object key="properties">
+                    <number key="widthOverride">326</number>
+                    <number key="heightOverride">0</number>
+                    <array key="minSize">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <array key="maxSize">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                  </object>
+                  <object key="slot">
+                    <array key="anchorMin">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <array key="anchorMax">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <array key="pivot">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <array key="position">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <array key="size">
+                      <number>200</number>
+                      <number>60</number>
+                    </array>
+                    <bool key="autoSize">false</bool>
+                    <number key="zOrder">0</number>
+                    <array key="padding">
+                      <number>0</number>
+                      <number>0</number>
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <string key="hAlign">Fill</string>
+                    <string key="vAlign">Fill</string>
+                    <string key="sizeRule">Auto</string>
+                    <number key="fillWeight">1</number>
+                  </object>
+                  <array key="children">
+                    <object>
+                      <string key="type">UIVerticalBox</string>
+                      <string key="name">CardTextExtrasContent</string>
+                      <object key="common">
+                        <string key="visibility">Visible</string>
+                        <bool key="enabled">true</bool>
+                        <number key="opacity">1</number>
+                        <array key="translation">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="renderScale">
+                          <number>1</number>
+                          <number>1</number>
+                        </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
+                        <bool key="clipChildren">false</bool>
+                        <string key="tooltip"/>
+                        <string key="visibleBind"/>
+                        <string key="shader"/>
+                        <bool key="blackWhiteEnabled">false</bool>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
+                      </object>
+                      <object key="properties">
+                        <number key="spacing">8</number>
+                        <array key="padding">
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                      </object>
+                      <object key="slot">
+                        <array key="anchorMin">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="anchorMax">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="pivot">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="position">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="size">
+                          <number>200</number>
+                          <number>60</number>
+                        </array>
+                        <bool key="autoSize">false</bool>
+                        <number key="zOrder">0</number>
+                        <array key="padding">
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <string key="hAlign">Fill</string>
+                        <string key="vAlign">Fill</string>
+                        <string key="sizeRule">Auto</string>
+                        <number key="fillWeight">1</number>
+                      </object>
+                      <array key="children">
+                        <object>
+                          <string key="type">UIText</string>
+                          <string key="name">CardTextExtrasNumber</string>
+                          <object key="common">
+                            <string key="visibility">Visible</string>
+                            <bool key="enabled">true</bool>
+                            <number key="opacity">1</number>
+                            <array key="translation">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="renderScale">
+                              <number>1</number>
+                              <number>1</number>
+                            </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
+                            <bool key="clipChildren">false</bool>
+                            <string key="tooltip"/>
+                            <string key="visibleBind"/>
+                            <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
+                          </object>
+                          <object key="properties">
+                            <string key="text">12</string>
+                            <string key="font"/>
+                            <number key="fontSize">22</number>
+                            <array key="color">
+                              <number>0.19599999487400055</number>
+                              <number>0.8510000109672546</number>
+                              <number>0.800000011920929</number>
+                              <number>0.8999999761581421</number>
+                            </array>
+                            <string key="align">Left</string>
+                            <string key="verticalAlign">Center</string>
+                            <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
+                            <string key="effect">None</string>
+                            <number key="effectStrength">6</number>
+                            <number key="effectSpeed">1</number>
+                            <string key="reveal">None</string>
+                            <number key="revealSpeed">30</number>
+                            <number key="revealDelay">0</number>
+                            <number key="revealFade">0.18000000715255737</number>
+                            <bool key="revealAuto">true</bool>
+                            <number key="revealProgress">1</number>
+                            <bool key="revealOnShow">true</bool>
+                            <string key="revealSound"/>
+                            <number key="revealSoundEvery">2</number>
+                            <bool key="richText">true</bool>
+                            <bool key="shadow">false</bool>
+                            <array key="shadowColor">
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0.6000000238418579</number>
+                            </array>
+                            <array key="shadowOffset">
+                              <number>2</number>
+                              <number>2</number>
+                            </array>
+                          </object>
+                          <object key="slot">
+                            <array key="anchorMin">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="anchorMax">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="pivot">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="position">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="size">
+                              <number>200</number>
+                              <number>60</number>
+                            </array>
+                            <bool key="autoSize">false</bool>
+                            <number key="zOrder">0</number>
+                            <array key="padding">
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <string key="hAlign">Fill</string>
+                            <string key="vAlign">Fill</string>
+                            <string key="sizeRule">Auto</string>
+                            <number key="fillWeight">1</number>
+                          </object>
+                          <array key="children"/>
+                        </object>
+                        <object>
+                          <string key="type">UIText</string>
+                          <string key="name">CardTextExtrasLabel</string>
+                          <object key="common">
+                            <string key="visibility">Visible</string>
+                            <bool key="enabled">true</bool>
+                            <number key="opacity">1</number>
+                            <array key="translation">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="renderScale">
+                              <number>1</number>
+                              <number>1</number>
+                            </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
+                            <bool key="clipChildren">false</bool>
+                            <string key="tooltip"/>
+                            <string key="visibleBind"/>
+                            <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
+                          </object>
+                          <object key="properties">
+                            <string key="text">文字の並びと白黒カラー</string>
+                            <string key="font"/>
+                            <number key="fontSize">32</number>
+                            <array key="color">
+                              <number>0.8669999837875366</number>
+                              <number>0.9369999766349792</number>
+                              <number>0.9449999928474426</number>
+                              <number>1</number>
+                            </array>
+                            <string key="align">Left</string>
+                            <string key="verticalAlign">Center</string>
+                            <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
+                            <string key="effect">None</string>
+                            <number key="effectStrength">6</number>
+                            <number key="effectSpeed">1</number>
+                            <string key="reveal">None</string>
+                            <number key="revealSpeed">30</number>
+                            <number key="revealDelay">0</number>
+                            <number key="revealFade">0.18000000715255737</number>
+                            <bool key="revealAuto">true</bool>
+                            <number key="revealProgress">1</number>
+                            <bool key="revealOnShow">true</bool>
+                            <string key="revealSound"/>
+                            <number key="revealSoundEvery">2</number>
+                            <bool key="richText">true</bool>
+                            <bool key="shadow">false</bool>
+                            <array key="shadowColor">
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0.6000000238418579</number>
+                            </array>
+                            <array key="shadowOffset">
+                              <number>2</number>
+                              <number>2</number>
+                            </array>
+                          </object>
+                          <object key="slot">
+                            <array key="anchorMin">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="anchorMax">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="pivot">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="position">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="size">
+                              <number>200</number>
+                              <number>60</number>
+                            </array>
+                            <bool key="autoSize">false</bool>
+                            <number key="zOrder">0</number>
+                            <array key="padding">
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <string key="hAlign">Fill</string>
+                            <string key="vAlign">Fill</string>
+                            <string key="sizeRule">Auto</string>
+                            <number key="fillWeight">1</number>
+                          </object>
+                          <array key="children"/>
+                        </object>
+                        <object>
+                          <string key="type">UIText</string>
+                          <string key="name">CardTextExtrasDesc</string>
+                          <object key="common">
+                            <string key="visibility">Visible</string>
+                            <bool key="enabled">true</bool>
+                            <number key="opacity">1</number>
+                            <array key="translation">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="renderScale">
+                              <number>1</number>
+                              <number>1</number>
+                            </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
+                            <bool key="clipChildren">false</bool>
+                            <string key="tooltip"/>
+                            <string key="visibleBind"/>
+                            <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
+                          </object>
+                          <object key="properties">
+                            <string key="text">文字間・行間・枠に合わせて縮小・行ごとのグラデーション・色の補間</string>
+                            <string key="font"/>
+                            <number key="fontSize">20</number>
+                            <array key="color">
+                              <number>0.550000011920929</number>
+                              <number>0.6800000071525574</number>
+                              <number>0.7099999785423279</number>
+                              <number>1</number>
+                            </array>
+                            <string key="align">Left</string>
+                            <string key="verticalAlign">Center</string>
+                            <bool key="wrap">true</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -6806,6 +7605,7 @@
             <string key="tooltip"/>
             <string key="visibleBind"/>
             <string key="shader"/>
+            <bool key="blackWhiteEnabled">false</bool>
             <bool key="vertexColorsEnabled">false</bool>
             <string key="userData"/>
           </object>
@@ -6822,6 +7622,10 @@
             <string key="align">Center</string>
             <string key="verticalAlign">Center</string>
             <bool key="wrap">false</bool>
+            <number key="letterSpacing">0</number>
+            <number key="lineSpacing">0</number>
+            <bool key="shrinkToFit">false</bool>
+            <bool key="gradient">false</bool>
             <string key="effect">None</string>
             <number key="effectStrength">6</number>
             <number key="effectSpeed">1</number>

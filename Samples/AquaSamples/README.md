@@ -15,6 +15,7 @@ Aqua で作った UI の見本を集めた RutoEngine のプロジェクト。�
 | 09 | 変形と頂点カラー | `AquaUI/Transform.aqs` | Null ペインごと回す・時計の針（transformOrigin）・回したボタン、四隅の色、絵の一部だけを当たりにする Bounding ペイン、スクリプトが読むユーザーデータ |
 | 10 | パーツの上書き | `AquaUI/Overrides.aqs` | 同じ StatusCard を 3 つ置き、名前・職業・ゲージ・アイコンの色をそれぞれ上書き。スクリプトの SetOverride / ClearOverrides |
 | 11 | 区間・グループ・コマ送り | `AquaUI/AnimExtras.aqs` | アニメーション Show の区間 In / Idle / Out を名前で再生、グループ Stars を @Stars のトラックでまとめて動かす・SetGroupVisible で隠す、組み込みの画像でパラパラ漫画 |
+| 12 | 文字の並びと白黒カラー | `AquaUI/TextExtras.aqs` | 文字間・行間、枠に合わせて縮小、行ごとのグラデーション、白黒カラー（色の補間）で同じ画像から色違い |
 
 背景では 3D の立方体と球が回っている（キャプチャーのサンプルで、撮った画面に写る）。
 

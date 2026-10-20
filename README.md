@@ -20,7 +20,7 @@ RutoEngine とは別のアプリで、**RutoEngine のプロジェクトが無�
 
 RutoEngine の SDK（ビルド済みのエンジン）をリンクして作る。先に RutoEngine の `Setup.bat` で SDK を作っておく。
 
-**エンジンのパッチ**: キャプチャー・テキストアニメーション・UI のシェーダー・Null / Bounding ペイン・回転・頂点カラー・ユーザーデータ・パーツの上書き・アニメーションの区間・グループ・コマ送りは RutoEngine 側の実装が要る。**`ApplyEnginePatches.bat` をダブルクリック**すると、`EnginePatches` のパッチを番号の順に RutoEngine へ `git am` で当て、`Setup.bat` で SDK を作り直す。
+**エンジンのパッチ**: キャプチャー・テキストアニメーション・UI のシェーダー・Null / Bounding ペイン・回転・頂点カラー・ユーザーデータ・パーツの上書き・アニメーションの区間・グループ・コマ送り・文字間 / 行間・白黒カラーは RutoEngine 側の実装が要る。**`ApplyEnginePatches.bat` をダブルクリック**すると、`EnginePatches` のパッチを番号の順に RutoEngine へ `git am` で当て、`Setup.bat` で SDK を作り直す。
 
 - 当て済みのパッチは飛ばすので、何度実行してもよい（パッチが増えたときもこれを実行する）。
 - RutoEngine にコミットしていない変更があると、パッチを当てる前に止まる（先にコミットするか stash する）。
@@ -31,7 +31,7 @@ RutoEngine の SDK（ビルド済みのエンジン）をリンクして作る�
 
 ```bat
 cd ..\RutoEngine
-git am -3 ..\Aqua\EnginePatches\0001-UICapture.patch ..\Aqua\EnginePatches\0002-TextAnimation-UIShader.patch ..\Aqua\EnginePatches\0003-Fix-duplicate-glGetIntegerv.patch ..\Aqua\EnginePatches\0004-NullPane.patch ..\Aqua\EnginePatches\0005-Rotation-VertexColors-BoundingPane-UserData.patch ..\Aqua\EnginePatches\0006-PartOverrides.patch ..\Aqua\EnginePatches\0007-AnimSections-Groups-TextureFrames.patch
+git am -3 ..\Aqua\EnginePatches\0001-UICapture.patch ..\Aqua\EnginePatches\0002-TextAnimation-UIShader.patch ..\Aqua\EnginePatches\0003-Fix-duplicate-glGetIntegerv.patch ..\Aqua\EnginePatches\0004-NullPane.patch ..\Aqua\EnginePatches\0005-Rotation-VertexColors-BoundingPane-UserData.patch ..\Aqua\EnginePatches\0006-PartOverrides.patch ..\Aqua\EnginePatches\0007-AnimSections-Groups-TextureFrames.patch ..\Aqua\EnginePatches\0008-TextSpacing-BlackWhite.patch
 Setup.bat
 ```
 
@@ -161,6 +161,15 @@ UI のシェーダーの `LocalUV()` などは回っていない四角形を基�
 | **コマ送り** | 画像の「コマの画像」に画像を 1 行に 1 つ書くと（「+ 画像をコマに足す」でも）、その中の「今のコマ」番目を描く。「今のコマ」にコンスタントのキーを打つとパラパラ漫画、「自動で送る速さ」を入れると自動で繰り返す |
 
 区間・グループの名前もスクリプト用のヘッダー（`Animations`・`Groups`）に出る。
+
+### 文字の並び・白黒カラー
+
+| 機能 | 内容 |
+|---|---|
+| **文字間・行間** | テキストの「文字間」「行間」で、文字と文字・行と行の間に足す幅（基準解像度の単位。負なら詰める）。テキストアニメーションにも効く |
+| **枠に合わせて縮小** | 枠に入りきらないとき、入るまで文字を小さくする（名前・アイテム名など長さの変わる文字に） |
+| **行ごとのグラデーション** | 行ごとに上の色から下の色へ混ぜる（頂点カラーは文字全体の四隅に掛かる） |
+| **白黒カラー** | 共通の「白黒カラーを使う」で、自分の描画の黒い所を「黒の色」、白い所を「白の色」にして間を混ぜる（色の補間）。同じ画像から色違いを作れる。UI のシェーダーを使っているウィジェットには掛からない |
 
 ### キャプチャー（パレットの「共通」）
 
