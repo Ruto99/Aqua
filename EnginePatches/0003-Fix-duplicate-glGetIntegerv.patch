@@ -1,0 +1,30 @@
+From 7b7c280dc0740abf9a84b213487a723a9d8cb9cb Mon Sep 17 00:00:00 2001
+From: Shiruba <koko0909e@gmail.com>
+Date: Wed, 21 Oct 2026 03:29:17 +0900
+Subject: [PATCH 2/2] Remove the duplicate glGetIntegerv from the GL function
+ list
+
+The UICapture patch added glGetIntegerv to RUTO_GL_FUNCTIONS, but the
+shader graph commit had already added it, so GL.cpp defined it twice
+(C2374) and RutoGraphics did not build.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ Modules/Graphics/src/GL.h | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/Modules/Graphics/src/GL.h b/Modules/Graphics/src/GL.h
+index db6a6f2..cd3dd16 100644
+--- a/Modules/Graphics/src/GL.h
++++ b/Modules/Graphics/src/GL.h
+@@ -158,7 +158,6 @@ constexpr GLenum GL_READ_FRAMEBUFFER_BINDING = 0x8CAA;
+     X(void, glRenderbufferStorage, (GLenum target, GLenum internalformat, GLsizei width, GLsizei height))     \
+     X(void, glFramebufferRenderbuffer, (GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer)) \
+     X(GLenum, glCheckFramebufferStatus, (GLenum target))                                                       \
+-    X(void, glGetIntegerv, (GLenum pname, GLint* data))                                                        \
+     X(void, glBlitFramebuffer,                                                                                 \
+       (GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, \
+        GLbitfield mask, GLenum filter))
+-- 
+2.53.0.windows.1
+
