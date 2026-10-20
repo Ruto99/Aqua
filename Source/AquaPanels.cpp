@@ -105,11 +105,9 @@ void App::DrawProjectPanel() {
                 for (int n = 2; fs::exists(copy, ec); ++n) copy.replace_filename(FileSystem::FromUtf8(std::format("{}{}{}", FileSystem::ToUtf8(s.path.stem()), n, Ruto::Aqua::kSourceExtension)));
                 fs::copy_file(s.path, copy, ec);
                 // 書き出し先は新しい名前に合わせる
-                if (auto text = FileSystem::ReadTextFile(copy)) {
-                    if (auto j = Json::Parse(*text)) {
-                        (*j)["output"] = m_Project.DefaultOutputFor(copy);
-                        FileSystem::WriteTextFile(copy, j->Dump(2) + "\n");
-                    }
+                if (auto j = ReadSourceFile(copy)) {
+                    (*j)["output"] = m_Project.DefaultOutputFor(copy);
+                    WriteSourceFile(copy, *j);
                 }
                 m_Project.Refresh(true);
                 if (Document* d = OpenDocument(copy)) d->Export();

@@ -1,5 +1,7 @@
 #include "AquaDocument.h"
 
+#include "AquaXml.h"
+
 #include <Ruto/Aqua/AquaFormat.h>
 
 #include <algorithm>
@@ -77,6 +79,37 @@ public:
 } // namespace
 
 // ---------------------------------------------------------------------------
+// 編集用ファイル（.aqs）
+// ---------------------------------------------------------------------------
+
+std::optional<Json> ReadSourceFile(const fs::path& file, std::string* error, bool* wasJson) {
+    if (wasJson) *wasJson = false;
+    const auto text = FileSystem::ReadTextFile(file);
+    if (!text) {
+        if (error) *error = "開けません: " + FileSystem::ToUtf8(file);
+        return std::nullopt;
+    }
+    // 以前の形式（JSON）は { で始まる
+    std::string_view body = *text;
+    if (body.starts_with("\xEF\xBB\xBF")) body.remove_prefix(3);
+    while (!body.empty() && (body.front() == ' ' || body.front() == '\t' || body.front() == '\r' || body.front() == '\n')) body.remove_prefix(1);
+    std::string e;
+    std::optional<Json> json;
+    if (body.starts_with("{")) {
+        json = Json::Parse(body, &e);
+        if (json && wasJson) *wasJson = true;
+    } else {
+        json = SourceFromXml(body, &e);
+    }
+    if (!json && error) *error = FileSystem::ToUtf8(file) + ": " + e;
+    return json;
+}
+
+bool WriteSourceFile(const fs::path& file, const Json& source) {
+    return WriteIfChanged(file, SourceToXml(source));
+}
+
+// ---------------------------------------------------------------------------
 // プロジェクト
 // ---------------------------------------------------------------------------
 
@@ -138,7 +171,7 @@ void Project::Refresh(bool force) {
             if (ec) break;
             if (!it->is_regular_file(ec) || LowerExt(it->path()) != Ruto::Aqua::kSourceExtension) continue;
             SourceInfo info{it->path(), {}};
-            if (const auto json = ReadJsonFile(it->path(), nullptr)) info.output = (*json)["output"].AsString();
+            if (const auto json = ReadSourceFile(it->path(), nullptr)) info.output = (*json)["output"].AsString();
             if (info.output.empty()) info.output = DefaultOutputFor(it->path());
             m_Sources.push_back(std::move(info));
         }
@@ -224,7 +257,8 @@ std::unique_ptr<Document> Document::Open(Project& project, const fs::path& file,
     const std::string ext = LowerExt(file);
     bool needSave = false;
     if (ext == Ruto::Aqua::kSourceExtension) {
-        auto json = ReadJsonFile(file, error);
+        bool wasJson = false;
+        auto json = ReadSourceFile(file, error, &wasJson);
         if (!json) return nullptr;
         if ((*json)["format"].AsString() != "AquaSource") {
             if (error) *error = "Aqua の編集用ファイルではありません: " + FileSystem::ToUtf8(file);
@@ -235,6 +269,11 @@ std::unique_ptr<Document> Document::Open(Project& project, const fs::path& file,
         if (doc->output.empty()) doc->output = project.DefaultOutputFor(file);
         doc->asset->FromJson((*json)["document"]);
         for (const auto& [k, v] : (*json)["preview"]["variables"].Items()) doc->previewVariables[k] = v.AsString();
+        if (wasJson) {
+            // 以前の JSON の編集用ファイルは、開いたときに XML に書き直す
+            doc->asset->path = doc->output;
+            if (doc->Save()) Log::Info("{} を XML の形式に変えました", FileSystem::ToUtf8(file.filename()));
+        }
     } else if (ext == Ruto::Aqua::kExtension) {
         // バイナリだけがあるとき（ほかの人が書き出した・編集用ファイルを消した）は、そこから編集用ファイルを作り直す
         auto bin = Ruto::Aqua::ReadFile(file, error);
@@ -341,16 +380,14 @@ void Document::Redo() {
 bool Document::Save() {
     Json j = Json::MakeObject();
     j["format"] = "AquaSource";
-    j["version"] = 1;
+    j["version"] = 2; // 2 = XML
     j["output"] = output;
     j["generator"] = kGenerator;
     j["document"] = asset->ToJson();
     Json vars = Json::MakeObject();
     for (const auto& [k, v] : previewVariables) vars[k] = v;
     j["preview"]["variables"] = std::move(vars);
-    std::error_code ec;
-    fs::create_directories(sourcePath.parent_path(), ec);
-    if (!FileSystem::WriteTextFile(sourcePath, j.Dump(2) + "\n")) {
+    if (!WriteSourceFile(sourcePath, j)) {
         m_SaveError = "保存できません: " + FileSystem::ToUtf8(sourcePath);
         Log::Error("{}", m_SaveError);
         return false;
