@@ -40,6 +40,7 @@ const char* AssetIcon(const std::string& ext) {
     if (ext == ".ttf" || ext == ".otf" || ext == ".ttc" || ext == ".bdf" || ext == ".fnt" || ext == ".rfont") return ICON_FA_FONT;
     if (ext == ".wav" || ext == ".ogg") return ICON_FA_VOLUME_HIGH;
     if (ext == ".aqua") return ICON_FA_DROPLET;
+    if (ext == ".uishader") return ICON_FA_FILL_DRIP;
     if (ext == ".rui") return ICON_FA_OBJECT_GROUP;
     return ICON_FA_FILE;
 }
@@ -194,7 +195,7 @@ void App::DrawProjectPanel() {
 // ---------------------------------------------------------------------------
 
 void App::DrawAssetsPanel() {
-    static const char* kFilters[] = {"すべて", ICON_FA_IMAGE " 画像", ICON_FA_FONT " フォント", ICON_FA_VOLUME_HIGH " 音", ICON_FA_DROPLET " UI"};
+    static const char* kFilters[] = {"すべて", ICON_FA_IMAGE " 画像", ICON_FA_FONT " フォント", ICON_FA_VOLUME_HIGH " 音", ICON_FA_DROPLET " UI", ICON_FA_FILL_DRIP " シェーダー"};
     ImGui::SetNextItemWidth(130.0f * m_Scale);
     ImGui::Combo("##asset-filter", &m_AssetFilter, kFilters, IM_ARRAYSIZE(kFilters));
     ImGui::SameLine();
@@ -218,7 +219,8 @@ void App::DrawAssetsPanel() {
         const bool font = ext == ".ttf" || ext == ".otf" || ext == ".ttc" || ext == ".bdf" || ext == ".fnt" || ext == ".rfont";
         const bool audio = ext == ".wav" || ext == ".ogg";
         const bool ui = ext == ".aqua" || ext == ".rui";
-        if ((m_AssetFilter == 1 && !image) || (m_AssetFilter == 2 && !font) || (m_AssetFilter == 3 && !audio) || (m_AssetFilter == 4 && !ui)) continue;
+        const bool shader = ext == ".uishader";
+        if ((m_AssetFilter == 1 && !image) || (m_AssetFilter == 2 && !font) || (m_AssetFilter == 3 && !audio) || (m_AssetFilter == 4 && !ui) || (m_AssetFilter == 5 && !shader)) continue;
         if (!Matches(path, m_AssetSearch)) continue;
         if (col > 0) ImGui::SameLine();
         ImGui::PushID(path.c_str());
@@ -241,7 +243,7 @@ void App::DrawAssetsPanel() {
             const char* icon = AssetIcon(ext);
             ImGui::PushFont(nullptr, ImGui::GetStyle().FontSizeBase * 1.8f);
             const ImVec2 ts = ImGui::CalcTextSize(icon);
-            dl->AddText({tp.x + (thumb - ts.x) * 0.5f, tp.y + (thumb - ts.y) * 0.5f}, ToU32(ui ? ImVec4(0.35f, 0.78f, 1.0f, 1.0f) : Theme::kTextDim), icon);
+            dl->AddText({tp.x + (thumb - ts.x) * 0.5f, tp.y + (thumb - ts.y) * 0.5f}, ToU32(ui ? ImVec4(0.35f, 0.78f, 1.0f, 1.0f) : shader ? ImVec4(0.85f, 0.6f, 1.0f, 1.0f) : Theme::kTextDim), icon);
             ImGui::PopFont();
         }
         // 名前（2 行まで、はみ出しは切る）
@@ -258,6 +260,8 @@ void App::DrawAssetsPanel() {
         }
         // UI はダブルクリックで開く
         if (ui && hovered && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) OpenDocument(Assets::GetPath(path));
+        // シェーダーはダブルクリックで編集する（キャンバス・階層のウィジェットへドラッグすると掛かる）
+        if (shader && hovered && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) OpenShaderEditor(path);
         ImGui::EndGroup();
         ImGui::PopID();
         col = (col + 1) % columns;

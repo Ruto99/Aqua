@@ -394,6 +394,16 @@ void App::DrawUI() {
     auto dockWith = [](const char* existing) {
         if (ImGuiWindow* w = ImGui::FindWindowByName(existing); w && w->DockId) ImGui::SetNextWindowDockID(w->DockId, ImGuiCond_FirstUseEver);
     };
+    dockWith("###Assets");
+    if (m_FocusShaderPanel) {
+        if (ImGuiWindow* w = ImGui::FindWindowByName("###Shader")) {
+            if (w->DockNode && w->DockNode->TabBar) w->DockNode->TabBar->NextSelectedTabId = w->TabId;
+            ImGui::FocusWindow(w);
+        }
+        m_FocusShaderPanel = false;
+    }
+    if (ImGui::Begin(ICON_FA_FILL_DRIP "  シェーダー###Shader")) DrawShaderPanel();
+    ImGui::End();
     dockWith("###Details");
     if (ImGui::Begin(ICON_FA_TABLE_CELLS "  整列###Arrange")) {
         if (Document* doc = ActiveDocument()) {
@@ -604,6 +614,7 @@ void App::BuildDefaultLayout(ImGuiID id) {
     ImGui::DockBuilderDockWindow("###Arrange", right);
     ImGui::DockBuilderDockWindow("###Animation", bottom);
     ImGui::DockBuilderDockWindow("###Assets", bottom);
+    ImGui::DockBuilderDockWindow("###Shader", bottom);
     ImGui::DockBuilderDockWindow("###Log", bottom);
     ImGui::DockBuilderFinish(id);
     m_DefaultTabsFrames = 4; // 窓とタブができてから、最初に見せるタブを選ぶ

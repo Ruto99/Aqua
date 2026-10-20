@@ -4,6 +4,12 @@
 
 #include <Ruto/Ruto.h>
 
+// テキストアニメーション・UI のシェーダー・キャプチャーは RutoEngine に EnginePatches を当てた SDK が要る
+#if !__has_include(<Ruto/Engine/UIShader.h>)
+#error "RutoEngine の SDK が古いです。RutoEngine で EnginePatches/*.patch を git am で当て、Setup.bat で SDK を作り直してください"
+#endif
+#include <Ruto/Engine/UIShader.h>
+
 #include <imgui.h>
 
 #include <span>
@@ -25,6 +31,10 @@ const char* TypeLabel(std::string_view type);
 std::string PropertyLabelJa(std::string_view property);
 // 選択肢（enum）の日本語の表示名（知らないものはそのまま）
 std::string EnumOptionLabelJa(std::string_view property, std::string_view option);
+// アニメーションのトラックの表示名（シェーダーの値は @param の表示名にする）。使わない値なら空
+std::string AnimPropertyLabel(Widget& w, const std::string& property, const std::string& channel);
+// shaderParamN の N（違えば -1）
+int ShaderParamSlot(std::string_view property);
 
 // ツリーの中の位置（子の番号の並び）
 using WidgetPath = std::vector<int>;

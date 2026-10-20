@@ -152,7 +152,8 @@ void Project::Refresh(bool force) {
     m_AssetLists[AssetType::Font] = Assets::FindFiles({".ttf", ".otf", ".ttc", ".bdf", ".fnt", ".rfont"});
     m_AssetLists[AssetType::Audio] = Assets::FindFiles({".wav", ".ogg"});
     m_AssetLists[AssetType::Widget] = Assets::FindFiles({".aqua", ".rui"});
-    m_AllAssets = Assets::FindFiles({".png", ".jpg", ".jpeg", ".bmp", ".tga", ".ttf", ".otf", ".ttc", ".bdf", ".fnt", ".rfont", ".wav", ".ogg", ".aqua", ".rui"});
+    m_AssetLists[AssetType::UIShader] = Assets::FindFiles({".uishader"});
+    m_AllAssets = Assets::FindFiles({".png", ".jpg", ".jpeg", ".bmp", ".tga", ".ttf", ".otf", ".ttc", ".bdf", ".fnt", ".rfont", ".wav", ".ogg", ".aqua", ".rui", ".uishader"});
 }
 
 const std::vector<std::string>& Project::GetAssets(AssetType type) {
