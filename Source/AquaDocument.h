@@ -3,7 +3,7 @@
 // Aqua のプロジェクトと文書
 //
 //   プロジェクト = RutoEngine のゲームプロジェクトのフォルダ（Assets・ProjectSettings がある所）
-//   文書         = 1 つの UI。編集用の AquaUI/*.aqs と、書き出し先の Assets/**/*.aqua の組
+//   文書         = 1 つの UI。編集用の AquaUI/*.aqs（XML）と、書き出し先の Assets/**/*.aqua の組
 //
 //   編集するたびに .aqs を保存して .aqua を書き出す（ドラッグ中も 0.1 秒ごとに .aqua だけ書き出す）。
 //   エンジンは .aqua の更新を見て読み直すので、エディター・実行中のゲームにそのまま反映される。
@@ -23,6 +23,12 @@
 namespace AquaTool {
 
 namespace fs = std::filesystem;
+
+// 編集用ファイル（AquaUI/*.aqs）を読む。XML（今の形式）と JSON（以前の形式）のどちらも読める
+//   wasJson … 以前の JSON の形式だった（次に保存すると XML になる）
+std::optional<Json> ReadSourceFile(const fs::path& file, std::string* error = nullptr, bool* wasJson = nullptr);
+// 編集用ファイルを XML で書く（内容が同じなら書かない）
+bool WriteSourceFile(const fs::path& file, const Json& source);
 
 // ---------------------------------------------------------------------------
 // プロジェクト

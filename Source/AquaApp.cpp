@@ -754,7 +754,7 @@ void App::DrawPopups() {
         ImGui::PopFont();
         ImGui::TextDisabled("Aqua %s · RutoEngine の UI を作るツール（UI バイナリ フォーマット %d）", AQUA_VERSION, static_cast<int>(Ruto::Aqua::kFormatVersion));
         ImGui::Spacing();
-        ImGui::BulletText("AquaUI/*.aqs … 編集用ファイル（バージョン管理向けの JSON）");
+        ImGui::BulletText("AquaUI/*.aqs … 編集用ファイル（バージョン管理向けの XML）");
         ImGui::BulletText("Assets/UI/*.aqua … 書き出した UI（ゲームが読むバイナリ）");
         ImGui::BulletText("Source/AquaGenerated/*.h … スクリプト用の名前の定数");
         ImGui::BulletText("編集するとすぐ書き出され、RutoEditor・実行中のゲームに反映されます");
