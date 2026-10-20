@@ -142,11 +142,33 @@ ui->SetShaderParam(AquaUI::Title::Widgets::Logo, "progress", 0.5f); // @param �
 
 | ファイル | 中身 |
 |---|---|
-| `AquaUI/*.aqs` | Aqua の編集用ファイル（JSON。バージョン管理向け。ゲームには入らない） |
+| `AquaUI/*.aqs` | Aqua の編集用ファイル（XML。バージョン管理向け。ゲームには入らない。以前の JSON の `.aqs` も開け、開くと XML に書き直される） |
 | `Assets/UI/Shaders/*.uishader` | UI のシェーダー（GLSL の effect() と @param。ゲームに入る） |
 | `Assets/UI/*.aqua` | 書き出した UI のバイナリ（ゲームが読む。文字列表 + 型付きの値 + CRC。JSON と相互に変換でき情報は失われない） |
 | `Source/AquaGenerated/**/*.h` | スクリプト用の名前の定数（ウィジェット・アニメーション・変数・ボタンのメッセージ）。書き間違いがコンパイルエラーになる |
 | `ProjectSettings/Aqua.json` | Aqua の設定（書き出し先・ヘッダーを書き出すか・ライブで書き出すか） |
+
+`.aqs` の XML は、UI の中身（`.aqua` と同じ木）を型の名前の要素で書いたもの。1 つの値は 1 行に収まる（改行・タブは `&#10;`・`&#9;`）ので差分が読みやすい。
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<AquaSource version="2" output="UI/Title.aqua" generator="Aqua 1.0.0">
+  <object key="document">
+    <object key="root">
+      <string key="type">CanvasPanel</string>
+      <bool key="visible">true</bool>
+      <array key="children">
+        ...
+      </array>
+    </object>
+  </object>
+  <object key="preview">
+    <object key="variables">
+      <string key="score">1200</string>
+    </object>
+  </object>
+</AquaSource>
+```
 
 ```cpp
 #include "AquaGenerated/UI/Title.h"   // Aqua が書き出したヘッダー
