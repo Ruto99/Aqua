@@ -53,78 +53,134 @@ const char* AssetIcon(const std::string& ext) {
 
 void App::DrawProjectPanel() {
     m_Project.Refresh();
-    if (ImGui::Button(ICON_FA_FILE_CIRCLE_PLUS "  新しい UI")) m_OpenNewPopup = true;
+    // ワークスペースの名前と種類
+    ImGui::TextColored(Theme::kAccent, "%s", m_Project.IsLibrary() ? ICON_FA_BOOK : ICON_FA_GAMEPAD);
+    ImGui::SameLine();
+    ImGui::TextUnformatted(m_Project.GetName().c_str());
+    ImGui::SameLine();
+    ImGui::TextDisabled("%s", m_Project.IsLibrary() ? "ライブラリ" : "ゲームのプロジェクト");
+    if (ImGui::Button(ICON_FA_DESKTOP "  Body")) {
+        m_NewKind = LayoutKind::Body;
+        m_OpenNewPopup = true;
+    }
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip("新しい Body（画面のいちばん親のレイアウト）");
+    ImGui::SameLine(0.0f, 4.0f);
+    if (ImGui::Button(ICON_FA_PUZZLE_PIECE "  パーツ")) {
+        m_NewKind = LayoutKind::Part;
+        m_OpenNewPopup = true;
+    }
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip("新しいパーツ（ほかのレイアウトに部品として入れるレイアウト）");
     ImGui::SameLine();
     SearchField("##project-search", m_ProjectSearch, "検索");
     ImGui::Separator();
 
     std::error_code ec;
-    const fs::path srcDir = m_Project.GetLayout().SourceDir();
-    std::string lastFolder = "\x01";
+    const fs::path srcDir = m_Project.GetSourceDir();
     int deleteIndex = -1;
     const auto& sources = m_Project.GetSources();
-    for (size_t i = 0; i < sources.size(); ++i) {
-        const Project::SourceInfo& s = sources[i];
-        const std::string rel = FileSystem::ToGenericUtf8(fs::relative(s.path, srcDir, ec));
-        if (!Matches(rel, m_ProjectSearch) && !Matches(s.output, m_ProjectSearch)) continue;
-        // フォルダの見出し
-        const size_t slash = rel.find_last_of('/');
-        const std::string folder = slash == std::string::npos ? std::string() : rel.substr(0, slash);
-        if (folder != lastFolder) {
-            lastFolder = folder;
-            if (!folder.empty()) ImGui::TextDisabled(ICON_FA_FOLDER "  %s", folder.c_str());
-        }
-        bool isOpen = false, isActive = false;
-        for (size_t d = 0; d < m_Docs.size(); ++d) {
-            if (fs::equivalent(m_Docs[d]->sourcePath, s.path, ec)) {
-                isOpen = true;
-                isActive = static_cast<int>(d) == m_Active;
+    // Body とパーツに分けて並べる（中はフォルダの見出しつき）
+    for (LayoutKind section : {LayoutKind::Body, LayoutKind::Part}) {
+        ImGui::PushStyleColor(ImGuiCol_Text, Theme::kAccent);
+        ImGui::SeparatorText(std::format("{}  {}", LayoutKindIcon(section), section == LayoutKind::Part ? "パーツ（部品として入れる）" : "Body（画面）").c_str());
+        ImGui::PopStyleColor();
+        std::string lastFolder = "\x01";
+        int shown = 0;
+        for (size_t i = 0; i < sources.size(); ++i) {
+            const Project::SourceInfo& s = sources[i];
+            if (s.kind != section) continue;
+            const std::string rel = FileSystem::ToGenericUtf8(fs::relative(s.path, srcDir, ec));
+            if (!Matches(rel, m_ProjectSearch) && !Matches(s.output, m_ProjectSearch)) continue;
+            ++shown;
+            // フォルダの見出し（ライブラリの Body / Parts は見出しで分かるので省く）
+            const size_t slash = rel.find_last_of('/');
+            std::string folder = slash == std::string::npos ? std::string() : rel.substr(0, slash);
+            for (const char* top : {"Body", "Parts"}) {
+                if (!m_Project.IsLibrary()) break;
+                const std::string t = top;
+                if (folder == t) folder.clear();
+                else if (folder.starts_with(t + "/")) folder = folder.substr(t.size() + 1);
             }
-        }
-        ImGui::PushID(static_cast<int>(i));
-        if (!folder.empty()) ImGui::Indent();
-        const std::string label = std::format("{}  {}", isOpen ? ICON_FA_PEN_TO_SQUARE : ICON_FA_OBJECT_GROUP, FileSystem::ToUtf8(s.path.stem()));
-        if (ImGui::Selectable(label.c_str(), isActive, ImGuiSelectableFlags_AllowDoubleClick)) OpenDocument(s.path);
-        if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-            ImGui::SetTooltip("%s\n→ Assets/%s", FileSystem::ToUtf8(s.path).c_str(), s.output.c_str());
-        // ほかの UI に部品として入れられるように、書き出した .aqua をドラッグできる
-        if (ImGui::BeginDragDropSource()) {
-            ImGui::SetDragDropPayload(kAssetPayload, s.output.data(), s.output.size());
-            ImGui::Text(ICON_FA_PUZZLE_PIECE "  %s（部品として入れる）", FileSystem::ToUtf8(s.path.stem()).c_str());
-            ImGui::EndDragDropSource();
-        }
-        if (ImGui::BeginPopupContextItem("source-menu")) {
-            if (ImGui::MenuItem(ICON_FA_FOLDER_OPEN "  開く")) OpenDocument(s.path);
-            if (ImGui::MenuItem(ICON_FA_FILE_EXPORT "  書き出す")) {
-                if (Document* d = OpenDocument(s.path)) {
-                    d->Export();
-                    Notify("書き出しました: Assets/" + d->output);
+            if (folder != lastFolder) {
+                lastFolder = folder;
+                if (!folder.empty()) ImGui::TextDisabled(ICON_FA_FOLDER "  %s", folder.c_str());
+            }
+            bool isOpen = false, isActive = false;
+            for (size_t d = 0; d < m_Docs.size(); ++d) {
+                if (fs::equivalent(m_Docs[d]->sourcePath, s.path, ec)) {
+                    isOpen = true;
+                    isActive = static_cast<int>(d) == m_Active;
                 }
             }
-            if (ImGui::MenuItem(ICON_FA_CLONE "  複製")) {
-                fs::path copy = s.path;
-                for (int n = 2; fs::exists(copy, ec); ++n) copy.replace_filename(FileSystem::FromUtf8(std::format("{}{}{}", FileSystem::ToUtf8(s.path.stem()), n, Ruto::Aqua::kSourceExtension)));
-                fs::copy_file(s.path, copy, ec);
-                // 書き出し先は新しい名前に合わせる
-                if (auto j = ReadSourceFile(copy)) {
-                    (*j)["output"] = m_Project.DefaultOutputFor(copy);
-                    WriteSourceFile(copy, *j);
-                }
-                m_Project.Refresh(true);
-                if (Document* d = OpenDocument(copy)) d->Export();
+            ImGui::PushID(static_cast<int>(i));
+            if (!folder.empty()) ImGui::Indent();
+            const std::string label = std::format("{}  {}", isOpen ? ICON_FA_PEN_TO_SQUARE : LayoutKindIcon(s.kind), FileSystem::ToUtf8(s.path.stem()));
+            if (ImGui::Selectable(label.c_str(), isActive, ImGuiSelectableFlags_AllowDoubleClick)) OpenDocument(s.path);
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+                ImGui::SetTooltip("%s\n→ %s%s%s", FileSystem::ToUtf8(s.path).c_str(), m_Project.IsLibrary() ? "" : "Assets/", s.output.c_str(),
+                                  s.kind == LayoutKind::Part ? "\nキャンバス・階層へドラッグすると部品として入ります" : "");
+            // パーツは、ほかのレイアウトに部品として入れられるように書き出した .aqua をドラッグできる
+            if (s.kind == LayoutKind::Part && ImGui::BeginDragDropSource()) {
+                ImGui::SetDragDropPayload(kAssetPayload, s.output.data(), s.output.size());
+                ImGui::Text(ICON_FA_PUZZLE_PIECE "  %s（部品として入れる）", FileSystem::ToUtf8(s.path.stem()).c_str());
+                ImGui::EndDragDropSource();
             }
-            if (ImGui::MenuItem(ICON_FA_FOLDER "  エクスプローラーで表示")) Platform::OpenInFileBrowser(s.path.parent_path());
-            ImGui::Separator();
-            if (ImGui::MenuItem(ICON_FA_TRASH "  削除（.aqs と .aqua）")) deleteIndex = static_cast<int>(i);
-            ImGui::EndPopup();
+            if (ImGui::BeginPopupContextItem("source-menu")) {
+                if (ImGui::MenuItem(ICON_FA_FOLDER_OPEN "  開く")) OpenDocument(s.path);
+                if (ImGui::MenuItem(ICON_FA_FILE_EXPORT "  書き出す")) {
+                    if (Document* d = OpenDocument(s.path)) {
+                        d->Export();
+                        Notify("書き出しました: " + d->output);
+                    }
+                }
+                if (m_Project.IsLibrary() && ImGui::MenuItem(ICON_FA_PAPER_PLANE "  RutoEngine に送る", nullptr, false, m_Project.sendTarget.Valid())) {
+                    std::string error;
+                    if (Document* d = OpenDocument(s.path)) d->Export();
+                    if (m_Project.SendLayout(s.output, &error)) Notify("送りました: Assets/" + m_Project.SendPathFor(s.output));
+                    else Notify(error, true);
+                }
+                const LayoutKind other = s.kind == LayoutKind::Part ? LayoutKind::Body : LayoutKind::Part;
+                if (ImGui::MenuItem(std::format("{}  {}にする", LayoutKindIcon(other), LayoutKindLabel(other)).c_str())) {
+                    // 開いていれば文書で、開いていなければファイルを直接書き換える
+                    bool done = false;
+                    for (auto& d : m_Docs) {
+                        if (fs::equivalent(d->sourcePath, s.path, ec)) {
+                            d->SetKind(other);
+                            done = true;
+                        }
+                    }
+                    if (!done) {
+                        if (auto doc = Document::Open(m_Project, s.path)) doc->SetKind(other);
+                    }
+                    m_Project.Refresh(true);
+                    Notify(std::format("{}にしました", LayoutKindLabel(other)));
+                }
+                if (ImGui::MenuItem(ICON_FA_CLONE "  複製")) {
+                    fs::path copy = s.path;
+                    for (int n = 2; fs::exists(copy, ec); ++n) copy.replace_filename(FileSystem::FromUtf8(std::format("{}{}{}", FileSystem::ToUtf8(s.path.stem()), n, Ruto::Aqua::kSourceExtension)));
+                    fs::copy_file(s.path, copy, ec);
+                    // 書き出し先は新しい名前に合わせる
+                    if (auto j = ReadSourceFile(copy)) {
+                        (*j)["output"] = m_Project.DefaultOutputFor(copy);
+                        WriteSourceFile(copy, *j);
+                    }
+                    m_Project.Refresh(true);
+                    if (Document* d = OpenDocument(copy)) d->Export();
+                }
+                if (ImGui::MenuItem(ICON_FA_FOLDER "  エクスプローラーで表示")) Platform::OpenInFileBrowser(s.path.parent_path());
+                ImGui::Separator();
+                if (ImGui::MenuItem(ICON_FA_TRASH "  削除（.aqs と .aqua）")) deleteIndex = static_cast<int>(i);
+                ImGui::EndPopup();
+            }
+            if (!folder.empty()) ImGui::Unindent();
+            ImGui::PopID();
         }
-        if (!folder.empty()) ImGui::Unindent();
-        ImGui::PopID();
-    }
-    if (sources.empty()) {
-        ImGui::PushTextWrapPos(0.0f);
-        ImGui::TextDisabled("UI がまだありません。「新しい UI」で作ってください。");
-        ImGui::PopTextWrapPos();
+        if (shown == 0) {
+            ImGui::PushTextWrapPos(0.0f);
+            ImGui::TextDisabled("%s", section == LayoutKind::Part ? "パーツはまだありません。何度も使う見た目（カード・ボタン・ゲージなど）をパーツにすると、Body に入れて使い回せます"
+                                                                  : "Body はまだありません。上の「Body」で作ってください");
+            ImGui::PopTextWrapPos();
+        }
+        ImGui::Spacing();
     }
     if (deleteIndex >= 0) {
         ImGui::OpenPopup("UI を削除");
@@ -137,7 +193,7 @@ void App::DrawProjectPanel() {
             if (s.path == target) output = s.output;
         }
         ImGui::Text("%s を削除しますか？", FileSystem::ToUtf8(target.filename()).c_str());
-        ImGui::TextDisabled("編集用ファイルと、書き出した Assets/%s を消します（元に戻せません）", output.c_str());
+        ImGui::TextDisabled("編集用ファイルと、書き出した %s%s を消します（元に戻せません）", m_Project.IsLibrary() ? "" : "Assets/", output.c_str());
         ImGui::TextDisabled("この UI を使っている UIDocument は表示されなくなります");
         ImGui::Spacing();
         ImGui::PushStyleColor(ImGuiCol_Button, Theme::kError);
@@ -153,7 +209,7 @@ void App::DrawProjectPanel() {
                 fs::remove(Assets::GetPath(output), ec);
                 std::string header = output;
                 if (const size_t dot = header.find_last_of('.'); dot != std::string::npos) header = header.substr(0, dot);
-                fs::remove(m_Project.GetLayout().GeneratedDir() / FileSystem::FromUtf8(header + ".h"), ec);
+                if (!m_Project.IsLibrary()) fs::remove(m_Project.GetLayout().GeneratedDir() / FileSystem::FromUtf8(header + ".h"), ec);
             }
             m_Project.Refresh(true);
             Log::Info("UI を削除しました: {}", FileSystem::ToUtf8(target.filename()));
@@ -201,7 +257,7 @@ void App::DrawAssetsPanel() {
     ImGui::SameLine();
     if (IconButton(ICON_FA_ROTATE, "一覧を更新")) m_Project.Refresh(true);
     ImGui::SameLine();
-    if (IconButton(ICON_FA_FOLDER_OPEN, "Assets フォルダを開く")) Platform::OpenInFileBrowser(m_Project.GetLayout().AssetsDir());
+    if (IconButton(ICON_FA_FOLDER_OPEN, m_Project.IsLibrary() ? "ライブラリのフォルダを開く" : "Assets フォルダを開く")) Platform::OpenInFileBrowser(m_Project.GetAssetRoot());
     ImGui::SameLine();
     ImGui::AlignTextToFramePadding();
     ImGui::TextDisabled("キャンバス・階層・詳細の欄へドラッグして使います");

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <AquaSource version="2" output="UI/TextAnimation.aqua" generator="Aqua 1.0.0">
+  <string key="kind">body</string>
   <object key="document">
     <string key="format">RutoUI</string>
     <number key="version">1</number>
@@ -22,10 +23,18 @@
           <number>1</number>
           <number>1</number>
         </array>
+        <number key="rotation">0</number>
+        <array key="transformOrigin">
+          <number>0.5</number>
+          <number>0.5</number>
+        </array>
         <bool key="clipChildren">false</bool>
         <string key="tooltip"/>
         <string key="visibleBind"/>
         <string key="shader"/>
+        <bool key="blackWhiteEnabled">false</bool>
+        <bool key="vertexColorsEnabled">false</bool>
+        <string key="userData"/>
       </object>
       <object key="properties"/>
       <object key="slot">
@@ -78,10 +87,18 @@
               <number>1</number>
               <number>1</number>
             </array>
+            <number key="rotation">0</number>
+            <array key="transformOrigin">
+              <number>0.5</number>
+              <number>0.5</number>
+            </array>
             <bool key="clipChildren">false</bool>
             <string key="tooltip"/>
             <string key="visibleBind"/>
             <string key="shader"/>
+            <bool key="blackWhiteEnabled">false</bool>
+            <bool key="vertexColorsEnabled">false</bool>
+            <string key="userData"/>
           </object>
           <object key="properties">
             <string key="texture"/>
@@ -103,6 +120,9 @@
               <number>0</number>
             </array>
             <number key="cornerRadius">0</number>
+            <string key="frames"/>
+            <number key="frame">0</number>
+            <number key="framesPerSecond">0</number>
           </object>
           <object key="slot">
             <array key="anchorMin">
@@ -155,10 +175,18 @@
               <number>1</number>
               <number>1</number>
             </array>
+            <number key="rotation">0</number>
+            <array key="transformOrigin">
+              <number>0.5</number>
+              <number>0.5</number>
+            </array>
             <bool key="clipChildren">false</bool>
             <string key="tooltip"/>
             <string key="visibleBind"/>
             <string key="shader"/>
+            <bool key="blackWhiteEnabled">false</bool>
+            <bool key="vertexColorsEnabled">false</bool>
+            <string key="userData"/>
           </object>
           <object key="properties">
             <number key="spacing">28</number>
@@ -219,10 +247,18 @@
                   <number>1</number>
                   <number>1</number>
                 </array>
+                <number key="rotation">0</number>
+                <array key="transformOrigin">
+                  <number>0.5</number>
+                  <number>0.5</number>
+                </array>
                 <bool key="clipChildren">false</bool>
                 <string key="tooltip"/>
                 <string key="visibleBind"/>
                 <string key="shader"/>
+                <bool key="blackWhiteEnabled">false</bool>
+                <bool key="vertexColorsEnabled">false</bool>
+                <string key="userData"/>
               </object>
               <object key="properties">
                 <string key="text">← メニュー</string>
@@ -328,10 +364,18 @@
                   <number>1</number>
                   <number>1</number>
                 </array>
+                <number key="rotation">0</number>
+                <array key="transformOrigin">
+                  <number>0.5</number>
+                  <number>0.5</number>
+                </array>
                 <bool key="clipChildren">false</bool>
                 <string key="tooltip"/>
                 <string key="visibleBind"/>
                 <string key="shader"/>
+                <bool key="blackWhiteEnabled">false</bool>
+                <bool key="vertexColorsEnabled">false</bool>
+                <string key="userData"/>
               </object>
               <object key="properties">
                 <number key="spacing">2</number>
@@ -392,6 +436,11 @@
                       <number>1</number>
                       <number>1</number>
                     </array>
+                    <number key="rotation">0</number>
+                    <array key="transformOrigin">
+                      <number>0.5</number>
+                      <number>0.5</number>
+                    </array>
                     <bool key="clipChildren">false</bool>
                     <string key="tooltip"/>
                     <string key="visibleBind"/>
@@ -433,6 +482,9 @@
                       <number>0</number>
                       <number>0</number>
                     </array>
+                    <bool key="blackWhiteEnabled">false</bool>
+                    <bool key="vertexColorsEnabled">false</bool>
+                    <string key="userData"/>
                   </object>
                   <object key="properties">
                     <string key="text">文字アニメーション</string>
@@ -447,6 +499,10 @@
                     <string key="align">Left</string>
                     <string key="verticalAlign">Center</string>
                     <bool key="wrap">false</bool>
+                    <number key="letterSpacing">0</number>
+                    <number key="lineSpacing">0</number>
+                    <bool key="shrinkToFit">false</bool>
+                    <bool key="gradient">false</bool>
                     <string key="effect">None</string>
                     <number key="effectStrength">6</number>
                     <number key="effectSpeed">1</number>
@@ -523,10 +579,18 @@
                       <number>1</number>
                       <number>1</number>
                     </array>
+                    <number key="rotation">0</number>
+                    <array key="transformOrigin">
+                      <number>0.5</number>
+                      <number>0.5</number>
+                    </array>
                     <bool key="clipChildren">false</bool>
                     <string key="tooltip"/>
                     <string key="visibleBind"/>
                     <string key="shader"/>
+                    <bool key="blackWhiteEnabled">false</bool>
+                    <bool key="vertexColorsEnabled">false</bool>
+                    <string key="userData"/>
                   </object>
                   <object key="properties">
                     <string key="text">UIText の effect（動き）と reveal（出し方）</string>
@@ -541,6 +605,10 @@
                     <string key="align">Left</string>
                     <string key="verticalAlign">Center</string>
                     <bool key="wrap">false</bool>
+                    <number key="letterSpacing">0</number>
+                    <number key="lineSpacing">0</number>
+                    <bool key="shrinkToFit">false</bool>
+                    <bool key="gradient">false</bool>
                     <string key="effect">None</string>
                     <number key="effectStrength">6</number>
                     <number key="effectSpeed">1</number>
@@ -621,10 +689,18 @@
               <number>1</number>
               <number>1</number>
             </array>
+            <number key="rotation">0</number>
+            <array key="transformOrigin">
+              <number>0.5</number>
+              <number>0.5</number>
+            </array>
             <bool key="clipChildren">false</bool>
             <string key="tooltip"/>
             <string key="visibleBind"/>
             <string key="shader"/>
+            <bool key="blackWhiteEnabled">false</bool>
+            <bool key="vertexColorsEnabled">false</bool>
+            <string key="userData"/>
           </object>
           <object key="properties">
             <number key="spacing">40</number>
@@ -685,10 +761,18 @@
                   <number>1</number>
                   <number>1</number>
                 </array>
+                <number key="rotation">0</number>
+                <array key="transformOrigin">
+                  <number>0.5</number>
+                  <number>0.5</number>
+                </array>
                 <bool key="clipChildren">false</bool>
                 <string key="tooltip"/>
                 <string key="visibleBind"/>
                 <string key="shader"/>
+                <bool key="blackWhiteEnabled">false</bool>
+                <bool key="vertexColorsEnabled">false</bool>
+                <string key="userData"/>
               </object>
               <object key="properties">
                 <array key="background">
@@ -775,10 +859,18 @@
                       <number>1</number>
                       <number>1</number>
                     </array>
+                    <number key="rotation">0</number>
+                    <array key="transformOrigin">
+                      <number>0.5</number>
+                      <number>0.5</number>
+                    </array>
                     <bool key="clipChildren">false</bool>
                     <string key="tooltip"/>
                     <string key="visibleBind"/>
                     <string key="shader"/>
+                    <bool key="blackWhiteEnabled">false</bool>
+                    <bool key="vertexColorsEnabled">false</bool>
+                    <string key="userData"/>
                   </object>
                   <object key="properties">
                     <number key="widthOverride">780</number>
@@ -842,10 +934,18 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="blackWhiteEnabled">false</bool>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <number key="spacing">12</number>
@@ -906,10 +1006,18 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties">
                             <string key="text">動き（effect）… ずっと続く</string>
@@ -924,6 +1032,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -1000,10 +1112,18 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties">
                             <string key="text">Wave　ゆらゆら波打つ</string>
@@ -1018,6 +1138,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">Wave</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -1094,10 +1218,18 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties">
                             <string key="text">Shake　ぶるぶる震える</string>
@@ -1112,6 +1244,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">Shake</string>
                             <number key="effectStrength">3</number>
                             <number key="effectSpeed">1</number>
@@ -1188,10 +1324,18 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties">
                             <string key="text">Rainbow　虹色が流れる</string>
@@ -1206,6 +1350,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">Rainbow</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -1282,10 +1430,18 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties">
                             <string key="text">Pulse　どくんと脈打つ</string>
@@ -1300,6 +1456,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">Pulse</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -1376,10 +1536,18 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties">
                             <string key="text">Swing　左右に揺れる</string>
@@ -1394,6 +1562,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">Swing</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -1470,10 +1642,18 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties">
                             <string key="text">Glitch　ノイズで乱れる</string>
@@ -1488,6 +1668,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">Glitch</string>
                             <number key="effectStrength">4</number>
                             <number key="effectSpeed">1</number>
@@ -1564,10 +1748,18 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties">
                             <string key="text">詳細パネルの「アニメーション」で選ぶ。強さ（effectStrength）と速さ（effectSpeed）も変えられる</string>
@@ -1582,6 +1774,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">true</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -1664,10 +1860,18 @@
                   <number>1</number>
                   <number>1</number>
                 </array>
+                <number key="rotation">0</number>
+                <array key="transformOrigin">
+                  <number>0.5</number>
+                  <number>0.5</number>
+                </array>
                 <bool key="clipChildren">false</bool>
                 <string key="tooltip"/>
                 <string key="visibleBind"/>
                 <string key="shader"/>
+                <bool key="blackWhiteEnabled">false</bool>
+                <bool key="vertexColorsEnabled">false</bool>
+                <string key="userData"/>
               </object>
               <object key="properties">
                 <array key="background">
@@ -1754,10 +1958,18 @@
                       <number>1</number>
                       <number>1</number>
                     </array>
+                    <number key="rotation">0</number>
+                    <array key="transformOrigin">
+                      <number>0.5</number>
+                      <number>0.5</number>
+                    </array>
                     <bool key="clipChildren">false</bool>
                     <string key="tooltip"/>
                     <string key="visibleBind"/>
                     <string key="shader"/>
+                    <bool key="blackWhiteEnabled">false</bool>
+                    <bool key="vertexColorsEnabled">false</bool>
+                    <string key="userData"/>
                   </object>
                   <object key="properties">
                     <number key="widthOverride">780</number>
@@ -1821,10 +2033,18 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="blackWhiteEnabled">false</bool>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <number key="spacing">12</number>
@@ -1885,10 +2105,18 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties">
                             <string key="text">出し方（reveal）… 表示したときに 1 回</string>
@@ -1903,6 +2131,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -1979,10 +2211,18 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties">
                             <string key="text">Typewriter　1 文字ずつ打ち出す</string>
@@ -1997,6 +2237,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -2073,10 +2317,18 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties">
                             <string key="text">Fade　1 文字ずつ浮かび上がる</string>
@@ -2091,6 +2343,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -2167,10 +2423,18 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties">
                             <string key="text">Pop　ぽんっと弾けて出る</string>
@@ -2185,6 +2449,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -2261,10 +2529,18 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties">
                             <string key="text">Rise　下からせり上がる</string>
@@ -2279,6 +2555,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -2355,10 +2635,18 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties">
                             <string key="text">Drop　上から落ちてくる</string>
@@ -2373,6 +2661,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -2449,10 +2741,18 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties">
                             <string key="text">Spin　くるっと回って出る</string>
@@ -2467,6 +2767,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -2543,10 +2847,18 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties">
                             <number key="spacing">16</number>
@@ -2607,10 +2919,18 @@
                                   <number>1</number>
                                   <number>1</number>
                                 </array>
+                                <number key="rotation">0</number>
+                                <array key="transformOrigin">
+                                  <number>0.5</number>
+                                  <number>0.5</number>
+                                </array>
                                 <bool key="clipChildren">false</bool>
                                 <string key="tooltip"/>
                                 <string key="visibleBind"/>
                                 <string key="shader"/>
+                                <bool key="blackWhiteEnabled">false</bool>
+                                <bool key="vertexColorsEnabled">false</bool>
+                                <string key="userData"/>
                               </object>
                               <object key="properties">
                                 <string key="text">もう一度</string>
@@ -2716,10 +3036,18 @@
                                   <number>1</number>
                                   <number>1</number>
                                 </array>
+                                <number key="rotation">0</number>
+                                <array key="transformOrigin">
+                                  <number>0.5</number>
+                                  <number>0.5</number>
+                                </array>
                                 <bool key="clipChildren">false</bool>
                                 <string key="tooltip"/>
                                 <string key="visibleBind"/>
                                 <string key="shader"/>
+                                <bool key="blackWhiteEnabled">false</bool>
+                                <bool key="vertexColorsEnabled">false</bool>
+                                <string key="userData"/>
                               </object>
                               <object key="properties">
                                 <string key="text">スクリプトからは ui-&gt;RestartText(&quot;名前&quot;) / SkipText(&quot;名前&quot;)</string>
@@ -2734,6 +3062,10 @@
                                 <string key="align">Left</string>
                                 <string key="verticalAlign">Center</string>
                                 <bool key="wrap">true</bool>
+                                <number key="letterSpacing">0</number>
+                                <number key="lineSpacing">0</number>
+                                <bool key="shrinkToFit">false</bool>
+                                <bool key="gradient">false</bool>
                                 <string key="effect">None</string>
                                 <number key="effectStrength">6</number>
                                 <number key="effectSpeed">1</number>
@@ -2820,10 +3152,18 @@
               <number>1</number>
               <number>1</number>
             </array>
+            <number key="rotation">0</number>
+            <array key="transformOrigin">
+              <number>0.5</number>
+              <number>0.5</number>
+            </array>
             <bool key="clipChildren">false</bool>
             <string key="tooltip"/>
             <string key="visibleBind"/>
             <string key="shader"/>
+            <bool key="blackWhiteEnabled">false</bool>
+            <bool key="vertexColorsEnabled">false</bool>
+            <string key="userData"/>
           </object>
           <object key="properties"/>
           <object key="slot">
@@ -2876,10 +3216,18 @@
                   <number>1</number>
                   <number>1</number>
                 </array>
+                <number key="rotation">0</number>
+                <array key="transformOrigin">
+                  <number>0.5</number>
+                  <number>0.5</number>
+                </array>
                 <bool key="clipChildren">false</bool>
                 <string key="tooltip"/>
                 <string key="visibleBind"/>
                 <string key="shader"/>
+                <bool key="blackWhiteEnabled">false</bool>
+                <bool key="vertexColorsEnabled">false</bool>
+                <string key="userData"/>
               </object>
               <object key="properties">
                 <array key="background">
@@ -2966,10 +3314,18 @@
                       <number>1</number>
                       <number>1</number>
                     </array>
+                    <number key="rotation">0</number>
+                    <array key="transformOrigin">
+                      <number>0.5</number>
+                      <number>0.5</number>
+                    </array>
                     <bool key="clipChildren">false</bool>
                     <string key="tooltip"/>
                     <string key="visibleBind"/>
                     <string key="shader"/>
+                    <bool key="blackWhiteEnabled">false</bool>
+                    <bool key="vertexColorsEnabled">false</bool>
+                    <string key="userData"/>
                   </object>
                   <object key="properties">
                     <number key="widthOverride">1600</number>
@@ -3033,10 +3389,18 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="blackWhiteEnabled">false</bool>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <number key="spacing">12</number>
@@ -3097,10 +3461,18 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties">
                             <string key="text">リッチテキスト（文字の中にタグを書く）</string>
@@ -3115,6 +3487,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -3191,10 +3567,18 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties">
                             <string key="text">&lt;wave&gt;ゆれる&lt;/wave&gt;文字、&lt;shake&gt;震える&lt;/shake&gt;文字、&lt;rainbow&gt;虹色&lt;/rainbow&gt;の文字。&lt;color=#ff7e6a&gt;色を変え&lt;/color&gt;たり&lt;alpha=0.4&gt;薄く&lt;/alpha&gt;したり。&lt;pause=0.6&gt;間を置いて…&lt;speed=0.25&gt;ゆっくり&lt;/speed&gt;出すこともできます。</string>
@@ -3209,6 +3593,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">true</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -3285,10 +3673,18 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties">
                             <string key="text">使えるタグ: &lt;wave&gt; &lt;shake&gt; &lt;rainbow&gt; &lt;pulse&gt; &lt;swing&gt; &lt;glitch&gt; &lt;color=#rrggbb&gt; &lt;alpha=0.5&gt; &lt;pause=秒&gt; &lt;speed=倍率&gt;（閉じるのは &lt;/名前&gt;）</string>
@@ -3303,6 +3699,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">true</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>

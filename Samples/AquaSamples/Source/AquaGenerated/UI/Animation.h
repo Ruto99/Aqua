@@ -39,7 +39,7 @@ inline constexpr const char* PlayShake = "PlayShake";
 inline constexpr const char* PlayGauge = "PlayGauge";
 } // namespace Widgets
 
-// アニメーションの名前（PlayAnimation）
+// アニメーションと区間の名前（PlayAnimation）
 namespace Animations {
 inline constexpr const char* Intro = "Intro";
 inline constexpr const char* Loop = "Loop";

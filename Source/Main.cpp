@@ -16,8 +16,11 @@
 
 #include <Ruto/Aqua/AquaFormat.h>
 
+#include <algorithm>
 #include <cstdio>
 #include <exception>
+#include <format>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -71,14 +74,8 @@ void Print(const std::string& text) {
     std::fflush(stdout);
 }
 
-// ファイルを含むプロジェクト（Assets がある親フォルダ）
-fs::path FindProjectOf(const fs::path& file) {
-    std::error_code ec;
-    for (fs::path dir = fs::absolute(file, ec).parent_path(); !dir.empty(); dir = dir.parent_path()) {
-        if (fs::is_directory(dir / "Assets", ec)) return dir;
-        if (dir == dir.root_path()) break;
-    }
-    return {};
+bool HasFlag(const std::vector<std::string>& args, const char* name) {
+    return std::find(args.begin(), args.end(), name) != args.end();
 }
 
 std::string OptionValue(const std::vector<std::string>& args, const char* name) {
@@ -90,9 +87,11 @@ std::string OptionValue(const std::vector<std::string>& args, const char* name) 
 
 int Usage() {
     Print("usage:");
-    Print("  Aqua [--project <ProjectDir>] [--open <file>]   open the UI tool");
-    Print("  Aqua export <ProjectDir | file.aqs> [--project <dir>]");
-    Print("  Aqua import <file.rui> --project <dir>");
+    Print("  Aqua [--project <Dir>] [--open <file>]          open the UI tool (Dir: a library folder or a RutoEngine project)");
+    Print("  Aqua new-library <Dir>                          make a layout library (Body / Parts / Images / Fonts / Shaders)");
+    Print("  Aqua export <Dir | file.aqs> [--project <dir>]");
+    Print("  Aqua import <file.rui> --project <dir> [--part]");
+    Print("  Aqua send <LibraryDir> [--to <RutoEngineProject>] [--folder <UI/Name>]   send all layouts to a RutoEngine project");
     Print("  Aqua info <file.aqua>");
     Print("  Aqua to-json <file.aqua> [out.json]");
     Print("  Aqua from-json <file.json> <out.aqua>");
@@ -152,13 +151,55 @@ int RunCommandLine(const std::vector<std::string>& args) {
         return 0;
     }
 
+    if (command == "new-library") {
+        if (args.size() < 2) return Usage();
+        std::string error;
+        if (!AquaTool::Project::CreateLibrary(FileSystem::FromUtf8(args[1]), &error)) {
+            Print("error: " + error);
+            return 1;
+        }
+        Print("created: " + args[1]);
+        return 0;
+    }
+
+    if (command == "send") {
+        if (args.size() < 2) return Usage();
+        AquaTool::Project library;
+        std::string error;
+        if (!library.Open(FileSystem::FromUtf8(args[1]), &error) || !library.IsLibrary()) {
+            Print("error: " + (error.empty() ? args[1] + " is not a layout library" : error));
+            return 1;
+        }
+        if (const std::string to = OptionValue(args, "--to"); !to.empty()) library.sendTarget.project = FileSystem::FromUtf8(to);
+        if (const std::string folder = OptionValue(args, "--folder"); !folder.empty()) library.sendTarget.folder = folder;
+        if (!library.sendTarget.Valid()) {
+            Print("error: no send target (use --to <RutoEngineProject>)");
+            return 1;
+        }
+        library.SaveSendTarget();
+        library.sendTarget.live = false; // 書き出しのたびには送らず、下でまとめて送る
+        std::set<std::string> done;
+        int failed = 0;
+        for (const auto& s : library.GetSources()) {
+            auto doc = AquaTool::Document::Open(library, s.path, &error);
+            if (!doc || !doc->Export() || !library.SendLayout(doc->output, &error, &done)) {
+                Print("error: " + error);
+                ++failed;
+                continue;
+            }
+            Print(std::format("{} -> Assets/{}", doc->output, library.SendPathFor(doc->output)));
+        }
+        Print(std::format("{} sent, {} failed", library.GetSources().size() - static_cast<size_t>(failed), failed));
+        return failed ? 1 : 0;
+    }
+
     if (command == "export" || command == "import") {
         if (args.size() < 2) return Usage();
         const fs::path target = FileSystem::FromUtf8(args[1]);
         std::error_code ec;
         fs::path projectDir = FileSystem::FromUtf8(OptionValue(args, "--project"));
         const bool wholeProject = command == "export" && fs::is_directory(target, ec);
-        if (projectDir.empty()) projectDir = wholeProject ? target : FindProjectOf(target);
+        if (projectDir.empty()) projectDir = wholeProject ? target : AquaTool::FindWorkspaceFor(target);
         if (projectDir.empty()) {
             Print("error: project folder was not found (use --project <dir>)");
             return 1;
@@ -183,6 +224,7 @@ int RunCommandLine(const std::vector<std::string>& args) {
                 ++failed;
                 continue;
             }
+            if (command == "import" && HasFlag(args, "--part")) doc->SetKind(AquaTool::LayoutKind::Part);
             Print(std::format("{} -> Assets/{}", FileSystem::ToUtf8(doc->sourcePath.filename()), doc->output));
         }
         Print(std::format("{} exported, {} failed", files.size() - static_cast<size_t>(failed), failed));

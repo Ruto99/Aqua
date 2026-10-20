@@ -1,0 +1,411 @@
+From 510caf9a8672e77fbf63e2d00fc23bed7cb4775f Mon Sep 17 00:00:00 2001
+From: Shiruba <koko0909e@gmail.com>
+Date: Wed, 21 Oct 2026 04:51:51 +0900
+Subject: [PATCH] Widget rotation, vertex colors, a bounding pane and user data
+
+- Widget::rotation (degrees, clockwise) and transformOrigin (also the
+  center of renderScale; defaults keep the old behavior). Rotation is
+  drawn through a Renderer2D transform and hit tests and pointer input
+  undo it, so rotated buttons and sliders still work. Clipping inside a
+  rotated widget uses the rotated bounding box.
+- Vertex colors: four corner colors multiplied into a widget's own
+  drawing (images, backgrounds, text), via Renderer2D corner colors.
+- UIBoundingPane: draws nothing, emits Click (clickMessage) when pressed.
+- Widget::userData: free "key=value" lines for scripts
+  (GetUserData / GetUserDataFloat / HasUserData).
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ Modules/Engine/include/Ruto/Engine/Widgets.h  | 35 ++++++++-
+ Modules/Engine/src/UIDocument.cpp             | 58 ++++++++++++--
+ Modules/Engine/src/Widgets.cpp                | 77 +++++++++++++++++++
+ .../include/Ruto/Graphics/Renderer2D.h        |  8 ++
+ Modules/Graphics/src/Renderer2D.cpp           | 42 +++++++++-
+ 5 files changed, 212 insertions(+), 8 deletions(-)
+
+diff --git a/Modules/Engine/include/Ruto/Engine/Widgets.h b/Modules/Engine/include/Ruto/Engine/Widgets.h
+index 4ef4feb..9ce283a 100644
+--- a/Modules/Engine/include/Ruto/Engine/Widgets.h
++++ b/Modules/Engine/include/Ruto/Engine/Widgets.h
+@@ -162,7 +162,9 @@ public:
+     bool enabled = true;
+     float opacity = 1.0f;
+     Vec2 translation{0.0f, 0.0f}; // 描画だけずらす（レイアウトは変わらない。アニメーション向け）
+-    Vec2 renderScale{1.0f, 1.0f}; // 中心を基準に描画だけ拡大縮小する
++    Vec2 renderScale{1.0f, 1.0f}; // transformOrigin を基準に描画だけ拡大縮小する
++    float rotation = 0.0f;        // transformOrigin を中心に描画だけ回す（度。時計回り）。子も一緒に回る
++    Vec2 transformOrigin{0.5f, 0.5f}; // 拡大縮小・回転の中心（自分の中の割合。0.5, 0.5 で中央）
+     std::string tooltip;
+     bool clipChildren = false;    // 子を自分の範囲で切り取る
+     std::string visibleBind;      // 変数が真のときだけ表示（"!変数名" で逆）
+@@ -178,6 +180,23 @@ public:
+     bool SetShaderParam(std::string_view param, const Vec4& value);
+     bool SetShaderParam(std::string_view param, float value) { return SetShaderParam(param, Vec4{value, 0.0f, 0.0f, 0.0f}); }
+ 
++    // 頂点カラー（四隅の色）。自分の描画（画像・背景・文字など）に掛ける。子には掛からない
++    bool vertexColorsEnabled = false;
++    Vec4 vertexColors[4] = {{1, 1, 1, 1}, {1, 1, 1, 1}, {1, 1, 1, 1}, {1, 1, 1, 1}}; // 左上・右上・左下・右下
++
++    // ユーザーデータ（スクリプト用の自由な値）。1 行に 1 つ「キー=値」
++    std::string userData;
++    // キーの値（無ければ fallback）
++    std::string GetUserData(std::string_view key, std::string_view fallback = {}) const;
++    float GetUserDataFloat(std::string_view key, float fallback = 0.0f) const;
++    bool HasUserData(std::string_view key) const;
++
++    // 回転を含む描画の変形（レイアウトの画面座標 → 実際に描かれる画面座標）。回転していなければ単位行列
++    const Mat4& GetScreenTransform() const { return m_Xform; }
++    bool HasScreenTransform() const { return m_HasXform; }
++    // 画面の点を、回転をほどいたレイアウトの画面座標にする（当たり判定・デザイナー用）
++    Vec2 ScreenToLayout(const Vec2& p) const;
++
+     WidgetSlot slot;
+     std::vector<std::unique_ptr<Widget>> children;
+     bool generated = false; // ユーザーウィジェットが作った子（保存しない）
+@@ -192,6 +211,9 @@ protected:
+     UI::Rect m_ScreenRect;
+     Vec2 m_Desired{0.0f, 0.0f};
+     Vec2 m_ScreenScale{1.0f, 1.0f}; // 基準解像度の単位 → ピクセル（描画の拡大を含む）
++    Mat4 m_Xform;                   // 祖先と自分の回転（描画に掛ける）
++    Mat4 m_InvXform;                // その逆
++    bool m_HasXform = false;
+     bool m_Hovered = false;
+     bool m_Pressed = false;
+     bool m_Focused = false;
+@@ -241,6 +263,17 @@ class UINullPane : public UICanvasPanel {
+     RUTO_WIDGET(UINullPane)
+ };
+ 
++// 何も描かないクリックの範囲（バウンディングペイン）。押すと Click のイベント（clickMessage。空なら名前）を出す。
++// 絵の一部をボタンにする・見えない当たり判定を置くときに使う。子の置き方は Canvas Panel と同じ
++class UIBoundingPane : public UINullPane {
++    RUTO_WIDGET(UIBoundingPane)
++    std::string clickMessage;
++    bool IsInteractive() const override { return true; }
++    bool HasHitArea() const override { return true; }
++    void Reflect(PropertyVisitor& v) override;
++    void OnPointerUp(WidgetContext& ctx, bool inside) override;
++};
++
+ // 横に並べる（Unreal の Horizontal Box / Unity の Horizontal Layout Group）
+ class UIHorizontalBox : public Widget {
+     RUTO_WIDGET(UIHorizontalBox)
+diff --git a/Modules/Engine/src/UIDocument.cpp b/Modules/Engine/src/UIDocument.cpp
+index e778947..85e1d29 100644
+--- a/Modules/Engine/src/UIDocument.cpp
++++ b/Modules/Engine/src/UIDocument.cpp
+@@ -205,12 +205,15 @@ void WidgetDocument::Layout(const UI::Rect& screen, float scaleOverride) {
+     const UI::Rect root{0.0f, 0.0f, screen.w / s, screen.h / s};
+     m_Ctx.Measure(*m_Root, root.w);
+     m_Ctx.Arrange(*m_Root, root);
++    m_Root->m_Xform = Mat4::Identity();
++    m_Root->m_InvXform = Mat4::Identity();
++    m_Root->m_HasXform = false;
+     TransformRecursive(*m_Root, {s, s}, {screen.x, screen.y});
+ }
+ 
+ void WidgetDocument::TransformRecursive(Widget& w, const Vec2& S, const Vec2& O) {
+     const UI::Rect& r = w.m_Rect;
+-    const Vec2 c{r.x + r.w * 0.5f, r.y + r.h * 0.5f};
++    const Vec2 c{r.x + r.w * w.transformOrigin.x, r.y + r.h * w.transformOrigin.y};
+     const float dyn = w.GetDynamicScale();
+     const Vec2 rs{w.renderScale.x * dyn, w.renderScale.y * dyn};
+     // 描画の変形（中心を基準に拡大してからずらす）: p → p * rs + ro
+@@ -219,6 +222,23 @@ void WidgetDocument::TransformRecursive(Widget& w, const Vec2& S, const Vec2& O)
+     const Vec2 b{r.Right() * rs.x + ro.x, r.Bottom() * rs.y + ro.y};
+     w.m_ScreenRect = {a.x * S.x + O.x, a.y * S.y + O.y, (b.x - a.x) * S.x, (b.y - a.y) * S.y};
+     w.m_ScreenScale = {rs.x * S.x, rs.y * S.y};
++    // 回転: 親から受け継いだ変形に、自分の回転（transformOrigin の画面上の位置が中心）を足す
++    if (w.GetParent()) {
++        const Widget& parent = *w.GetParent();
++        w.m_Xform = parent.m_Xform;
++        w.m_InvXform = parent.m_InvXform;
++        w.m_HasXform = parent.m_HasXform;
++    }
++    if (std::abs(w.rotation) > 1e-4f) {
++        const UI::Rect& sr = w.m_ScreenRect;
++        const Vec3 pivot{sr.x + sr.w * w.transformOrigin.x, sr.y + sr.h * w.transformOrigin.y, 0.0f};
++        const float rad = w.rotation * 3.14159265358979f / 180.0f;
++        const Mat4 rot = Mat4::Translate(pivot) * Mat4::RotateZ(rad) * Mat4::Translate({-pivot.x, -pivot.y, 0.0f});
++        const Mat4 inv = Mat4::Translate(pivot) * Mat4::RotateZ(-rad) * Mat4::Translate({-pivot.x, -pivot.y, 0.0f});
++        w.m_Xform = w.m_Xform * rot;
++        w.m_InvXform = inv * w.m_InvXform;
++        w.m_HasXform = true;
++    }
+     const Vec2 off = w.GetChildOffset();
+     const Vec2 S2{rs.x * S.x, rs.y * S.y};
+     const Vec2 O2{(off.x * rs.x + ro.x) * S.x + O.x, (off.y * rs.y + ro.y) * S.y + O.y};
+@@ -228,7 +248,7 @@ void WidgetDocument::TransformRecursive(Widget& w, const Vec2& S, const Vec2& O)
+ Widget* WidgetDocument::HitTestRecursive(Widget& w, const Vec2& p, bool inputMode) const {
+     if (w.visibility == WidgetVisibility::Collapsed || w.visibility == WidgetVisibility::Hidden) return nullptr;
+     if (inputMode && w.visibility == WidgetVisibility::HitTestInvisible) return nullptr;
+-    const bool inside = w.m_ScreenRect.Contains(p);
++    const bool inside = w.m_ScreenRect.Contains(w.ScreenToLayout(p)); // 回転していれば、ほどいてから比べる
+     if (!ClipsChildren(w) || inside) {
+         const auto order = PaintOrder(w);
+         for (auto it = order.rbegin(); it != order.rend(); ++it) {
+@@ -247,8 +267,8 @@ Widget* WidgetDocument::HitTest(const Vec2& pixel, bool interactiveOnly) const {
+ }
+ 
+ Vec2 WidgetDocument::LocalPoint(const Widget& w) const {
+-    return {(m_Ctx.mouse.x - w.m_ScreenRect.x) / std::max(w.m_ScreenScale.x, 1e-4f),
+-            (m_Ctx.mouse.y - w.m_ScreenRect.y) / std::max(w.m_ScreenScale.y, 1e-4f)};
++    const Vec2 m = w.ScreenToLayout(m_Ctx.mouse);
++    return {(m.x - w.m_ScreenRect.x) / std::max(w.m_ScreenScale.x, 1e-4f), (m.y - w.m_ScreenRect.y) / std::max(w.m_ScreenScale.y, 1e-4f)};
+ }
+ 
+ void WidgetDocument::HandleInput() {
+@@ -306,7 +326,7 @@ void WidgetDocument::HandleInput() {
+         Widget* p = m_Pressed;
+         m_Pressed = nullptr;
+         p->m_Pressed = false;
+-        p->OnPointerUp(m_Ctx, target == p && p->m_ScreenRect.Contains(ms.position));
++        p->OnPointerUp(m_Ctx, target == p && p->m_ScreenRect.Contains(p->ScreenToLayout(ms.position)));
+     }
+     if (ms.wheel != 0.0f) {
+         for (Widget* w = top; w; w = w->m_Parent) {
+@@ -413,6 +433,8 @@ void WidgetDocument::Paint() {
+     if (!m_Root) return;
+     m_Ctx.opacity = 1.0f;
+     PaintRecursive(*m_Root);
++    Renderer2D::ResetTransform();
++    Renderer2D::ClearCornerColors();
+     PaintTooltip();
+ }
+ 
+@@ -431,15 +453,39 @@ void WidgetDocument::PaintRecursive(Widget& w) {
+         m_ShaderStack.emplace_back(shader, &w);
+         ApplyShaderStack();
+     }
++    // 回転（祖先の分も含めて、自分と子の描画に掛ける）
++    if (w.m_HasXform) Renderer2D::SetTransform(w.m_Xform);
++    else Renderer2D::ResetTransform();
++    // 頂点カラー（自分の描画だけ）
++    if (w.vertexColorsEnabled) {
++        const UI::Rect& sr = w.m_ScreenRect;
++        Renderer2D::SetCornerColors({sr.x, sr.y, sr.w, sr.h}, w.vertexColors);
++    }
+     w.Paint(m_Ctx);
++    if (w.vertexColorsEnabled) Renderer2D::ClearCornerColors();
+     if (shader && !w.shaderChildren) {
+         m_ShaderStack.pop_back();
+         ApplyShaderStack();
+     }
+     const bool clip = ClipsChildren(w);
+-    if (clip) UI::PushClip(w.m_ScreenRect);
++    if (clip) {
++        // 回転しているときは、回った四角形を囲む範囲で切り取る（はさみは傾けられないため）
++        UI::Rect cr = w.m_ScreenRect;
++        if (w.m_HasXform) {
++            float x0 = 1e30f, y0 = 1e30f, x1 = -1e30f, y1 = -1e30f;
++            for (const Vec2& c : {Vec2{cr.x, cr.y}, Vec2{cr.Right(), cr.y}, Vec2{cr.x, cr.Bottom()}, Vec2{cr.Right(), cr.Bottom()}}) {
++                const Vec4 q = w.m_Xform * Vec4{c.x, c.y, 0.0f, 1.0f};
++                x0 = std::min(x0, q.x), y0 = std::min(y0, q.y), x1 = std::max(x1, q.x), y1 = std::max(y1, q.y);
++            }
++            cr = {x0, y0, x1 - x0, y1 - y0};
++        }
++        UI::PushClip(cr);
++    }
+     for (Widget* c : PaintOrder(w)) PaintRecursive(*c);
+     if (clip) UI::PopClip();
++    // 子が変えた変形を自分のものに戻す（重ねて描く分のため）
++    if (w.m_HasXform) Renderer2D::SetTransform(w.m_Xform);
++    else Renderer2D::ResetTransform();
+     if (shader && w.shaderChildren) {
+         m_ShaderStack.pop_back();
+         ApplyShaderStack();
+diff --git a/Modules/Engine/src/Widgets.cpp b/Modules/Engine/src/Widgets.cpp
+index 81b8569..d9fd50a 100644
+--- a/Modules/Engine/src/Widgets.cpp
++++ b/Modules/Engine/src/Widgets.cpp
+@@ -83,6 +83,7 @@ void EnsureBuiltins() {
+     s_Done = true;
+     Reg<UICanvasPanel>("UICanvasPanel", "キャンバスパネル", "パネル", "子をアンカーとピボットで自由に置く（Unity の Canvas）");
+     Reg<UINullPane>("UINullPane", "Null ペイン", "パネル", "何も描かない入れ物。子をまとめて動かす・拡大する・アニメーションさせる基準点（子の置き方はキャンバスパネルと同じ）");
++    Reg<UIBoundingPane>("UIBoundingPane", "Bounding ペイン", "パネル", "何も描かないクリックの範囲。押すと Click のイベントを出す（絵の一部をボタンにする・見えない当たり判定）");
+     Reg<UIVerticalBox>("UIVerticalBox", "縦に並べる", "パネル", "子を上から順に並べる（Vertical Box）");
+     Reg<UIHorizontalBox>("UIHorizontalBox", "横に並べる", "パネル", "子を左から順に並べる（Horizontal Box）");
+     Reg<UIOverlay>("UIOverlay", "重ねる", "パネル", "子を重ねて置く（後の子ほど手前）");
+@@ -144,6 +145,8 @@ void Widget::ReflectCommon(PropertyVisitor& v) {
+     v.Range("opacity", opacity, 0.0f, 1.0f);
+     v.Property("translation", translation);
+     v.Property("renderScale", renderScale);
++    v.Property("rotation", rotation);
++    v.Property("transformOrigin", transformOrigin);
+     v.Property("clipChildren", clipChildren);
+     v.Property("tooltip", tooltip);
+     v.Property("visibleBind", visibleBind);
+@@ -155,6 +158,80 @@ void Widget::ReflectCommon(PropertyVisitor& v) {
+         static const char* const kParamNames[kShaderParamCount] = {"shaderParam0", "shaderParam1", "shaderParam2", "shaderParam3", "shaderParam4", "shaderParam5"};
+         for (int i = 0; i < kShaderParamCount; ++i) v.Property(kParamNames[i], shaderParams[i]);
+     }
++    v.Header("頂点カラー");
++    v.Property("vertexColorsEnabled", vertexColorsEnabled);
++    if (vertexColorsEnabled) {
++        // 使うときだけ保存する
++        v.Color("vertexColorTopLeft", vertexColors[0]);
++        v.Color("vertexColorTopRight", vertexColors[1]);
++        v.Color("vertexColorBottomLeft", vertexColors[2]);
++        v.Color("vertexColorBottomRight", vertexColors[3]);
++    }
++    v.Header("ユーザーデータ");
++    v.Property("userData", userData);
++}
++
++namespace {
++// userData の「キー=値」の行からキーを探す
++bool FindUserData(std::string_view data, std::string_view key, std::string_view& value) {
++    auto trim = [](std::string_view s) {
++        while (!s.empty() && (s.front() == ' ' || s.front() == '\t')) s.remove_prefix(1);
++        while (!s.empty() && (s.back() == ' ' || s.back() == '\t' || s.back() == '\r')) s.remove_suffix(1);
++        return s;
++    };
++    size_t start = 0;
++    while (start <= data.size()) {
++        size_t end = data.find('\n', start);
++        if (end == std::string_view::npos) end = data.size();
++        const std::string_view line = data.substr(start, end - start);
++        if (const size_t eq = line.find('='); eq != std::string_view::npos && trim(line.substr(0, eq)) == key) {
++            value = trim(line.substr(eq + 1));
++            return true;
++        }
++        start = end + 1;
++    }
++    return false;
++}
++} // namespace
++
++std::string Widget::GetUserData(std::string_view key, std::string_view fallback) const {
++    std::string_view v;
++    return std::string(FindUserData(userData, key, v) ? v : fallback);
++}
++
++float Widget::GetUserDataFloat(std::string_view key, float fallback) const {
++    std::string_view v;
++    if (!FindUserData(userData, key, v)) return fallback;
++    try {
++        return std::stof(std::string(v));
++    } catch (...) {
++        return fallback;
++    }
++}
++
++bool Widget::HasUserData(std::string_view key) const {
++    std::string_view v;
++    return FindUserData(userData, key, v);
++}
++
++Vec2 Widget::ScreenToLayout(const Vec2& p) const {
++    if (!m_HasXform) return p;
++    const Vec4 q = m_InvXform * Vec4{p.x, p.y, 0.0f, 1.0f};
++    return {q.x, q.y};
++}
++
++void UIBoundingPane::Reflect(PropertyVisitor& v) {
++    v.Property("clickMessage", clickMessage);
++}
++
++void UIBoundingPane::OnPointerUp(WidgetContext& ctx, bool inside) {
++    if (!inside || !enabled) return;
++    UIEvent e;
++    e.type = UIEventType::Click;
++    e.widget = name;
++    e.message = clickMessage.empty() ? name : clickMessage;
++    e.source = this;
++    ctx.Emit(std::move(e));
+ }
+ 
+ bool Widget::SetShaderParam(std::string_view param, const Vec4& value) {
+diff --git a/Modules/Graphics/include/Ruto/Graphics/Renderer2D.h b/Modules/Graphics/include/Ruto/Graphics/Renderer2D.h
+index ef304ca..2c76002 100644
+--- a/Modules/Graphics/include/Ruto/Graphics/Renderer2D.h
++++ b/Modules/Graphics/include/Ruto/Graphics/Renderer2D.h
+@@ -44,6 +44,14 @@ public:
+     // 文字列を描く（画面座標系・y 下向き用）。position は 1 行目の左上。描いた幅を返す。
+     static float DrawText(Font& font, std::string_view utf8, const Vec2& position, const Vec4& color);
+ 
++    // ---- 以降に積む四角形すべてに掛ける変形（UI のウィジェットの回転など）。BeginScene で元に戻る ----
++    static void SetTransform(const Mat4& transform);
++    static void ResetTransform();
++    // ---- 四隅の色（頂点カラー）。rect（x, y, 幅, 高さ。変形の前の座標）の中の位置で 4 色を混ぜて、各頂点の色に掛ける ----
++    //   colors は左上・右上・左下・右下の順。BeginScene で外れる
++    static void SetCornerColors(const Vec4& rect, const Vec4 colors[4]);
++    static void ClearCornerColors();
++
+     // 描画範囲の制限（フレームバッファのピクセル座標・左下原点）
+     static void SetScissor(int x, int y, int width, int height);
+     static void DisableScissor();
+diff --git a/Modules/Graphics/src/Renderer2D.cpp b/Modules/Graphics/src/Renderer2D.cpp
+index fa6f61d..30e26c4 100644
+--- a/Modules/Graphics/src/Renderer2D.cpp
++++ b/Modules/Graphics/src/Renderer2D.cpp
+@@ -40,6 +40,13 @@ struct Renderer2DData {
+     uint32_t textureCount = 1; // スロット 0 は白テクスチャ
+     bool flipV = false;
+     Renderer2D::Stats stats;
++    // 以降の四角形に掛ける変形
++    Mat4 transform;
++    bool hasTransform = false;
++    // 四隅の色
++    Vec4 cornerRect{0.0f, 0.0f, 0.0f, 0.0f};
++    Vec4 cornerColors[4];
++    bool hasCornerColors = false;
+ };
+ 
+ Renderer2DData* s_Data = nullptr;
+@@ -178,6 +185,8 @@ void Renderer2D::BeginScene(const Mat4& viewProjection, bool flipV) {
+ 
+     s_Data->viewProjection = viewProjection;
+     s_Data->current = nullptr;
++    s_Data->hasTransform = false;
++    s_Data->hasCornerColors = false;
+     BindShader(*s_Data->shader);
+ }
+ 
+@@ -254,11 +263,42 @@ void Renderer2D::DrawTransformedQuad(const Mat4& transform, const Vec4& color, c
+ 
+     for (int i = 0; i < 4; ++i) {
+         Vec4 p = transform * kCorners[i];
+-        s_Data->vertices.push_back({p.xyz(), color, uvs[i], texIndex});
++        Vec4 c = color;
++        if (s_Data->hasCornerColors) {
++            // 範囲の中の位置で 4 色を混ぜる（左上・右上・左下・右下）
++            const Vec4& r = s_Data->cornerRect;
++            const float u = r.z > 0.0f ? std::clamp((p.x - r.x) / r.z, 0.0f, 1.0f) : 0.0f;
++            const float v = r.w > 0.0f ? std::clamp((p.y - r.y) / r.w, 0.0f, 1.0f) : 0.0f;
++            const Vec4* k = s_Data->cornerColors;
++            const Vec4 top = k[0] + (k[1] - k[0]) * u, bottom = k[2] + (k[3] - k[2]) * u;
++            const Vec4 m = top + (bottom - top) * v;
++            c = {c.x * m.x, c.y * m.y, c.z * m.z, c.w * m.w};
++        }
++        if (s_Data->hasTransform) p = s_Data->transform * p;
++        s_Data->vertices.push_back({p.xyz(), c, uvs[i], texIndex});
+     }
+     s_Data->stats.quadCount++;
+ }
+ 
++void Renderer2D::SetTransform(const Mat4& transform) {
++    s_Data->transform = transform;
++    s_Data->hasTransform = true;
++}
++
++void Renderer2D::ResetTransform() {
++    s_Data->hasTransform = false;
++}
++
++void Renderer2D::SetCornerColors(const Vec4& rect, const Vec4 colors[4]) {
++    s_Data->cornerRect = rect;
++    for (int i = 0; i < 4; ++i) s_Data->cornerColors[i] = colors[i];
++    s_Data->hasCornerColors = true;
++}
++
++void Renderer2D::ClearCornerColors() {
++    s_Data->hasCornerColors = false;
++}
++
+ float Renderer2D::DrawText(Font& font, std::string_view utf8, const Vec2& position, const Vec4& color) {
+     float x = std::round(position.x);
+     float baseline = std::round(position.y + font.GetAscent());
+-- 
+2.53.0.windows.1
+

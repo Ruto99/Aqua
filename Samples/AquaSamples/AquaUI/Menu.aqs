@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <AquaSource version="2" output="UI/Menu.aqua" generator="Aqua 1.0.0">
+  <string key="kind">body</string>
   <object key="document">
     <string key="format">RutoUI</string>
     <number key="version">1</number>
@@ -22,10 +23,18 @@
           <number>1</number>
           <number>1</number>
         </array>
+        <number key="rotation">0</number>
+        <array key="transformOrigin">
+          <number>0.5</number>
+          <number>0.5</number>
+        </array>
         <bool key="clipChildren">false</bool>
         <string key="tooltip"/>
         <string key="visibleBind"/>
         <string key="shader"/>
+        <bool key="blackWhiteEnabled">false</bool>
+        <bool key="vertexColorsEnabled">false</bool>
+        <string key="userData"/>
       </object>
       <object key="properties"/>
       <object key="slot">
@@ -78,6 +87,11 @@
               <number>1</number>
               <number>1</number>
             </array>
+            <number key="rotation">0</number>
+            <array key="transformOrigin">
+              <number>0.5</number>
+              <number>0.5</number>
+            </array>
             <bool key="clipChildren">false</bool>
             <string key="tooltip"/>
             <string key="visibleBind"/>
@@ -119,6 +133,9 @@
               <number>0</number>
               <number>0</number>
             </array>
+            <bool key="blackWhiteEnabled">false</bool>
+            <bool key="vertexColorsEnabled">false</bool>
+            <string key="userData"/>
           </object>
           <object key="properties">
             <string key="texture"/>
@@ -140,6 +157,9 @@
               <number>0</number>
             </array>
             <number key="cornerRadius">0</number>
+            <string key="frames"/>
+            <number key="frame">0</number>
+            <number key="framesPerSecond">0</number>
           </object>
           <object key="slot">
             <array key="anchorMin">
@@ -192,6 +212,11 @@
               <number>1</number>
               <number>1</number>
             </array>
+            <number key="rotation">0</number>
+            <array key="transformOrigin">
+              <number>0.5</number>
+              <number>0.5</number>
+            </array>
             <bool key="clipChildren">false</bool>
             <string key="tooltip"/>
             <string key="visibleBind"/>
@@ -233,6 +258,9 @@
               <number>0</number>
               <number>0</number>
             </array>
+            <bool key="blackWhiteEnabled">false</bool>
+            <bool key="vertexColorsEnabled">false</bool>
+            <string key="userData"/>
           </object>
           <object key="properties">
             <string key="text">Aqua サンプル集</string>
@@ -247,6 +275,10 @@
             <string key="align">Center</string>
             <string key="verticalAlign">Center</string>
             <bool key="wrap">false</bool>
+            <number key="letterSpacing">0</number>
+            <number key="lineSpacing">0</number>
+            <bool key="shrinkToFit">false</bool>
+            <bool key="gradient">false</bool>
             <string key="effect">None</string>
             <number key="effectStrength">6</number>
             <number key="effectSpeed">1</number>
@@ -287,7 +319,7 @@
             </array>
             <array key="position">
               <number>0</number>
-              <number>150</number>
+              <number>70</number>
             </array>
             <array key="size">
               <number>1400</number>
@@ -323,10 +355,18 @@
               <number>1</number>
               <number>1</number>
             </array>
+            <number key="rotation">0</number>
+            <array key="transformOrigin">
+              <number>0.5</number>
+              <number>0.5</number>
+            </array>
             <bool key="clipChildren">false</bool>
             <string key="tooltip"/>
             <string key="visibleBind"/>
             <string key="shader"/>
+            <bool key="blackWhiteEnabled">false</bool>
+            <bool key="vertexColorsEnabled">false</bool>
+            <string key="userData"/>
           </object>
           <object key="properties">
             <string key="text">&lt;wave&gt;Aqua&lt;/wave&gt; で作った UI の見本です。カードを選ぶと、それぞれの機能のサンプルが開きます</string>
@@ -341,6 +381,10 @@
             <string key="align">Center</string>
             <string key="verticalAlign">Center</string>
             <bool key="wrap">false</bool>
+            <number key="letterSpacing">0</number>
+            <number key="lineSpacing">0</number>
+            <bool key="shrinkToFit">false</bool>
+            <bool key="gradient">false</bool>
             <string key="effect">None</string>
             <number key="effectStrength">4</number>
             <number key="effectSpeed">1</number>
@@ -381,7 +425,7 @@
             </array>
             <array key="position">
               <number>0</number>
-              <number>300</number>
+              <number>218</number>
             </array>
             <array key="size">
               <number>1600</number>
@@ -417,18 +461,26 @@
               <number>1</number>
               <number>1</number>
             </array>
+            <number key="rotation">0</number>
+            <array key="transformOrigin">
+              <number>0.5</number>
+              <number>0.5</number>
+            </array>
             <bool key="clipChildren">false</bool>
             <string key="tooltip"/>
             <string key="visibleBind"/>
             <string key="shader"/>
+            <bool key="blackWhiteEnabled">false</bool>
+            <bool key="vertexColorsEnabled">false</bool>
+            <string key="userData"/>
           </object>
           <object key="properties">
             <number key="columns">4</number>
             <array key="spacing">
-              <number>24</number>
-              <number>24</number>
+              <number>20</number>
+              <number>18</number>
             </array>
-            <number key="cellHeight">200</number>
+            <number key="cellHeight">182</number>
             <array key="padding">
               <number>0</number>
               <number>0</number>
@@ -451,11 +503,11 @@
             </array>
             <array key="position">
               <number>0</number>
-              <number>80</number>
+              <number>120</number>
             </array>
             <array key="size">
               <number>1600</number>
-              <number>424</number>
+              <number>582</number>
             </array>
             <bool key="autoSize">false</bool>
             <number key="zOrder">0</number>
@@ -487,10 +539,18 @@
                   <number>1</number>
                   <number>1</number>
                 </array>
+                <number key="rotation">0</number>
+                <array key="transformOrigin">
+                  <number>0.5</number>
+                  <number>0.5</number>
+                </array>
                 <bool key="clipChildren">false</bool>
                 <string key="tooltip"/>
                 <string key="visibleBind"/>
                 <string key="shader"/>
+                <bool key="blackWhiteEnabled">false</bool>
+                <bool key="vertexColorsEnabled">false</bool>
+                <string key="userData"/>
               </object>
               <object key="properties">
                 <string key="text"/>
@@ -538,10 +598,10 @@
                 <number key="borderThickness">1.5</number>
                 <bool key="shadow">true</bool>
                 <array key="contentPadding">
-                  <number>28</number>
-                  <number>22</number>
-                  <number>28</number>
-                  <number>22</number>
+                  <number>26</number>
+                  <number>16</number>
+                  <number>26</number>
+                  <number>16</number>
                 </array>
                 <number key="hoverScale">1.0399999618530273</number>
               </object>
@@ -595,10 +655,18 @@
                       <number>1</number>
                       <number>1</number>
                     </array>
+                    <number key="rotation">0</number>
+                    <array key="transformOrigin">
+                      <number>0.5</number>
+                      <number>0.5</number>
+                    </array>
                     <bool key="clipChildren">false</bool>
                     <string key="tooltip"/>
                     <string key="visibleBind"/>
                     <string key="shader"/>
+                    <bool key="blackWhiteEnabled">false</bool>
+                    <bool key="vertexColorsEnabled">false</bool>
+                    <string key="userData"/>
                   </object>
                   <object key="properties">
                     <number key="widthOverride">326</number>
@@ -662,10 +730,18 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="blackWhiteEnabled">false</bool>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <number key="spacing">8</number>
@@ -726,10 +802,18 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties">
                             <string key="text">01</string>
@@ -744,6 +828,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -820,10 +908,18 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties">
                             <string key="text">文字アニメーション</string>
@@ -838,6 +934,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -914,10 +1014,18 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties">
                             <string key="text">波打つ・震える・虹色の文字と、1 文字ずつ出す演出</string>
@@ -932,6 +1040,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">true</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -1015,10 +1127,18 @@
                   <number>1</number>
                   <number>1</number>
                 </array>
+                <number key="rotation">0</number>
+                <array key="transformOrigin">
+                  <number>0.5</number>
+                  <number>0.5</number>
+                </array>
                 <bool key="clipChildren">false</bool>
                 <string key="tooltip"/>
                 <string key="visibleBind"/>
                 <string key="shader"/>
+                <bool key="blackWhiteEnabled">false</bool>
+                <bool key="vertexColorsEnabled">false</bool>
+                <string key="userData"/>
               </object>
               <object key="properties">
                 <string key="text"/>
@@ -1066,10 +1186,10 @@
                 <number key="borderThickness">1.5</number>
                 <bool key="shadow">true</bool>
                 <array key="contentPadding">
-                  <number>28</number>
-                  <number>22</number>
-                  <number>28</number>
-                  <number>22</number>
+                  <number>26</number>
+                  <number>16</number>
+                  <number>26</number>
+                  <number>16</number>
                 </array>
                 <number key="hoverScale">1.0399999618530273</number>
               </object>
@@ -1123,10 +1243,18 @@
                       <number>1</number>
                       <number>1</number>
                     </array>
+                    <number key="rotation">0</number>
+                    <array key="transformOrigin">
+                      <number>0.5</number>
+                      <number>0.5</number>
+                    </array>
                     <bool key="clipChildren">false</bool>
                     <string key="tooltip"/>
                     <string key="visibleBind"/>
                     <string key="shader"/>
+                    <bool key="blackWhiteEnabled">false</bool>
+                    <bool key="vertexColorsEnabled">false</bool>
+                    <string key="userData"/>
                   </object>
                   <object key="properties">
                     <number key="widthOverride">326</number>
@@ -1190,10 +1318,18 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="blackWhiteEnabled">false</bool>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <number key="spacing">8</number>
@@ -1254,10 +1390,18 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties">
                             <string key="text">02</string>
@@ -1272,6 +1416,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -1348,10 +1496,18 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties">
                             <string key="text">会話ウィンドウ</string>
@@ -1366,6 +1522,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -1442,10 +1602,18 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties">
                             <string key="text">タイプライター表示＋スクリプトで台詞を送る</string>
@@ -1460,6 +1628,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">true</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -1543,10 +1715,18 @@
                   <number>1</number>
                   <number>1</number>
                 </array>
+                <number key="rotation">0</number>
+                <array key="transformOrigin">
+                  <number>0.5</number>
+                  <number>0.5</number>
+                </array>
                 <bool key="clipChildren">false</bool>
                 <string key="tooltip"/>
                 <string key="visibleBind"/>
                 <string key="shader"/>
+                <bool key="blackWhiteEnabled">false</bool>
+                <bool key="vertexColorsEnabled">false</bool>
+                <string key="userData"/>
               </object>
               <object key="properties">
                 <string key="text"/>
@@ -1594,10 +1774,10 @@
                 <number key="borderThickness">1.5</number>
                 <bool key="shadow">true</bool>
                 <array key="contentPadding">
-                  <number>28</number>
-                  <number>22</number>
-                  <number>28</number>
-                  <number>22</number>
+                  <number>26</number>
+                  <number>16</number>
+                  <number>26</number>
+                  <number>16</number>
                 </array>
                 <number key="hoverScale">1.0399999618530273</number>
               </object>
@@ -1651,10 +1831,18 @@
                       <number>1</number>
                       <number>1</number>
                     </array>
+                    <number key="rotation">0</number>
+                    <array key="transformOrigin">
+                      <number>0.5</number>
+                      <number>0.5</number>
+                    </array>
                     <bool key="clipChildren">false</bool>
                     <string key="tooltip"/>
                     <string key="visibleBind"/>
                     <string key="shader"/>
+                    <bool key="blackWhiteEnabled">false</bool>
+                    <bool key="vertexColorsEnabled">false</bool>
+                    <string key="userData"/>
                   </object>
                   <object key="properties">
                     <number key="widthOverride">326</number>
@@ -1718,10 +1906,18 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="blackWhiteEnabled">false</bool>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <number key="spacing">8</number>
@@ -1782,10 +1978,18 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties">
                             <string key="text">03</string>
@@ -1800,6 +2004,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -1876,10 +2084,18 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties">
                             <string key="text">UI シェーダー</string>
@@ -1894,6 +2110,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -1970,10 +2190,18 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties">
                             <string key="text">グレースケール・ディゾルブ・ホログラムなど 13 種類</string>
@@ -1988,6 +2216,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">true</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -2071,10 +2303,18 @@
                   <number>1</number>
                   <number>1</number>
                 </array>
+                <number key="rotation">0</number>
+                <array key="transformOrigin">
+                  <number>0.5</number>
+                  <number>0.5</number>
+                </array>
                 <bool key="clipChildren">false</bool>
                 <string key="tooltip"/>
                 <string key="visibleBind"/>
                 <string key="shader"/>
+                <bool key="blackWhiteEnabled">false</bool>
+                <bool key="vertexColorsEnabled">false</bool>
+                <string key="userData"/>
               </object>
               <object key="properties">
                 <string key="text"/>
@@ -2122,10 +2362,10 @@
                 <number key="borderThickness">1.5</number>
                 <bool key="shadow">true</bool>
                 <array key="contentPadding">
-                  <number>28</number>
-                  <number>22</number>
-                  <number>28</number>
-                  <number>22</number>
+                  <number>26</number>
+                  <number>16</number>
+                  <number>26</number>
+                  <number>16</number>
                 </array>
                 <number key="hoverScale">1.0399999618530273</number>
               </object>
@@ -2179,10 +2419,18 @@
                       <number>1</number>
                       <number>1</number>
                     </array>
+                    <number key="rotation">0</number>
+                    <array key="transformOrigin">
+                      <number>0.5</number>
+                      <number>0.5</number>
+                    </array>
                     <bool key="clipChildren">false</bool>
                     <string key="tooltip"/>
                     <string key="visibleBind"/>
                     <string key="shader"/>
+                    <bool key="blackWhiteEnabled">false</bool>
+                    <bool key="vertexColorsEnabled">false</bool>
+                    <string key="userData"/>
                   </object>
                   <object key="properties">
                     <number key="widthOverride">326</number>
@@ -2246,10 +2494,18 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="blackWhiteEnabled">false</bool>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <number key="spacing">8</number>
@@ -2310,10 +2566,18 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties">
                             <string key="text">04</string>
@@ -2328,6 +2592,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -2404,10 +2672,18 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties">
                             <string key="text">キャプチャー</string>
@@ -2422,6 +2698,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -2498,10 +2778,18 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties">
                             <string key="text">ゲーム画面を撮ってぼかすポーズ画面・すりガラス</string>
@@ -2516,6 +2804,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">true</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -2599,10 +2891,18 @@
                   <number>1</number>
                   <number>1</number>
                 </array>
+                <number key="rotation">0</number>
+                <array key="transformOrigin">
+                  <number>0.5</number>
+                  <number>0.5</number>
+                </array>
                 <bool key="clipChildren">false</bool>
                 <string key="tooltip"/>
                 <string key="visibleBind"/>
                 <string key="shader"/>
+                <bool key="blackWhiteEnabled">false</bool>
+                <bool key="vertexColorsEnabled">false</bool>
+                <string key="userData"/>
               </object>
               <object key="properties">
                 <string key="text"/>
@@ -2650,10 +2950,10 @@
                 <number key="borderThickness">1.5</number>
                 <bool key="shadow">true</bool>
                 <array key="contentPadding">
-                  <number>28</number>
-                  <number>22</number>
-                  <number>28</number>
-                  <number>22</number>
+                  <number>26</number>
+                  <number>16</number>
+                  <number>26</number>
+                  <number>16</number>
                 </array>
                 <number key="hoverScale">1.0399999618530273</number>
               </object>
@@ -2707,10 +3007,18 @@
                       <number>1</number>
                       <number>1</number>
                     </array>
+                    <number key="rotation">0</number>
+                    <array key="transformOrigin">
+                      <number>0.5</number>
+                      <number>0.5</number>
+                    </array>
                     <bool key="clipChildren">false</bool>
                     <string key="tooltip"/>
                     <string key="visibleBind"/>
                     <string key="shader"/>
+                    <bool key="blackWhiteEnabled">false</bool>
+                    <bool key="vertexColorsEnabled">false</bool>
+                    <string key="userData"/>
                   </object>
                   <object key="properties">
                     <number key="widthOverride">326</number>
@@ -2774,10 +3082,18 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="blackWhiteEnabled">false</bool>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <number key="spacing">8</number>
@@ -2838,10 +3154,18 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties">
                             <string key="text">05</string>
@@ -2856,6 +3180,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -2932,10 +3260,18 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties">
                             <string key="text">アニメーション</string>
@@ -2950,6 +3286,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -3026,10 +3366,18 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties">
                             <string key="text">キーで動かす登場・ループ・揺れの演出</string>
@@ -3044,6 +3392,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">true</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -3127,10 +3479,18 @@
                   <number>1</number>
                   <number>1</number>
                 </array>
+                <number key="rotation">0</number>
+                <array key="transformOrigin">
+                  <number>0.5</number>
+                  <number>0.5</number>
+                </array>
                 <bool key="clipChildren">false</bool>
                 <string key="tooltip"/>
                 <string key="visibleBind"/>
                 <string key="shader"/>
+                <bool key="blackWhiteEnabled">false</bool>
+                <bool key="vertexColorsEnabled">false</bool>
+                <string key="userData"/>
               </object>
               <object key="properties">
                 <string key="text"/>
@@ -3178,10 +3538,10 @@
                 <number key="borderThickness">1.5</number>
                 <bool key="shadow">true</bool>
                 <array key="contentPadding">
-                  <number>28</number>
-                  <number>22</number>
-                  <number>28</number>
-                  <number>22</number>
+                  <number>26</number>
+                  <number>16</number>
+                  <number>26</number>
+                  <number>16</number>
                 </array>
                 <number key="hoverScale">1.0399999618530273</number>
               </object>
@@ -3235,10 +3595,18 @@
                       <number>1</number>
                       <number>1</number>
                     </array>
+                    <number key="rotation">0</number>
+                    <array key="transformOrigin">
+                      <number>0.5</number>
+                      <number>0.5</number>
+                    </array>
                     <bool key="clipChildren">false</bool>
                     <string key="tooltip"/>
                     <string key="visibleBind"/>
                     <string key="shader"/>
+                    <bool key="blackWhiteEnabled">false</bool>
+                    <bool key="vertexColorsEnabled">false</bool>
+                    <string key="userData"/>
                   </object>
                   <object key="properties">
                     <number key="widthOverride">326</number>
@@ -3302,10 +3670,18 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="blackWhiteEnabled">false</bool>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <number key="spacing">8</number>
@@ -3366,10 +3742,18 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties">
                             <string key="text">06</string>
@@ -3384,6 +3768,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -3460,10 +3848,18 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties">
                             <string key="text">レイアウト</string>
@@ -3478,6 +3874,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -3554,10 +3954,18 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties">
                             <string key="text">横・縦・グリッド・折り返し・スクロール</string>
@@ -3572,6 +3980,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">true</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -3655,10 +4067,18 @@
                   <number>1</number>
                   <number>1</number>
                 </array>
+                <number key="rotation">0</number>
+                <array key="transformOrigin">
+                  <number>0.5</number>
+                  <number>0.5</number>
+                </array>
                 <bool key="clipChildren">false</bool>
                 <string key="tooltip"/>
                 <string key="visibleBind"/>
                 <string key="shader"/>
+                <bool key="blackWhiteEnabled">false</bool>
+                <bool key="vertexColorsEnabled">false</bool>
+                <string key="userData"/>
               </object>
               <object key="properties">
                 <string key="text"/>
@@ -3706,10 +4126,10 @@
                 <number key="borderThickness">1.5</number>
                 <bool key="shadow">true</bool>
                 <array key="contentPadding">
-                  <number>28</number>
-                  <number>22</number>
-                  <number>28</number>
-                  <number>22</number>
+                  <number>26</number>
+                  <number>16</number>
+                  <number>26</number>
+                  <number>16</number>
                 </array>
                 <number key="hoverScale">1.0399999618530273</number>
               </object>
@@ -3763,10 +4183,18 @@
                       <number>1</number>
                       <number>1</number>
                     </array>
+                    <number key="rotation">0</number>
+                    <array key="transformOrigin">
+                      <number>0.5</number>
+                      <number>0.5</number>
+                    </array>
                     <bool key="clipChildren">false</bool>
                     <string key="tooltip"/>
                     <string key="visibleBind"/>
                     <string key="shader"/>
+                    <bool key="blackWhiteEnabled">false</bool>
+                    <bool key="vertexColorsEnabled">false</bool>
+                    <string key="userData"/>
                   </object>
                   <object key="properties">
                     <number key="widthOverride">326</number>
@@ -3830,10 +4258,18 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="blackWhiteEnabled">false</bool>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <number key="spacing">8</number>
@@ -3894,10 +4330,18 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties">
                             <string key="text">07</string>
@@ -3912,6 +4356,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -3988,10 +4436,18 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties">
                             <string key="text">変数と入力</string>
@@ -4006,6 +4462,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -4082,10 +4542,18 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties">
                             <string key="text">スライダー・トグル・入力欄と {変数} の連動</string>
@@ -4100,6 +4568,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">true</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -4183,10 +4655,18 @@
                   <number>1</number>
                   <number>1</number>
                 </array>
+                <number key="rotation">0</number>
+                <array key="transformOrigin">
+                  <number>0.5</number>
+                  <number>0.5</number>
+                </array>
                 <bool key="clipChildren">false</bool>
                 <string key="tooltip"/>
                 <string key="visibleBind"/>
                 <string key="shader"/>
+                <bool key="blackWhiteEnabled">false</bool>
+                <bool key="vertexColorsEnabled">false</bool>
+                <string key="userData"/>
               </object>
               <object key="properties">
                 <string key="text"/>
@@ -4234,10 +4714,10 @@
                 <number key="borderThickness">1.5</number>
                 <bool key="shadow">true</bool>
                 <array key="contentPadding">
-                  <number>28</number>
-                  <number>22</number>
-                  <number>28</number>
-                  <number>22</number>
+                  <number>26</number>
+                  <number>16</number>
+                  <number>26</number>
+                  <number>16</number>
                 </array>
                 <number key="hoverScale">1.0399999618530273</number>
               </object>
@@ -4291,10 +4771,18 @@
                       <number>1</number>
                       <number>1</number>
                     </array>
+                    <number key="rotation">0</number>
+                    <array key="transformOrigin">
+                      <number>0.5</number>
+                      <number>0.5</number>
+                    </array>
                     <bool key="clipChildren">false</bool>
                     <string key="tooltip"/>
                     <string key="visibleBind"/>
                     <string key="shader"/>
+                    <bool key="blackWhiteEnabled">false</bool>
+                    <bool key="vertexColorsEnabled">false</bool>
+                    <string key="userData"/>
                   </object>
                   <object key="properties">
                     <number key="widthOverride">326</number>
@@ -4358,10 +4846,18 @@
                           <number>1</number>
                           <number>1</number>
                         </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
                         <bool key="clipChildren">false</bool>
                         <string key="tooltip"/>
                         <string key="visibleBind"/>
                         <string key="shader"/>
+                        <bool key="blackWhiteEnabled">false</bool>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
                       </object>
                       <object key="properties">
                         <number key="spacing">8</number>
@@ -4422,10 +4918,18 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties">
                             <string key="text">08</string>
@@ -4440,6 +4944,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -4516,10 +5024,18 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties">
                             <string key="text">スタイルと部品</string>
@@ -4534,6 +5050,10 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -4610,10 +5130,18 @@
                               <number>1</number>
                               <number>1</number>
                             </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
                             <bool key="clipChildren">false</bool>
                             <string key="tooltip"/>
                             <string key="visibleBind"/>
                             <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
                           </object>
                           <object key="properties">
                             <string key="text">共通の見た目と、UI を部品として使い回す</string>
@@ -4628,6 +5156,2362 @@
                             <string key="align">Left</string>
                             <string key="verticalAlign">Center</string>
                             <bool key="wrap">true</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
+                            <string key="effect">None</string>
+                            <number key="effectStrength">6</number>
+                            <number key="effectSpeed">1</number>
+                            <string key="reveal">None</string>
+                            <number key="revealSpeed">30</number>
+                            <number key="revealDelay">0</number>
+                            <number key="revealFade">0.18000000715255737</number>
+                            <bool key="revealAuto">true</bool>
+                            <number key="revealProgress">1</number>
+                            <bool key="revealOnShow">true</bool>
+                            <string key="revealSound"/>
+                            <number key="revealSoundEvery">2</number>
+                            <bool key="richText">true</bool>
+                            <bool key="shadow">false</bool>
+                            <array key="shadowColor">
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0.6000000238418579</number>
+                            </array>
+                            <array key="shadowOffset">
+                              <number>2</number>
+                              <number>2</number>
+                            </array>
+                          </object>
+                          <object key="slot">
+                            <array key="anchorMin">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="anchorMax">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="pivot">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="position">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="size">
+                              <number>200</number>
+                              <number>60</number>
+                            </array>
+                            <bool key="autoSize">false</bool>
+                            <number key="zOrder">0</number>
+                            <array key="padding">
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <string key="hAlign">Fill</string>
+                            <string key="vAlign">Fill</string>
+                            <string key="sizeRule">Auto</string>
+                            <number key="fillWeight">1</number>
+                          </object>
+                          <array key="children"/>
+                        </object>
+                      </array>
+                    </object>
+                  </array>
+                </object>
+              </array>
+            </object>
+            <object>
+              <string key="type">UIButton</string>
+              <string key="name">OpenTransform</string>
+              <string key="style">MenuCard</string>
+              <object key="common">
+                <string key="visibility">Visible</string>
+                <bool key="enabled">true</bool>
+                <number key="opacity">1</number>
+                <array key="translation">
+                  <number>0</number>
+                  <number>0</number>
+                </array>
+                <array key="renderScale">
+                  <number>1</number>
+                  <number>1</number>
+                </array>
+                <number key="rotation">0</number>
+                <array key="transformOrigin">
+                  <number>0.5</number>
+                  <number>0.5</number>
+                </array>
+                <bool key="clipChildren">false</bool>
+                <string key="tooltip"/>
+                <string key="visibleBind"/>
+                <string key="shader"/>
+                <bool key="blackWhiteEnabled">false</bool>
+                <bool key="vertexColorsEnabled">false</bool>
+                <string key="userData"/>
+              </object>
+              <object key="properties">
+                <string key="text"/>
+                <number key="fontSize">26</number>
+                <array key="textColor">
+                  <number>0.8669999837875366</number>
+                  <number>0.9369999766349792</number>
+                  <number>0.9449999928474426</number>
+                  <number>1</number>
+                </array>
+                <string key="clickMessage">open:UI/Transform.aqua</string>
+                <string key="clickSound"/>
+                <array key="normalColor">
+                  <number>0.0860000029206276</number>
+                  <number>0.16500000655651093</number>
+                  <number>0.20000000298023224</number>
+                  <number>0.9200000166893005</number>
+                </array>
+                <array key="hoveredColor">
+                  <number>0.11999999731779099</number>
+                  <number>0.30000001192092896</number>
+                  <number>0.33000001311302185</number>
+                  <number>1</number>
+                </array>
+                <array key="pressedColor">
+                  <number>0.07000000029802322</number>
+                  <number>0.20000000298023224</number>
+                  <number>0.2199999988079071</number>
+                  <number>1</number>
+                </array>
+                <array key="disabledColor">
+                  <number>0.3499999940395355</number>
+                  <number>0.3700000047683716</number>
+                  <number>0.41999998688697815</number>
+                  <number>0.6000000238418579</number>
+                </array>
+                <string key="texture"/>
+                <number key="cornerRadius">18</number>
+                <array key="borderColor">
+                  <number>0.19599999487400055</number>
+                  <number>0.8510000109672546</number>
+                  <number>0.800000011920929</number>
+                  <number>0.3499999940395355</number>
+                </array>
+                <number key="borderThickness">1.5</number>
+                <bool key="shadow">true</bool>
+                <array key="contentPadding">
+                  <number>26</number>
+                  <number>16</number>
+                  <number>26</number>
+                  <number>16</number>
+                </array>
+                <number key="hoverScale">1.0399999618530273</number>
+              </object>
+              <object key="slot">
+                <array key="anchorMin">
+                  <number>0</number>
+                  <number>0</number>
+                </array>
+                <array key="anchorMax">
+                  <number>0</number>
+                  <number>0</number>
+                </array>
+                <array key="pivot">
+                  <number>0</number>
+                  <number>0</number>
+                </array>
+                <array key="position">
+                  <number>0</number>
+                  <number>0</number>
+                </array>
+                <array key="size">
+                  <number>200</number>
+                  <number>60</number>
+                </array>
+                <bool key="autoSize">false</bool>
+                <number key="zOrder">0</number>
+                <array key="padding">
+                  <number>0</number>
+                  <number>0</number>
+                  <number>0</number>
+                  <number>0</number>
+                </array>
+                <string key="hAlign">Fill</string>
+                <string key="vAlign">Fill</string>
+                <string key="sizeRule">Auto</string>
+                <number key="fillWeight">1</number>
+              </object>
+              <array key="children">
+                <object>
+                  <string key="type">UISizeBox</string>
+                  <string key="name">CardTransformSize</string>
+                  <object key="common">
+                    <string key="visibility">Visible</string>
+                    <bool key="enabled">true</bool>
+                    <number key="opacity">1</number>
+                    <array key="translation">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <array key="renderScale">
+                      <number>1</number>
+                      <number>1</number>
+                    </array>
+                    <number key="rotation">0</number>
+                    <array key="transformOrigin">
+                      <number>0.5</number>
+                      <number>0.5</number>
+                    </array>
+                    <bool key="clipChildren">false</bool>
+                    <string key="tooltip"/>
+                    <string key="visibleBind"/>
+                    <string key="shader"/>
+                    <bool key="blackWhiteEnabled">false</bool>
+                    <bool key="vertexColorsEnabled">false</bool>
+                    <string key="userData"/>
+                  </object>
+                  <object key="properties">
+                    <number key="widthOverride">326</number>
+                    <number key="heightOverride">0</number>
+                    <array key="minSize">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <array key="maxSize">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                  </object>
+                  <object key="slot">
+                    <array key="anchorMin">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <array key="anchorMax">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <array key="pivot">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <array key="position">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <array key="size">
+                      <number>200</number>
+                      <number>60</number>
+                    </array>
+                    <bool key="autoSize">false</bool>
+                    <number key="zOrder">0</number>
+                    <array key="padding">
+                      <number>0</number>
+                      <number>0</number>
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <string key="hAlign">Fill</string>
+                    <string key="vAlign">Fill</string>
+                    <string key="sizeRule">Auto</string>
+                    <number key="fillWeight">1</number>
+                  </object>
+                  <array key="children">
+                    <object>
+                      <string key="type">UIVerticalBox</string>
+                      <string key="name">CardTransformContent</string>
+                      <object key="common">
+                        <string key="visibility">Visible</string>
+                        <bool key="enabled">true</bool>
+                        <number key="opacity">1</number>
+                        <array key="translation">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="renderScale">
+                          <number>1</number>
+                          <number>1</number>
+                        </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
+                        <bool key="clipChildren">false</bool>
+                        <string key="tooltip"/>
+                        <string key="visibleBind"/>
+                        <string key="shader"/>
+                        <bool key="blackWhiteEnabled">false</bool>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
+                      </object>
+                      <object key="properties">
+                        <number key="spacing">8</number>
+                        <array key="padding">
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                      </object>
+                      <object key="slot">
+                        <array key="anchorMin">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="anchorMax">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="pivot">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="position">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="size">
+                          <number>200</number>
+                          <number>60</number>
+                        </array>
+                        <bool key="autoSize">false</bool>
+                        <number key="zOrder">0</number>
+                        <array key="padding">
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <string key="hAlign">Fill</string>
+                        <string key="vAlign">Fill</string>
+                        <string key="sizeRule">Auto</string>
+                        <number key="fillWeight">1</number>
+                      </object>
+                      <array key="children">
+                        <object>
+                          <string key="type">UIText</string>
+                          <string key="name">CardTransformNumber</string>
+                          <object key="common">
+                            <string key="visibility">Visible</string>
+                            <bool key="enabled">true</bool>
+                            <number key="opacity">1</number>
+                            <array key="translation">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="renderScale">
+                              <number>1</number>
+                              <number>1</number>
+                            </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
+                            <bool key="clipChildren">false</bool>
+                            <string key="tooltip"/>
+                            <string key="visibleBind"/>
+                            <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
+                          </object>
+                          <object key="properties">
+                            <string key="text">09</string>
+                            <string key="font"/>
+                            <number key="fontSize">22</number>
+                            <array key="color">
+                              <number>0.19599999487400055</number>
+                              <number>0.8510000109672546</number>
+                              <number>0.800000011920929</number>
+                              <number>0.8999999761581421</number>
+                            </array>
+                            <string key="align">Left</string>
+                            <string key="verticalAlign">Center</string>
+                            <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
+                            <string key="effect">None</string>
+                            <number key="effectStrength">6</number>
+                            <number key="effectSpeed">1</number>
+                            <string key="reveal">None</string>
+                            <number key="revealSpeed">30</number>
+                            <number key="revealDelay">0</number>
+                            <number key="revealFade">0.18000000715255737</number>
+                            <bool key="revealAuto">true</bool>
+                            <number key="revealProgress">1</number>
+                            <bool key="revealOnShow">true</bool>
+                            <string key="revealSound"/>
+                            <number key="revealSoundEvery">2</number>
+                            <bool key="richText">true</bool>
+                            <bool key="shadow">false</bool>
+                            <array key="shadowColor">
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0.6000000238418579</number>
+                            </array>
+                            <array key="shadowOffset">
+                              <number>2</number>
+                              <number>2</number>
+                            </array>
+                          </object>
+                          <object key="slot">
+                            <array key="anchorMin">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="anchorMax">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="pivot">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="position">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="size">
+                              <number>200</number>
+                              <number>60</number>
+                            </array>
+                            <bool key="autoSize">false</bool>
+                            <number key="zOrder">0</number>
+                            <array key="padding">
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <string key="hAlign">Fill</string>
+                            <string key="vAlign">Fill</string>
+                            <string key="sizeRule">Auto</string>
+                            <number key="fillWeight">1</number>
+                          </object>
+                          <array key="children"/>
+                        </object>
+                        <object>
+                          <string key="type">UIText</string>
+                          <string key="name">CardTransformLabel</string>
+                          <object key="common">
+                            <string key="visibility">Visible</string>
+                            <bool key="enabled">true</bool>
+                            <number key="opacity">1</number>
+                            <array key="translation">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="renderScale">
+                              <number>1</number>
+                              <number>1</number>
+                            </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
+                            <bool key="clipChildren">false</bool>
+                            <string key="tooltip"/>
+                            <string key="visibleBind"/>
+                            <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
+                          </object>
+                          <object key="properties">
+                            <string key="text">変形と頂点カラー</string>
+                            <string key="font"/>
+                            <number key="fontSize">32</number>
+                            <array key="color">
+                              <number>0.8669999837875366</number>
+                              <number>0.9369999766349792</number>
+                              <number>0.9449999928474426</number>
+                              <number>1</number>
+                            </array>
+                            <string key="align">Left</string>
+                            <string key="verticalAlign">Center</string>
+                            <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
+                            <string key="effect">None</string>
+                            <number key="effectStrength">6</number>
+                            <number key="effectSpeed">1</number>
+                            <string key="reveal">None</string>
+                            <number key="revealSpeed">30</number>
+                            <number key="revealDelay">0</number>
+                            <number key="revealFade">0.18000000715255737</number>
+                            <bool key="revealAuto">true</bool>
+                            <number key="revealProgress">1</number>
+                            <bool key="revealOnShow">true</bool>
+                            <string key="revealSound"/>
+                            <number key="revealSoundEvery">2</number>
+                            <bool key="richText">true</bool>
+                            <bool key="shadow">false</bool>
+                            <array key="shadowColor">
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0.6000000238418579</number>
+                            </array>
+                            <array key="shadowOffset">
+                              <number>2</number>
+                              <number>2</number>
+                            </array>
+                          </object>
+                          <object key="slot">
+                            <array key="anchorMin">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="anchorMax">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="pivot">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="position">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="size">
+                              <number>200</number>
+                              <number>60</number>
+                            </array>
+                            <bool key="autoSize">false</bool>
+                            <number key="zOrder">0</number>
+                            <array key="padding">
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <string key="hAlign">Fill</string>
+                            <string key="vAlign">Fill</string>
+                            <string key="sizeRule">Auto</string>
+                            <number key="fillWeight">1</number>
+                          </object>
+                          <array key="children"/>
+                        </object>
+                        <object>
+                          <string key="type">UIText</string>
+                          <string key="name">CardTransformDesc</string>
+                          <object key="common">
+                            <string key="visibility">Visible</string>
+                            <bool key="enabled">true</bool>
+                            <number key="opacity">1</number>
+                            <array key="translation">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="renderScale">
+                              <number>1</number>
+                              <number>1</number>
+                            </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
+                            <bool key="clipChildren">false</bool>
+                            <string key="tooltip"/>
+                            <string key="visibleBind"/>
+                            <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
+                          </object>
+                          <object key="properties">
+                            <string key="text">回転・四隅の色・Bounding ペイン・ユーザーデータ</string>
+                            <string key="font"/>
+                            <number key="fontSize">20</number>
+                            <array key="color">
+                              <number>0.550000011920929</number>
+                              <number>0.6800000071525574</number>
+                              <number>0.7099999785423279</number>
+                              <number>1</number>
+                            </array>
+                            <string key="align">Left</string>
+                            <string key="verticalAlign">Center</string>
+                            <bool key="wrap">true</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
+                            <string key="effect">None</string>
+                            <number key="effectStrength">6</number>
+                            <number key="effectSpeed">1</number>
+                            <string key="reveal">None</string>
+                            <number key="revealSpeed">30</number>
+                            <number key="revealDelay">0</number>
+                            <number key="revealFade">0.18000000715255737</number>
+                            <bool key="revealAuto">true</bool>
+                            <number key="revealProgress">1</number>
+                            <bool key="revealOnShow">true</bool>
+                            <string key="revealSound"/>
+                            <number key="revealSoundEvery">2</number>
+                            <bool key="richText">true</bool>
+                            <bool key="shadow">false</bool>
+                            <array key="shadowColor">
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0.6000000238418579</number>
+                            </array>
+                            <array key="shadowOffset">
+                              <number>2</number>
+                              <number>2</number>
+                            </array>
+                          </object>
+                          <object key="slot">
+                            <array key="anchorMin">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="anchorMax">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="pivot">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="position">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="size">
+                              <number>200</number>
+                              <number>60</number>
+                            </array>
+                            <bool key="autoSize">false</bool>
+                            <number key="zOrder">0</number>
+                            <array key="padding">
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <string key="hAlign">Fill</string>
+                            <string key="vAlign">Fill</string>
+                            <string key="sizeRule">Auto</string>
+                            <number key="fillWeight">1</number>
+                          </object>
+                          <array key="children"/>
+                        </object>
+                      </array>
+                    </object>
+                  </array>
+                </object>
+              </array>
+            </object>
+            <object>
+              <string key="type">UIButton</string>
+              <string key="name">OpenOverrides</string>
+              <string key="style">MenuCard</string>
+              <object key="common">
+                <string key="visibility">Visible</string>
+                <bool key="enabled">true</bool>
+                <number key="opacity">1</number>
+                <array key="translation">
+                  <number>0</number>
+                  <number>0</number>
+                </array>
+                <array key="renderScale">
+                  <number>1</number>
+                  <number>1</number>
+                </array>
+                <number key="rotation">0</number>
+                <array key="transformOrigin">
+                  <number>0.5</number>
+                  <number>0.5</number>
+                </array>
+                <bool key="clipChildren">false</bool>
+                <string key="tooltip"/>
+                <string key="visibleBind"/>
+                <string key="shader"/>
+                <bool key="blackWhiteEnabled">false</bool>
+                <bool key="vertexColorsEnabled">false</bool>
+                <string key="userData"/>
+              </object>
+              <object key="properties">
+                <string key="text"/>
+                <number key="fontSize">26</number>
+                <array key="textColor">
+                  <number>0.8669999837875366</number>
+                  <number>0.9369999766349792</number>
+                  <number>0.9449999928474426</number>
+                  <number>1</number>
+                </array>
+                <string key="clickMessage">open:UI/Overrides.aqua</string>
+                <string key="clickSound"/>
+                <array key="normalColor">
+                  <number>0.0860000029206276</number>
+                  <number>0.16500000655651093</number>
+                  <number>0.20000000298023224</number>
+                  <number>0.9200000166893005</number>
+                </array>
+                <array key="hoveredColor">
+                  <number>0.11999999731779099</number>
+                  <number>0.30000001192092896</number>
+                  <number>0.33000001311302185</number>
+                  <number>1</number>
+                </array>
+                <array key="pressedColor">
+                  <number>0.07000000029802322</number>
+                  <number>0.20000000298023224</number>
+                  <number>0.2199999988079071</number>
+                  <number>1</number>
+                </array>
+                <array key="disabledColor">
+                  <number>0.3499999940395355</number>
+                  <number>0.3700000047683716</number>
+                  <number>0.41999998688697815</number>
+                  <number>0.6000000238418579</number>
+                </array>
+                <string key="texture"/>
+                <number key="cornerRadius">18</number>
+                <array key="borderColor">
+                  <number>0.19599999487400055</number>
+                  <number>0.8510000109672546</number>
+                  <number>0.800000011920929</number>
+                  <number>0.3499999940395355</number>
+                </array>
+                <number key="borderThickness">1.5</number>
+                <bool key="shadow">true</bool>
+                <array key="contentPadding">
+                  <number>26</number>
+                  <number>16</number>
+                  <number>26</number>
+                  <number>16</number>
+                </array>
+                <number key="hoverScale">1.0399999618530273</number>
+              </object>
+              <object key="slot">
+                <array key="anchorMin">
+                  <number>0</number>
+                  <number>0</number>
+                </array>
+                <array key="anchorMax">
+                  <number>0</number>
+                  <number>0</number>
+                </array>
+                <array key="pivot">
+                  <number>0</number>
+                  <number>0</number>
+                </array>
+                <array key="position">
+                  <number>0</number>
+                  <number>0</number>
+                </array>
+                <array key="size">
+                  <number>200</number>
+                  <number>60</number>
+                </array>
+                <bool key="autoSize">false</bool>
+                <number key="zOrder">0</number>
+                <array key="padding">
+                  <number>0</number>
+                  <number>0</number>
+                  <number>0</number>
+                  <number>0</number>
+                </array>
+                <string key="hAlign">Fill</string>
+                <string key="vAlign">Fill</string>
+                <string key="sizeRule">Auto</string>
+                <number key="fillWeight">1</number>
+              </object>
+              <array key="children">
+                <object>
+                  <string key="type">UISizeBox</string>
+                  <string key="name">CardOverridesSize</string>
+                  <object key="common">
+                    <string key="visibility">Visible</string>
+                    <bool key="enabled">true</bool>
+                    <number key="opacity">1</number>
+                    <array key="translation">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <array key="renderScale">
+                      <number>1</number>
+                      <number>1</number>
+                    </array>
+                    <number key="rotation">0</number>
+                    <array key="transformOrigin">
+                      <number>0.5</number>
+                      <number>0.5</number>
+                    </array>
+                    <bool key="clipChildren">false</bool>
+                    <string key="tooltip"/>
+                    <string key="visibleBind"/>
+                    <string key="shader"/>
+                    <bool key="blackWhiteEnabled">false</bool>
+                    <bool key="vertexColorsEnabled">false</bool>
+                    <string key="userData"/>
+                  </object>
+                  <object key="properties">
+                    <number key="widthOverride">326</number>
+                    <number key="heightOverride">0</number>
+                    <array key="minSize">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <array key="maxSize">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                  </object>
+                  <object key="slot">
+                    <array key="anchorMin">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <array key="anchorMax">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <array key="pivot">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <array key="position">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <array key="size">
+                      <number>200</number>
+                      <number>60</number>
+                    </array>
+                    <bool key="autoSize">false</bool>
+                    <number key="zOrder">0</number>
+                    <array key="padding">
+                      <number>0</number>
+                      <number>0</number>
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <string key="hAlign">Fill</string>
+                    <string key="vAlign">Fill</string>
+                    <string key="sizeRule">Auto</string>
+                    <number key="fillWeight">1</number>
+                  </object>
+                  <array key="children">
+                    <object>
+                      <string key="type">UIVerticalBox</string>
+                      <string key="name">CardOverridesContent</string>
+                      <object key="common">
+                        <string key="visibility">Visible</string>
+                        <bool key="enabled">true</bool>
+                        <number key="opacity">1</number>
+                        <array key="translation">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="renderScale">
+                          <number>1</number>
+                          <number>1</number>
+                        </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
+                        <bool key="clipChildren">false</bool>
+                        <string key="tooltip"/>
+                        <string key="visibleBind"/>
+                        <string key="shader"/>
+                        <bool key="blackWhiteEnabled">false</bool>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
+                      </object>
+                      <object key="properties">
+                        <number key="spacing">8</number>
+                        <array key="padding">
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                      </object>
+                      <object key="slot">
+                        <array key="anchorMin">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="anchorMax">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="pivot">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="position">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="size">
+                          <number>200</number>
+                          <number>60</number>
+                        </array>
+                        <bool key="autoSize">false</bool>
+                        <number key="zOrder">0</number>
+                        <array key="padding">
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <string key="hAlign">Fill</string>
+                        <string key="vAlign">Fill</string>
+                        <string key="sizeRule">Auto</string>
+                        <number key="fillWeight">1</number>
+                      </object>
+                      <array key="children">
+                        <object>
+                          <string key="type">UIText</string>
+                          <string key="name">CardOverridesNumber</string>
+                          <object key="common">
+                            <string key="visibility">Visible</string>
+                            <bool key="enabled">true</bool>
+                            <number key="opacity">1</number>
+                            <array key="translation">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="renderScale">
+                              <number>1</number>
+                              <number>1</number>
+                            </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
+                            <bool key="clipChildren">false</bool>
+                            <string key="tooltip"/>
+                            <string key="visibleBind"/>
+                            <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
+                          </object>
+                          <object key="properties">
+                            <string key="text">10</string>
+                            <string key="font"/>
+                            <number key="fontSize">22</number>
+                            <array key="color">
+                              <number>0.19599999487400055</number>
+                              <number>0.8510000109672546</number>
+                              <number>0.800000011920929</number>
+                              <number>0.8999999761581421</number>
+                            </array>
+                            <string key="align">Left</string>
+                            <string key="verticalAlign">Center</string>
+                            <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
+                            <string key="effect">None</string>
+                            <number key="effectStrength">6</number>
+                            <number key="effectSpeed">1</number>
+                            <string key="reveal">None</string>
+                            <number key="revealSpeed">30</number>
+                            <number key="revealDelay">0</number>
+                            <number key="revealFade">0.18000000715255737</number>
+                            <bool key="revealAuto">true</bool>
+                            <number key="revealProgress">1</number>
+                            <bool key="revealOnShow">true</bool>
+                            <string key="revealSound"/>
+                            <number key="revealSoundEvery">2</number>
+                            <bool key="richText">true</bool>
+                            <bool key="shadow">false</bool>
+                            <array key="shadowColor">
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0.6000000238418579</number>
+                            </array>
+                            <array key="shadowOffset">
+                              <number>2</number>
+                              <number>2</number>
+                            </array>
+                          </object>
+                          <object key="slot">
+                            <array key="anchorMin">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="anchorMax">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="pivot">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="position">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="size">
+                              <number>200</number>
+                              <number>60</number>
+                            </array>
+                            <bool key="autoSize">false</bool>
+                            <number key="zOrder">0</number>
+                            <array key="padding">
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <string key="hAlign">Fill</string>
+                            <string key="vAlign">Fill</string>
+                            <string key="sizeRule">Auto</string>
+                            <number key="fillWeight">1</number>
+                          </object>
+                          <array key="children"/>
+                        </object>
+                        <object>
+                          <string key="type">UIText</string>
+                          <string key="name">CardOverridesLabel</string>
+                          <object key="common">
+                            <string key="visibility">Visible</string>
+                            <bool key="enabled">true</bool>
+                            <number key="opacity">1</number>
+                            <array key="translation">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="renderScale">
+                              <number>1</number>
+                              <number>1</number>
+                            </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
+                            <bool key="clipChildren">false</bool>
+                            <string key="tooltip"/>
+                            <string key="visibleBind"/>
+                            <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
+                          </object>
+                          <object key="properties">
+                            <string key="text">パーツの上書き</string>
+                            <string key="font"/>
+                            <number key="fontSize">32</number>
+                            <array key="color">
+                              <number>0.8669999837875366</number>
+                              <number>0.9369999766349792</number>
+                              <number>0.9449999928474426</number>
+                              <number>1</number>
+                            </array>
+                            <string key="align">Left</string>
+                            <string key="verticalAlign">Center</string>
+                            <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
+                            <string key="effect">None</string>
+                            <number key="effectStrength">6</number>
+                            <number key="effectSpeed">1</number>
+                            <string key="reveal">None</string>
+                            <number key="revealSpeed">30</number>
+                            <number key="revealDelay">0</number>
+                            <number key="revealFade">0.18000000715255737</number>
+                            <bool key="revealAuto">true</bool>
+                            <number key="revealProgress">1</number>
+                            <bool key="revealOnShow">true</bool>
+                            <string key="revealSound"/>
+                            <number key="revealSoundEvery">2</number>
+                            <bool key="richText">true</bool>
+                            <bool key="shadow">false</bool>
+                            <array key="shadowColor">
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0.6000000238418579</number>
+                            </array>
+                            <array key="shadowOffset">
+                              <number>2</number>
+                              <number>2</number>
+                            </array>
+                          </object>
+                          <object key="slot">
+                            <array key="anchorMin">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="anchorMax">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="pivot">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="position">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="size">
+                              <number>200</number>
+                              <number>60</number>
+                            </array>
+                            <bool key="autoSize">false</bool>
+                            <number key="zOrder">0</number>
+                            <array key="padding">
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <string key="hAlign">Fill</string>
+                            <string key="vAlign">Fill</string>
+                            <string key="sizeRule">Auto</string>
+                            <number key="fillWeight">1</number>
+                          </object>
+                          <array key="children"/>
+                        </object>
+                        <object>
+                          <string key="type">UIText</string>
+                          <string key="name">CardOverridesDesc</string>
+                          <object key="common">
+                            <string key="visibility">Visible</string>
+                            <bool key="enabled">true</bool>
+                            <number key="opacity">1</number>
+                            <array key="translation">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="renderScale">
+                              <number>1</number>
+                              <number>1</number>
+                            </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
+                            <bool key="clipChildren">false</bool>
+                            <string key="tooltip"/>
+                            <string key="visibleBind"/>
+                            <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
+                          </object>
+                          <object key="properties">
+                            <string key="text">同じパーツを置いた先ごとに、名前・ゲージ・色を変える</string>
+                            <string key="font"/>
+                            <number key="fontSize">20</number>
+                            <array key="color">
+                              <number>0.550000011920929</number>
+                              <number>0.6800000071525574</number>
+                              <number>0.7099999785423279</number>
+                              <number>1</number>
+                            </array>
+                            <string key="align">Left</string>
+                            <string key="verticalAlign">Center</string>
+                            <bool key="wrap">true</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
+                            <string key="effect">None</string>
+                            <number key="effectStrength">6</number>
+                            <number key="effectSpeed">1</number>
+                            <string key="reveal">None</string>
+                            <number key="revealSpeed">30</number>
+                            <number key="revealDelay">0</number>
+                            <number key="revealFade">0.18000000715255737</number>
+                            <bool key="revealAuto">true</bool>
+                            <number key="revealProgress">1</number>
+                            <bool key="revealOnShow">true</bool>
+                            <string key="revealSound"/>
+                            <number key="revealSoundEvery">2</number>
+                            <bool key="richText">true</bool>
+                            <bool key="shadow">false</bool>
+                            <array key="shadowColor">
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0.6000000238418579</number>
+                            </array>
+                            <array key="shadowOffset">
+                              <number>2</number>
+                              <number>2</number>
+                            </array>
+                          </object>
+                          <object key="slot">
+                            <array key="anchorMin">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="anchorMax">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="pivot">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="position">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="size">
+                              <number>200</number>
+                              <number>60</number>
+                            </array>
+                            <bool key="autoSize">false</bool>
+                            <number key="zOrder">0</number>
+                            <array key="padding">
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <string key="hAlign">Fill</string>
+                            <string key="vAlign">Fill</string>
+                            <string key="sizeRule">Auto</string>
+                            <number key="fillWeight">1</number>
+                          </object>
+                          <array key="children"/>
+                        </object>
+                      </array>
+                    </object>
+                  </array>
+                </object>
+              </array>
+            </object>
+            <object>
+              <string key="type">UIButton</string>
+              <string key="name">OpenAnimExtras</string>
+              <string key="style">MenuCard</string>
+              <object key="common">
+                <string key="visibility">Visible</string>
+                <bool key="enabled">true</bool>
+                <number key="opacity">1</number>
+                <array key="translation">
+                  <number>0</number>
+                  <number>0</number>
+                </array>
+                <array key="renderScale">
+                  <number>1</number>
+                  <number>1</number>
+                </array>
+                <number key="rotation">0</number>
+                <array key="transformOrigin">
+                  <number>0.5</number>
+                  <number>0.5</number>
+                </array>
+                <bool key="clipChildren">false</bool>
+                <string key="tooltip"/>
+                <string key="visibleBind"/>
+                <string key="shader"/>
+                <bool key="blackWhiteEnabled">false</bool>
+                <bool key="vertexColorsEnabled">false</bool>
+                <string key="userData"/>
+              </object>
+              <object key="properties">
+                <string key="text"/>
+                <number key="fontSize">26</number>
+                <array key="textColor">
+                  <number>0.8669999837875366</number>
+                  <number>0.9369999766349792</number>
+                  <number>0.9449999928474426</number>
+                  <number>1</number>
+                </array>
+                <string key="clickMessage">open:UI/AnimExtras.aqua</string>
+                <string key="clickSound"/>
+                <array key="normalColor">
+                  <number>0.0860000029206276</number>
+                  <number>0.16500000655651093</number>
+                  <number>0.20000000298023224</number>
+                  <number>0.9200000166893005</number>
+                </array>
+                <array key="hoveredColor">
+                  <number>0.11999999731779099</number>
+                  <number>0.30000001192092896</number>
+                  <number>0.33000001311302185</number>
+                  <number>1</number>
+                </array>
+                <array key="pressedColor">
+                  <number>0.07000000029802322</number>
+                  <number>0.20000000298023224</number>
+                  <number>0.2199999988079071</number>
+                  <number>1</number>
+                </array>
+                <array key="disabledColor">
+                  <number>0.3499999940395355</number>
+                  <number>0.3700000047683716</number>
+                  <number>0.41999998688697815</number>
+                  <number>0.6000000238418579</number>
+                </array>
+                <string key="texture"/>
+                <number key="cornerRadius">18</number>
+                <array key="borderColor">
+                  <number>0.19599999487400055</number>
+                  <number>0.8510000109672546</number>
+                  <number>0.800000011920929</number>
+                  <number>0.3499999940395355</number>
+                </array>
+                <number key="borderThickness">1.5</number>
+                <bool key="shadow">true</bool>
+                <array key="contentPadding">
+                  <number>26</number>
+                  <number>16</number>
+                  <number>26</number>
+                  <number>16</number>
+                </array>
+                <number key="hoverScale">1.0399999618530273</number>
+              </object>
+              <object key="slot">
+                <array key="anchorMin">
+                  <number>0</number>
+                  <number>0</number>
+                </array>
+                <array key="anchorMax">
+                  <number>0</number>
+                  <number>0</number>
+                </array>
+                <array key="pivot">
+                  <number>0</number>
+                  <number>0</number>
+                </array>
+                <array key="position">
+                  <number>0</number>
+                  <number>0</number>
+                </array>
+                <array key="size">
+                  <number>200</number>
+                  <number>60</number>
+                </array>
+                <bool key="autoSize">false</bool>
+                <number key="zOrder">0</number>
+                <array key="padding">
+                  <number>0</number>
+                  <number>0</number>
+                  <number>0</number>
+                  <number>0</number>
+                </array>
+                <string key="hAlign">Fill</string>
+                <string key="vAlign">Fill</string>
+                <string key="sizeRule">Auto</string>
+                <number key="fillWeight">1</number>
+              </object>
+              <array key="children">
+                <object>
+                  <string key="type">UISizeBox</string>
+                  <string key="name">CardAnimExtrasSize</string>
+                  <object key="common">
+                    <string key="visibility">Visible</string>
+                    <bool key="enabled">true</bool>
+                    <number key="opacity">1</number>
+                    <array key="translation">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <array key="renderScale">
+                      <number>1</number>
+                      <number>1</number>
+                    </array>
+                    <number key="rotation">0</number>
+                    <array key="transformOrigin">
+                      <number>0.5</number>
+                      <number>0.5</number>
+                    </array>
+                    <bool key="clipChildren">false</bool>
+                    <string key="tooltip"/>
+                    <string key="visibleBind"/>
+                    <string key="shader"/>
+                    <bool key="blackWhiteEnabled">false</bool>
+                    <bool key="vertexColorsEnabled">false</bool>
+                    <string key="userData"/>
+                  </object>
+                  <object key="properties">
+                    <number key="widthOverride">326</number>
+                    <number key="heightOverride">0</number>
+                    <array key="minSize">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <array key="maxSize">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                  </object>
+                  <object key="slot">
+                    <array key="anchorMin">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <array key="anchorMax">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <array key="pivot">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <array key="position">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <array key="size">
+                      <number>200</number>
+                      <number>60</number>
+                    </array>
+                    <bool key="autoSize">false</bool>
+                    <number key="zOrder">0</number>
+                    <array key="padding">
+                      <number>0</number>
+                      <number>0</number>
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <string key="hAlign">Fill</string>
+                    <string key="vAlign">Fill</string>
+                    <string key="sizeRule">Auto</string>
+                    <number key="fillWeight">1</number>
+                  </object>
+                  <array key="children">
+                    <object>
+                      <string key="type">UIVerticalBox</string>
+                      <string key="name">CardAnimExtrasContent</string>
+                      <object key="common">
+                        <string key="visibility">Visible</string>
+                        <bool key="enabled">true</bool>
+                        <number key="opacity">1</number>
+                        <array key="translation">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="renderScale">
+                          <number>1</number>
+                          <number>1</number>
+                        </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
+                        <bool key="clipChildren">false</bool>
+                        <string key="tooltip"/>
+                        <string key="visibleBind"/>
+                        <string key="shader"/>
+                        <bool key="blackWhiteEnabled">false</bool>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
+                      </object>
+                      <object key="properties">
+                        <number key="spacing">8</number>
+                        <array key="padding">
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                      </object>
+                      <object key="slot">
+                        <array key="anchorMin">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="anchorMax">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="pivot">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="position">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="size">
+                          <number>200</number>
+                          <number>60</number>
+                        </array>
+                        <bool key="autoSize">false</bool>
+                        <number key="zOrder">0</number>
+                        <array key="padding">
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <string key="hAlign">Fill</string>
+                        <string key="vAlign">Fill</string>
+                        <string key="sizeRule">Auto</string>
+                        <number key="fillWeight">1</number>
+                      </object>
+                      <array key="children">
+                        <object>
+                          <string key="type">UIText</string>
+                          <string key="name">CardAnimExtrasNumber</string>
+                          <object key="common">
+                            <string key="visibility">Visible</string>
+                            <bool key="enabled">true</bool>
+                            <number key="opacity">1</number>
+                            <array key="translation">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="renderScale">
+                              <number>1</number>
+                              <number>1</number>
+                            </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
+                            <bool key="clipChildren">false</bool>
+                            <string key="tooltip"/>
+                            <string key="visibleBind"/>
+                            <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
+                          </object>
+                          <object key="properties">
+                            <string key="text">11</string>
+                            <string key="font"/>
+                            <number key="fontSize">22</number>
+                            <array key="color">
+                              <number>0.19599999487400055</number>
+                              <number>0.8510000109672546</number>
+                              <number>0.800000011920929</number>
+                              <number>0.8999999761581421</number>
+                            </array>
+                            <string key="align">Left</string>
+                            <string key="verticalAlign">Center</string>
+                            <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
+                            <string key="effect">None</string>
+                            <number key="effectStrength">6</number>
+                            <number key="effectSpeed">1</number>
+                            <string key="reveal">None</string>
+                            <number key="revealSpeed">30</number>
+                            <number key="revealDelay">0</number>
+                            <number key="revealFade">0.18000000715255737</number>
+                            <bool key="revealAuto">true</bool>
+                            <number key="revealProgress">1</number>
+                            <bool key="revealOnShow">true</bool>
+                            <string key="revealSound"/>
+                            <number key="revealSoundEvery">2</number>
+                            <bool key="richText">true</bool>
+                            <bool key="shadow">false</bool>
+                            <array key="shadowColor">
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0.6000000238418579</number>
+                            </array>
+                            <array key="shadowOffset">
+                              <number>2</number>
+                              <number>2</number>
+                            </array>
+                          </object>
+                          <object key="slot">
+                            <array key="anchorMin">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="anchorMax">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="pivot">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="position">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="size">
+                              <number>200</number>
+                              <number>60</number>
+                            </array>
+                            <bool key="autoSize">false</bool>
+                            <number key="zOrder">0</number>
+                            <array key="padding">
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <string key="hAlign">Fill</string>
+                            <string key="vAlign">Fill</string>
+                            <string key="sizeRule">Auto</string>
+                            <number key="fillWeight">1</number>
+                          </object>
+                          <array key="children"/>
+                        </object>
+                        <object>
+                          <string key="type">UIText</string>
+                          <string key="name">CardAnimExtrasLabel</string>
+                          <object key="common">
+                            <string key="visibility">Visible</string>
+                            <bool key="enabled">true</bool>
+                            <number key="opacity">1</number>
+                            <array key="translation">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="renderScale">
+                              <number>1</number>
+                              <number>1</number>
+                            </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
+                            <bool key="clipChildren">false</bool>
+                            <string key="tooltip"/>
+                            <string key="visibleBind"/>
+                            <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
+                          </object>
+                          <object key="properties">
+                            <string key="text">区間・グループ・コマ送り</string>
+                            <string key="font"/>
+                            <number key="fontSize">32</number>
+                            <array key="color">
+                              <number>0.8669999837875366</number>
+                              <number>0.9369999766349792</number>
+                              <number>0.9449999928474426</number>
+                              <number>1</number>
+                            </array>
+                            <string key="align">Left</string>
+                            <string key="verticalAlign">Center</string>
+                            <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
+                            <string key="effect">None</string>
+                            <number key="effectStrength">6</number>
+                            <number key="effectSpeed">1</number>
+                            <string key="reveal">None</string>
+                            <number key="revealSpeed">30</number>
+                            <number key="revealDelay">0</number>
+                            <number key="revealFade">0.18000000715255737</number>
+                            <bool key="revealAuto">true</bool>
+                            <number key="revealProgress">1</number>
+                            <bool key="revealOnShow">true</bool>
+                            <string key="revealSound"/>
+                            <number key="revealSoundEvery">2</number>
+                            <bool key="richText">true</bool>
+                            <bool key="shadow">false</bool>
+                            <array key="shadowColor">
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0.6000000238418579</number>
+                            </array>
+                            <array key="shadowOffset">
+                              <number>2</number>
+                              <number>2</number>
+                            </array>
+                          </object>
+                          <object key="slot">
+                            <array key="anchorMin">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="anchorMax">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="pivot">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="position">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="size">
+                              <number>200</number>
+                              <number>60</number>
+                            </array>
+                            <bool key="autoSize">false</bool>
+                            <number key="zOrder">0</number>
+                            <array key="padding">
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <string key="hAlign">Fill</string>
+                            <string key="vAlign">Fill</string>
+                            <string key="sizeRule">Auto</string>
+                            <number key="fillWeight">1</number>
+                          </object>
+                          <array key="children"/>
+                        </object>
+                        <object>
+                          <string key="type">UIText</string>
+                          <string key="name">CardAnimExtrasDesc</string>
+                          <object key="common">
+                            <string key="visibility">Visible</string>
+                            <bool key="enabled">true</bool>
+                            <number key="opacity">1</number>
+                            <array key="translation">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="renderScale">
+                              <number>1</number>
+                              <number>1</number>
+                            </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
+                            <bool key="clipChildren">false</bool>
+                            <string key="tooltip"/>
+                            <string key="visibleBind"/>
+                            <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
+                          </object>
+                          <object key="properties">
+                            <string key="text">In / Idle / Out の区間、まとめて動かすグループ、パラパラ漫画</string>
+                            <string key="font"/>
+                            <number key="fontSize">20</number>
+                            <array key="color">
+                              <number>0.550000011920929</number>
+                              <number>0.6800000071525574</number>
+                              <number>0.7099999785423279</number>
+                              <number>1</number>
+                            </array>
+                            <string key="align">Left</string>
+                            <string key="verticalAlign">Center</string>
+                            <bool key="wrap">true</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
+                            <string key="effect">None</string>
+                            <number key="effectStrength">6</number>
+                            <number key="effectSpeed">1</number>
+                            <string key="reveal">None</string>
+                            <number key="revealSpeed">30</number>
+                            <number key="revealDelay">0</number>
+                            <number key="revealFade">0.18000000715255737</number>
+                            <bool key="revealAuto">true</bool>
+                            <number key="revealProgress">1</number>
+                            <bool key="revealOnShow">true</bool>
+                            <string key="revealSound"/>
+                            <number key="revealSoundEvery">2</number>
+                            <bool key="richText">true</bool>
+                            <bool key="shadow">false</bool>
+                            <array key="shadowColor">
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0.6000000238418579</number>
+                            </array>
+                            <array key="shadowOffset">
+                              <number>2</number>
+                              <number>2</number>
+                            </array>
+                          </object>
+                          <object key="slot">
+                            <array key="anchorMin">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="anchorMax">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="pivot">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="position">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="size">
+                              <number>200</number>
+                              <number>60</number>
+                            </array>
+                            <bool key="autoSize">false</bool>
+                            <number key="zOrder">0</number>
+                            <array key="padding">
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <string key="hAlign">Fill</string>
+                            <string key="vAlign">Fill</string>
+                            <string key="sizeRule">Auto</string>
+                            <number key="fillWeight">1</number>
+                          </object>
+                          <array key="children"/>
+                        </object>
+                      </array>
+                    </object>
+                  </array>
+                </object>
+              </array>
+            </object>
+            <object>
+              <string key="type">UIButton</string>
+              <string key="name">OpenTextExtras</string>
+              <string key="style">MenuCard</string>
+              <object key="common">
+                <string key="visibility">Visible</string>
+                <bool key="enabled">true</bool>
+                <number key="opacity">1</number>
+                <array key="translation">
+                  <number>0</number>
+                  <number>0</number>
+                </array>
+                <array key="renderScale">
+                  <number>1</number>
+                  <number>1</number>
+                </array>
+                <number key="rotation">0</number>
+                <array key="transformOrigin">
+                  <number>0.5</number>
+                  <number>0.5</number>
+                </array>
+                <bool key="clipChildren">false</bool>
+                <string key="tooltip"/>
+                <string key="visibleBind"/>
+                <string key="shader"/>
+                <bool key="blackWhiteEnabled">false</bool>
+                <bool key="vertexColorsEnabled">false</bool>
+                <string key="userData"/>
+              </object>
+              <object key="properties">
+                <string key="text"/>
+                <number key="fontSize">26</number>
+                <array key="textColor">
+                  <number>0.8669999837875366</number>
+                  <number>0.9369999766349792</number>
+                  <number>0.9449999928474426</number>
+                  <number>1</number>
+                </array>
+                <string key="clickMessage">open:UI/TextExtras.aqua</string>
+                <string key="clickSound"/>
+                <array key="normalColor">
+                  <number>0.0860000029206276</number>
+                  <number>0.16500000655651093</number>
+                  <number>0.20000000298023224</number>
+                  <number>0.9200000166893005</number>
+                </array>
+                <array key="hoveredColor">
+                  <number>0.11999999731779099</number>
+                  <number>0.30000001192092896</number>
+                  <number>0.33000001311302185</number>
+                  <number>1</number>
+                </array>
+                <array key="pressedColor">
+                  <number>0.07000000029802322</number>
+                  <number>0.20000000298023224</number>
+                  <number>0.2199999988079071</number>
+                  <number>1</number>
+                </array>
+                <array key="disabledColor">
+                  <number>0.3499999940395355</number>
+                  <number>0.3700000047683716</number>
+                  <number>0.41999998688697815</number>
+                  <number>0.6000000238418579</number>
+                </array>
+                <string key="texture"/>
+                <number key="cornerRadius">18</number>
+                <array key="borderColor">
+                  <number>0.19599999487400055</number>
+                  <number>0.8510000109672546</number>
+                  <number>0.800000011920929</number>
+                  <number>0.3499999940395355</number>
+                </array>
+                <number key="borderThickness">1.5</number>
+                <bool key="shadow">true</bool>
+                <array key="contentPadding">
+                  <number>26</number>
+                  <number>16</number>
+                  <number>26</number>
+                  <number>16</number>
+                </array>
+                <number key="hoverScale">1.0399999618530273</number>
+              </object>
+              <object key="slot">
+                <array key="anchorMin">
+                  <number>0</number>
+                  <number>0</number>
+                </array>
+                <array key="anchorMax">
+                  <number>0</number>
+                  <number>0</number>
+                </array>
+                <array key="pivot">
+                  <number>0</number>
+                  <number>0</number>
+                </array>
+                <array key="position">
+                  <number>0</number>
+                  <number>0</number>
+                </array>
+                <array key="size">
+                  <number>200</number>
+                  <number>60</number>
+                </array>
+                <bool key="autoSize">false</bool>
+                <number key="zOrder">0</number>
+                <array key="padding">
+                  <number>0</number>
+                  <number>0</number>
+                  <number>0</number>
+                  <number>0</number>
+                </array>
+                <string key="hAlign">Fill</string>
+                <string key="vAlign">Fill</string>
+                <string key="sizeRule">Auto</string>
+                <number key="fillWeight">1</number>
+              </object>
+              <array key="children">
+                <object>
+                  <string key="type">UISizeBox</string>
+                  <string key="name">CardTextExtrasSize</string>
+                  <object key="common">
+                    <string key="visibility">Visible</string>
+                    <bool key="enabled">true</bool>
+                    <number key="opacity">1</number>
+                    <array key="translation">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <array key="renderScale">
+                      <number>1</number>
+                      <number>1</number>
+                    </array>
+                    <number key="rotation">0</number>
+                    <array key="transformOrigin">
+                      <number>0.5</number>
+                      <number>0.5</number>
+                    </array>
+                    <bool key="clipChildren">false</bool>
+                    <string key="tooltip"/>
+                    <string key="visibleBind"/>
+                    <string key="shader"/>
+                    <bool key="blackWhiteEnabled">false</bool>
+                    <bool key="vertexColorsEnabled">false</bool>
+                    <string key="userData"/>
+                  </object>
+                  <object key="properties">
+                    <number key="widthOverride">326</number>
+                    <number key="heightOverride">0</number>
+                    <array key="minSize">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <array key="maxSize">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                  </object>
+                  <object key="slot">
+                    <array key="anchorMin">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <array key="anchorMax">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <array key="pivot">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <array key="position">
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <array key="size">
+                      <number>200</number>
+                      <number>60</number>
+                    </array>
+                    <bool key="autoSize">false</bool>
+                    <number key="zOrder">0</number>
+                    <array key="padding">
+                      <number>0</number>
+                      <number>0</number>
+                      <number>0</number>
+                      <number>0</number>
+                    </array>
+                    <string key="hAlign">Fill</string>
+                    <string key="vAlign">Fill</string>
+                    <string key="sizeRule">Auto</string>
+                    <number key="fillWeight">1</number>
+                  </object>
+                  <array key="children">
+                    <object>
+                      <string key="type">UIVerticalBox</string>
+                      <string key="name">CardTextExtrasContent</string>
+                      <object key="common">
+                        <string key="visibility">Visible</string>
+                        <bool key="enabled">true</bool>
+                        <number key="opacity">1</number>
+                        <array key="translation">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="renderScale">
+                          <number>1</number>
+                          <number>1</number>
+                        </array>
+                        <number key="rotation">0</number>
+                        <array key="transformOrigin">
+                          <number>0.5</number>
+                          <number>0.5</number>
+                        </array>
+                        <bool key="clipChildren">false</bool>
+                        <string key="tooltip"/>
+                        <string key="visibleBind"/>
+                        <string key="shader"/>
+                        <bool key="blackWhiteEnabled">false</bool>
+                        <bool key="vertexColorsEnabled">false</bool>
+                        <string key="userData"/>
+                      </object>
+                      <object key="properties">
+                        <number key="spacing">8</number>
+                        <array key="padding">
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                      </object>
+                      <object key="slot">
+                        <array key="anchorMin">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="anchorMax">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="pivot">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="position">
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <array key="size">
+                          <number>200</number>
+                          <number>60</number>
+                        </array>
+                        <bool key="autoSize">false</bool>
+                        <number key="zOrder">0</number>
+                        <array key="padding">
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0</number>
+                          <number>0</number>
+                        </array>
+                        <string key="hAlign">Fill</string>
+                        <string key="vAlign">Fill</string>
+                        <string key="sizeRule">Auto</string>
+                        <number key="fillWeight">1</number>
+                      </object>
+                      <array key="children">
+                        <object>
+                          <string key="type">UIText</string>
+                          <string key="name">CardTextExtrasNumber</string>
+                          <object key="common">
+                            <string key="visibility">Visible</string>
+                            <bool key="enabled">true</bool>
+                            <number key="opacity">1</number>
+                            <array key="translation">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="renderScale">
+                              <number>1</number>
+                              <number>1</number>
+                            </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
+                            <bool key="clipChildren">false</bool>
+                            <string key="tooltip"/>
+                            <string key="visibleBind"/>
+                            <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
+                          </object>
+                          <object key="properties">
+                            <string key="text">12</string>
+                            <string key="font"/>
+                            <number key="fontSize">22</number>
+                            <array key="color">
+                              <number>0.19599999487400055</number>
+                              <number>0.8510000109672546</number>
+                              <number>0.800000011920929</number>
+                              <number>0.8999999761581421</number>
+                            </array>
+                            <string key="align">Left</string>
+                            <string key="verticalAlign">Center</string>
+                            <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
+                            <string key="effect">None</string>
+                            <number key="effectStrength">6</number>
+                            <number key="effectSpeed">1</number>
+                            <string key="reveal">None</string>
+                            <number key="revealSpeed">30</number>
+                            <number key="revealDelay">0</number>
+                            <number key="revealFade">0.18000000715255737</number>
+                            <bool key="revealAuto">true</bool>
+                            <number key="revealProgress">1</number>
+                            <bool key="revealOnShow">true</bool>
+                            <string key="revealSound"/>
+                            <number key="revealSoundEvery">2</number>
+                            <bool key="richText">true</bool>
+                            <bool key="shadow">false</bool>
+                            <array key="shadowColor">
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0.6000000238418579</number>
+                            </array>
+                            <array key="shadowOffset">
+                              <number>2</number>
+                              <number>2</number>
+                            </array>
+                          </object>
+                          <object key="slot">
+                            <array key="anchorMin">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="anchorMax">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="pivot">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="position">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="size">
+                              <number>200</number>
+                              <number>60</number>
+                            </array>
+                            <bool key="autoSize">false</bool>
+                            <number key="zOrder">0</number>
+                            <array key="padding">
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <string key="hAlign">Fill</string>
+                            <string key="vAlign">Fill</string>
+                            <string key="sizeRule">Auto</string>
+                            <number key="fillWeight">1</number>
+                          </object>
+                          <array key="children"/>
+                        </object>
+                        <object>
+                          <string key="type">UIText</string>
+                          <string key="name">CardTextExtrasLabel</string>
+                          <object key="common">
+                            <string key="visibility">Visible</string>
+                            <bool key="enabled">true</bool>
+                            <number key="opacity">1</number>
+                            <array key="translation">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="renderScale">
+                              <number>1</number>
+                              <number>1</number>
+                            </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
+                            <bool key="clipChildren">false</bool>
+                            <string key="tooltip"/>
+                            <string key="visibleBind"/>
+                            <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
+                          </object>
+                          <object key="properties">
+                            <string key="text">文字の並びと白黒カラー</string>
+                            <string key="font"/>
+                            <number key="fontSize">32</number>
+                            <array key="color">
+                              <number>0.8669999837875366</number>
+                              <number>0.9369999766349792</number>
+                              <number>0.9449999928474426</number>
+                              <number>1</number>
+                            </array>
+                            <string key="align">Left</string>
+                            <string key="verticalAlign">Center</string>
+                            <bool key="wrap">false</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
+                            <string key="effect">None</string>
+                            <number key="effectStrength">6</number>
+                            <number key="effectSpeed">1</number>
+                            <string key="reveal">None</string>
+                            <number key="revealSpeed">30</number>
+                            <number key="revealDelay">0</number>
+                            <number key="revealFade">0.18000000715255737</number>
+                            <bool key="revealAuto">true</bool>
+                            <number key="revealProgress">1</number>
+                            <bool key="revealOnShow">true</bool>
+                            <string key="revealSound"/>
+                            <number key="revealSoundEvery">2</number>
+                            <bool key="richText">true</bool>
+                            <bool key="shadow">false</bool>
+                            <array key="shadowColor">
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0.6000000238418579</number>
+                            </array>
+                            <array key="shadowOffset">
+                              <number>2</number>
+                              <number>2</number>
+                            </array>
+                          </object>
+                          <object key="slot">
+                            <array key="anchorMin">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="anchorMax">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="pivot">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="position">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="size">
+                              <number>200</number>
+                              <number>60</number>
+                            </array>
+                            <bool key="autoSize">false</bool>
+                            <number key="zOrder">0</number>
+                            <array key="padding">
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <string key="hAlign">Fill</string>
+                            <string key="vAlign">Fill</string>
+                            <string key="sizeRule">Auto</string>
+                            <number key="fillWeight">1</number>
+                          </object>
+                          <array key="children"/>
+                        </object>
+                        <object>
+                          <string key="type">UIText</string>
+                          <string key="name">CardTextExtrasDesc</string>
+                          <object key="common">
+                            <string key="visibility">Visible</string>
+                            <bool key="enabled">true</bool>
+                            <number key="opacity">1</number>
+                            <array key="translation">
+                              <number>0</number>
+                              <number>0</number>
+                            </array>
+                            <array key="renderScale">
+                              <number>1</number>
+                              <number>1</number>
+                            </array>
+                            <number key="rotation">0</number>
+                            <array key="transformOrigin">
+                              <number>0.5</number>
+                              <number>0.5</number>
+                            </array>
+                            <bool key="clipChildren">false</bool>
+                            <string key="tooltip"/>
+                            <string key="visibleBind"/>
+                            <string key="shader"/>
+                            <bool key="blackWhiteEnabled">false</bool>
+                            <bool key="vertexColorsEnabled">false</bool>
+                            <string key="userData"/>
+                          </object>
+                          <object key="properties">
+                            <string key="text">文字間・行間・枠に合わせて縮小・行ごとのグラデーション・色の補間</string>
+                            <string key="font"/>
+                            <number key="fontSize">20</number>
+                            <array key="color">
+                              <number>0.550000011920929</number>
+                              <number>0.6800000071525574</number>
+                              <number>0.7099999785423279</number>
+                              <number>1</number>
+                            </array>
+                            <string key="align">Left</string>
+                            <string key="verticalAlign">Center</string>
+                            <bool key="wrap">true</bool>
+                            <number key="letterSpacing">0</number>
+                            <number key="lineSpacing">0</number>
+                            <bool key="shrinkToFit">false</bool>
+                            <bool key="gradient">false</bool>
                             <string key="effect">None</string>
                             <number key="effectStrength">6</number>
                             <number key="effectSpeed">1</number>
@@ -4712,10 +7596,18 @@
               <number>1</number>
               <number>1</number>
             </array>
+            <number key="rotation">0</number>
+            <array key="transformOrigin">
+              <number>0.5</number>
+              <number>0.5</number>
+            </array>
             <bool key="clipChildren">false</bool>
             <string key="tooltip"/>
             <string key="visibleBind"/>
             <string key="shader"/>
+            <bool key="blackWhiteEnabled">false</bool>
+            <bool key="vertexColorsEnabled">false</bool>
+            <string key="userData"/>
           </object>
           <object key="properties">
             <string key="text">Esc でいつでもメニューに戻れます　・　各画面の UI は AquaUI フォルダの .aqs を Aqua で開くと編集できます</string>
@@ -4730,6 +7622,10 @@
             <string key="align">Center</string>
             <string key="verticalAlign">Center</string>
             <bool key="wrap">false</bool>
+            <number key="letterSpacing">0</number>
+            <number key="lineSpacing">0</number>
+            <bool key="shrinkToFit">false</bool>
+            <bool key="gradient">false</bool>
             <string key="effect">None</string>
             <number key="effectStrength">6</number>
             <number key="effectSpeed">1</number>
@@ -4906,10 +7802,10 @@
           </array>
           <number key="borderThickness">1.5</number>
           <array key="contentPadding">
-            <number>28</number>
-            <number>22</number>
-            <number>28</number>
-            <number>22</number>
+            <number>26</number>
+            <number>16</number>
+            <number>26</number>
+            <number>16</number>
           </array>
           <number key="hoverScale">1.04</number>
         </object>

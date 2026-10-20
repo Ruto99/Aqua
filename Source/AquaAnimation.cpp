@@ -156,6 +156,16 @@ void App::DrawAnimations(Document& doc) {
         dl->AddLine({timeToX(t), origin.y + rulerH - 6.0f}, {timeToX(t), origin.y + rulerH}, ToU32(Theme::kTextDim));
         dl->AddText({timeToX(t) + 3.0f, origin.y + 2.0f}, ToU32(Theme::kTextDim), std::format("{:.1f}", t).c_str());
     }
+    // 区間（名前付きの範囲）を目盛りに帯で示す
+    for (size_t si = 0; si < anim->sections.size(); ++si) {
+        const WidgetAnimSection& sec = anim->sections[si];
+        const ImU32 col = si % 2 ? Theme::U32(Theme::kCoral, 0.30f) : Theme::U32(Theme::kAccent, 0.30f);
+        const float sx0 = timeToX(sec.start), sx1 = std::max(timeToX(sec.end), sx0 + 2.0f);
+        dl->AddRectFilled({sx0, origin.y}, {sx1, origin.y + rulerH}, col, 3.0f);
+        dl->PushClipRect({sx0, origin.y}, {sx1, origin.y + rulerH}, true);
+        dl->AddText({sx0 + 4.0f, origin.y + 2.0f}, ToU32(Theme::kText), std::format("{}{}", sec.loop ? ICON_FA_REPEAT " " : "", sec.name).c_str());
+        dl->PopClipRect();
+    }
     ImGui::SetCursorScreenPos({x0, origin.y});
     ImGui::InvisibleButton("##anim-ruler", {std::max(area.x - labelW, 1.0f), rulerH});
     if (ImGui::IsItemActive()) {
@@ -167,11 +177,89 @@ void App::DrawAnimations(Document& doc) {
     // トラックを追加（選択中のウィジェットのプロパティ）
     ImGui::SetCursorScreenPos({origin.x + 4.0f, origin.y});
     Widget* sel = ui.hasSelection ? Resolve(asset.root.get(), ui.selection) : nullptr;
-    ImGui::BeginDisabled(!sel);
+    ImGui::BeginDisabled(!sel && asset.groups.empty());
     if (ImGui::SmallButton(ICON_FA_PLUS " トラック")) ImGui::OpenPopup("add-anim-track");
     ImGui::EndDisabled();
+    ImGui::SameLine(0.0f, 4.0f);
+    if (ImGui::SmallButton(ui.curveView ? ICON_FA_LIST : ICON_FA_CHART_LINE)) {
+        ui.curveView = !ui.curveView;
+        if (ui.curveTrack < 0 && !anim->tracks.empty()) ui.curveTrack = ui.keySelected ? ui.keyTrack : 0;
+    }
+    if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) ImGui::SetTooltip("カーブ表示: トラックの値の変化をグラフで見て、キーを上下（値）・左右（時刻）に動かす");
+    ImGui::SameLine(0.0f, 4.0f);
+    if (ImGui::SmallButton(ICON_FA_BOOKMARK)) ImGui::OpenPopup("anim-sections");
+    if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) ImGui::SetTooltip("区間: タイムラインの一部に名前を付け、スクリプトから PlayAnimation(\"区間の名前\") で再生する（In・Loop・Out など）");
+    if (ImGui::BeginPopup("anim-sections")) {
+        ImGui::TextDisabled("区間（名前で再生する範囲）");
+        int removeSec = -1;
+        for (size_t si = 0; si < anim->sections.size(); ++si) {
+            WidgetAnimSection& sec = anim->sections[si];
+            ImGui::PushID(static_cast<int>(si));
+            ImGui::SetNextItemWidth(110.0f * s);
+            if (ImGui::InputText("##name", &sec.name, ImGuiInputTextFlags_EnterReturnsTrue) || ImGui::IsItemDeactivatedAfterEdit()) doc.Changed();
+            ImGui::SameLine();
+            float range[2] = {sec.start, sec.end};
+            ImGui::SetNextItemWidth(150.0f * s);
+            if (ImGui::DragFloat2("##range", range, 0.01f, 0.0f, 600.0f, "%.2f")) {
+                sec.start = std::max(range[0], 0.0f);
+                sec.end = std::max(range[1], sec.start);
+                doc.Changed();
+            }
+            ImGui::SameLine();
+            if (ImGui::Checkbox("繰り返す", &sec.loop)) doc.Changed();
+            ImGui::SameLine();
+            if (IconButton(ICON_FA_PLAY, "この区間を見る（始まりへ）")) ui.animTime = sec.start;
+            ImGui::SameLine(0.0f, 2.0f);
+            if (IconButton(ICON_FA_TRASH, "区間を削除")) removeSec = static_cast<int>(si);
+            ImGui::PopID();
+        }
+        if (removeSec >= 0) {
+            anim->sections.erase(anim->sections.begin() + removeSec);
+            doc.Changed();
+        }
+        if (ImGui::Button(ICON_FA_PLUS " 区間を追加（今の時刻から最後まで）")) {
+            WidgetAnimSection sec;
+            sec.name = "Section";
+            for (int n = 1; anim->FindSection(sec.name) || asset.FindAnimation(sec.name); ++n) sec.name = std::format("Section{}", n);
+            sec.start = ui.animTime;
+            sec.end = std::max(anim->GetDuration(), ui.animTime);
+            anim->sections.push_back(sec);
+            doc.Changed();
+        }
+        ImGui::EndPopup();
+    }
     if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort | ImGuiHoveredFlags_AllowWhenDisabled)) ImGui::SetTooltip("選択中のウィジェットのプロパティを追加（今の値でキーを打つ）");
-    if (sel && ImGui::BeginPopup("add-anim-track")) {
+    if (ImGui::BeginPopup("add-anim-track")) {
+        // グループのトラック（"@グループ名"。全員に同じ値を当てる）
+        for (const WidgetGroup& g : asset.groups) {
+            Widget* first = nullptr;
+            for (const std::string& m : g.members) {
+                if (!first) first = asset.root->Find(m);
+            }
+            if (!first) continue;
+            if (ImGui::BeginMenu(std::format(ICON_FA_OBJECT_GROUP "  グループ {}", g.name).c_str())) {
+                const std::string target = "@" + g.name;
+                for (const auto& info : WidgetProperties::List(*first)) {
+                    if (ShaderParamSlot(info.property) >= 0) continue;
+                    const std::string label = PropertyLabelJa(info.property) + (info.channel.empty() ? "" : "." + info.channel);
+                    if (ImGui::MenuItem(label.c_str(), nullptr, anim->FindTrack(target, info.path) != nullptr)) {
+                        float v = 0.0f;
+                        WidgetProperties::Get(*first, info.path, v);
+                        WidgetAnimTrack* t = anim->FindTrack(target, info.path);
+                        if (!t) {
+                            anim->tracks.push_back({target, info.path, TimelineCurve{info.path, {}}});
+                            t = &anim->tracks.back();
+                        }
+                        t->curve.SetKey(ui.animTime, v);
+                        doc.Changed();
+                    }
+                }
+                ImGui::EndMenu();
+            }
+        }
+        if (!sel) {
+            ImGui::EndPopup();
+        } else {
         ImGui::TextDisabled("%s のプロパティ", sel->name.c_str());
         Widget* docSel = doc.view ? Resolve(doc.view->GetRoot(), ui.selection) : nullptr;
         std::string lastProp;
@@ -209,6 +297,135 @@ void App::DrawAnimations(Document& doc) {
             }
         }
         ImGui::EndPopup();
+        }
+    }
+
+    // ---- カーブ表示 ----
+    if (ui.curveView) {
+        ImGui::SetCursorScreenPos({origin.x, origin.y + rulerH});
+        ImGui::BeginChild("##anim-curve", {0.0f, 0.0f}, ImGuiChildFlags_None);
+        if (ui.curveTrack >= static_cast<int>(anim->tracks.size())) ui.curveTrack = -1;
+        // 左: トラックを選ぶ
+        ImGui::BeginChild("##curve-tracks", {labelW, 0.0f}, ImGuiChildFlags_None);
+        for (int ti = 0; ti < static_cast<int>(anim->tracks.size()); ++ti) {
+            const WidgetAnimTrack& t = anim->tracks[static_cast<size_t>(ti)];
+            if (ImGui::Selectable(std::format("{}  ·  {}##ct{}", t.widget, t.curve.property, ti).c_str(), ui.curveTrack == ti)) ui.curveTrack = ti;
+        }
+        if (anim->tracks.empty()) ImGui::TextDisabled("トラックがありません");
+        ImGui::EndChild();
+        ImGui::SameLine(0.0f, 0.0f);
+        const ImVec2 g0 = ImGui::GetCursorScreenPos();
+        const ImVec2 gs = ImGui::GetContentRegionAvail();
+        ImDrawList* gdl = ImGui::GetWindowDrawList();
+        gdl->AddRectFilled(g0, {g0.x + gs.x, g0.y + gs.y}, ToU32(Theme::kBackground));
+        if (ui.curveTrack >= 0 && gs.x > 20.0f && gs.y > 20.0f) {
+            WidgetAnimTrack& t = anim->tracks[static_cast<size_t>(ui.curveTrack)];
+            // 値の範囲（キーとカーブから。上下に少し余白）
+            float vmin = 1e30f, vmax = -1e30f;
+            for (const TimelineKey& k : t.curve.keys) vmin = std::min(vmin, k.value), vmax = std::max(vmax, k.value);
+            const float tEnd = std::max(anim->GetDuration(), xToTime(g0.x + gs.x));
+            for (int i = 0; i <= 64; ++i) {
+                const float v = t.curve.Evaluate(tEnd * static_cast<float>(i) / 64.0f);
+                vmin = std::min(vmin, v), vmax = std::max(vmax, v);
+            }
+            if (vmin > vmax) vmin = 0.0f, vmax = 1.0f;
+            if (vmax - vmin < 1e-3f) vmin -= 0.5f, vmax += 0.5f;
+            const float pad = (vmax - vmin) * 0.12f;
+            vmin -= pad, vmax += pad;
+            auto valueToY = [&](float v) { return g0.y + gs.y - (v - vmin) / (vmax - vmin) * gs.y; };
+            auto yToValue = [&](float y) { return vmin + (g0.y + gs.y - y) / gs.y * (vmax - vmin); };
+            // 目盛り（値）
+            for (int i = 0; i <= 4; ++i) {
+                const float v = vmin + (vmax - vmin) * static_cast<float>(i) / 4.0f;
+                const float y = valueToY(v);
+                gdl->AddLine({g0.x, y}, {g0.x + gs.x, y}, Theme::U32(Theme::kBorder, 0.8f));
+                gdl->AddText({g0.x + 4.0f, y - ImGui::GetTextLineHeight()}, ToU32(Theme::kTextDim), std::format("{:.2f}", v).c_str());
+            }
+            // カーブ
+            ImVec2 prev{};
+            for (int i = 0; i <= 240; ++i) {
+                const float x = g0.x + gs.x * static_cast<float>(i) / 240.0f;
+                const ImVec2 p{x, valueToY(t.curve.Evaluate(xToTime(x)))};
+                if (i > 0) gdl->AddLine(prev, p, ToU32(Theme::kAccent), 2.0f);
+                prev = p;
+            }
+            // キー（ドラッグで時刻と値を変える）
+            ImGui::SetCursorScreenPos(g0);
+            ImGui::InvisibleButton("##curve-area", gs, ImGuiButtonFlags_MouseButtonLeft | ImGuiButtonFlags_MouseButtonRight);
+            const bool areaHovered = ImGui::IsItemHovered();
+            int hoverKey = -1;
+            for (int ki = 0; ki < static_cast<int>(t.curve.keys.size()); ++ki) {
+                const TimelineKey& k = t.curve.keys[static_cast<size_t>(ki)];
+                const ImVec2 c{timeToX(k.time), valueToY(k.value)};
+                if (areaHovered && std::abs(io.MousePos.x - c.x) <= 7.0f && std::abs(io.MousePos.y - c.y) <= 7.0f) hoverKey = ki;
+            }
+            if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
+                ui.curveKey = hoverKey;
+                if (hoverKey < 0) ui.animTime = snap(xToTime(io.MousePos.x));
+                ui.animPlaying = false;
+            }
+            if (ImGui::IsItemActive() && ui.curveKey >= 0 && ui.curveKey < static_cast<int>(t.curve.keys.size()) && ImGui::IsMouseDragging(ImGuiMouseButton_Left, 1.0f)) {
+                TimelineKey& k = t.curve.keys[static_cast<size_t>(ui.curveKey)];
+                const float nt = snap(xToTime(io.MousePos.x));
+                float nv = yToValue(io.MousePos.y);
+                if (!io.KeyAlt) nv = std::round(nv * 100.0f) / 100.0f; // 0.01 刻み（Alt で自由）
+                k.value = nv;
+                if (std::abs(nt - k.time) > 1e-5f && t.curve.FindKey(nt) < 0) {
+                    k.time = nt;
+                    t.curve.Sort();
+                    ui.curveKey = t.curve.FindKey(nt);
+                }
+                ui.animTime = k.time;
+                doc.Changed();
+            }
+            if (!ImGui::IsMouseDown(ImGuiMouseButton_Left)) ui.curveKey = -1;
+            if (ImGui::IsItemClicked(ImGuiMouseButton_Right) && hoverKey >= 0) {
+                ui.keySelected = true;
+                ui.keyTrack = ui.curveTrack;
+                ui.keyTime = t.curve.keys[static_cast<size_t>(hoverKey)].time;
+                ImGui::OpenPopup("curve-key-menu");
+            }
+            if (ImGui::BeginPopup("curve-key-menu")) {
+                const int ki = t.curve.FindKey(ui.keyTime);
+                if (ki >= 0) {
+                    TimelineKey& k = t.curve.keys[static_cast<size_t>(ki)];
+                    ImGui::TextDisabled("キー %.2f 秒", k.time);
+                    ImGui::SetNextItemWidth(120.0f * s);
+                    if (ImGui::DragFloat("値", &k.value, 0.01f)) doc.Changed();
+                    const char* names[] = {"スムーズ", "リニア", "コンスタント"};
+                    for (int i = 0; i < 3; ++i) {
+                        if (ImGui::MenuItem(names[i], nullptr, static_cast<int>(k.interpolation) == i)) {
+                            k.interpolation = static_cast<KeyInterpolation>(i);
+                            doc.Changed();
+                        }
+                    }
+                    ImGui::Separator();
+                    if (ImGui::MenuItem(ICON_FA_TRASH "  削除")) {
+                        t.curve.keys.erase(t.curve.keys.begin() + ki);
+                        doc.Changed();
+                    }
+                }
+                ImGui::EndPopup();
+            }
+            for (int ki = 0; ki < static_cast<int>(t.curve.keys.size()); ++ki) {
+                const TimelineKey& k = t.curve.keys[static_cast<size_t>(ki)];
+                const ImVec2 c{timeToX(k.time), valueToY(k.value)};
+                const float r = (ki == hoverKey || ki == ui.curveKey ? 7.0f : 5.5f) * s;
+                gdl->AddQuadFilled({c.x, c.y - r}, {c.x + r, c.y}, {c.x, c.y + r}, {c.x - r, c.y}, ki == ui.curveKey ? IM_COL32(255, 255, 255, 255) : IM_COL32(255, 200, 80, 255));
+                gdl->AddQuad({c.x, c.y - r}, {c.x + r, c.y}, {c.x, c.y + r}, {c.x - r, c.y}, IM_COL32(20, 20, 24, 255));
+                if (ki == hoverKey) gdl->AddText({c.x + 8.0f, c.y - 18.0f}, ToU32(Theme::kText), std::format("{:.2f} 秒 · {:.2f}", k.time, k.value).c_str());
+            }
+            // 再生ヘッド
+            const float hx = timeToX(ui.animTime);
+            gdl->AddLine({hx, g0.y}, {hx, g0.y + gs.y}, IM_COL32(255, 255, 255, 200), 1.5f);
+        } else {
+            gdl->AddText({g0.x + 10.0f, g0.y + 10.0f}, ToU32(Theme::kTextDim), "左でトラックを選ぶと、値の変化を線で表示します（キーを上下左右にドラッグ）");
+        }
+        ImGui::EndChild();
+        const float px = timeToX(ui.animTime);
+        dl->AddTriangleFilled({px - 5.0f, origin.y}, {px + 5.0f, origin.y}, {px, origin.y + rulerH}, ui.animRecording ? IM_COL32(240, 70, 70, 255) : ToU32(Theme::kAccent));
+        ImGui::EndChild();
+        return;
     }
 
     // 行
@@ -221,7 +438,8 @@ void App::DrawAnimations(Document& doc) {
         WidgetAnimTrack& t = anim->tracks[static_cast<size_t>(ti)];
         const float y = rowsOrigin.y + static_cast<float>(ti) * rowH;
         ImGui::PushID(ti);
-        const bool exists = asset.root->Find(t.widget) != nullptr;
+        const bool isGroup = !t.widget.empty() && t.widget.front() == '@';
+        const bool exists = isGroup ? asset.FindGroup(std::string_view(t.widget).substr(1)) != nullptr : asset.root->Find(t.widget) != nullptr;
         rdl->AddRectFilled({rowsOrigin.x, y}, {rowsOrigin.x + labelW, y + rowH}, ToU32(ti % 2 ? Theme::kPanel : Theme::kFrame));
         rdl->AddLine({rowsOrigin.x, y + rowH - 0.5f}, {rowsOrigin.x + area.x, y + rowH - 0.5f}, ToU32(Theme::kBorder));
         std::string propLabel = t.curve.property;
@@ -248,11 +466,19 @@ void App::DrawAnimations(Document& doc) {
                 ui.hasSelection = true;
             }
         }
-        if (!exists && ImGui::IsItemHovered()) ImGui::SetTooltip("このウィジェットはもうありません（名前を変えたか消した）");
+        if (!exists && ImGui::IsItemHovered()) ImGui::SetTooltip("%s", isGroup ? "このグループはもうありません" : "このウィジェットはもうありません（名前を変えたか消した）");
+        if (isGroup && exists && ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) ImGui::SetTooltip("グループのトラック: メンバー全員に同じ値を当てる");
         if (ImGui::BeginPopupContextItem("track-menu")) {
             if (ImGui::MenuItem(ICON_FA_DIAMOND "  今の時刻にキーを打つ（今の値）")) {
                 float v = t.curve.Evaluate(ui.animTime);
-                if (Widget* dw = doc.view ? doc.view->Find(t.widget) : nullptr) WidgetProperties::Get(*dw, t.curve.property, v);
+                Widget* dw = nullptr;
+                if (doc.view && isGroup) {
+                    const auto members = doc.view->FindGroup(std::string_view(t.widget).substr(1));
+                    if (!members.empty()) dw = members.front();
+                } else if (doc.view) {
+                    dw = doc.view->Find(t.widget);
+                }
+                if (dw) WidgetProperties::Get(*dw, t.curve.property, v);
                 t.curve.SetKey(ui.animTime, v);
                 doc.Changed();
             }

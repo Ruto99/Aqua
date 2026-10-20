@@ -1,13 +1,13 @@
 #pragma once
 
-// Aqua — RutoEngine の UI を作る別のツール
+// Aqua — UI のレイアウトを作るツール（RutoEngine のゲームのプロジェクトでも、単体のライブラリでも使える）
 //
-//   左:   プロジェクト（UI の一覧）・アセット（画像・フォント・音・UI）・パレット・階層
+//   左:   レイアウト（Body・パーツの一覧）・パレット（パーツも）・階層
 //   中央: 文書のタブ + 見たままのキャンバス、下にアニメーションのタイムライン
 //   右:   詳細（スロット・プロパティ・スタイル）・スタイル・変数（プレビュー用の値）・整列
 //   下:   アニメーション・アセット・シェーダー（UI のシェーダーを書く）・ログ
 //
-// 編集すると Assets/**/*.aqua がすぐ書き出され、RutoEditor・実行中のゲームに反映される。
+// 編集すると .aqua がすぐ書き出され、ゲームのプロジェクト（か、ライブラリの送り先）の RutoEditor・実行中のゲームに反映される。
 
 #include "AquaDocument.h"
 
@@ -41,12 +41,19 @@ protected:
 
 private:
     // ---- プロジェクト・文書（AquaApp.cpp） ----
-    bool OpenProject(const fs::path& dir);
+    bool OpenProject(const fs::path& dir);  // ゲームのプロジェクトかライブラリ（Assets があるかで決まる）
     void CloseProject();
     Document* OpenDocument(const fs::path& file);
+    // どこにあるファイルでも開く（含むワークスペースを探して開き直す）
+    Document* OpenAnyFile(const fs::path& file);
+    void ShowOpenFileDialog();
+    void ShowOpenFolderDialog();
+    void CreateLibraryAt(const fs::path& dir);
+    // ライブラリのレイアウトを送り先にすべて送る
+    void SendAll();
     void CloseDocument(size_t index);
     Document* ActiveDocument();
-    void NewDocument(const std::string& name);
+    void NewDocument(const std::string& name, LayoutKind kind);
     void ExportAll();
     void HandleLinkRequests();
     void WriteSession();
@@ -64,6 +71,7 @@ private:
     void DrawWelcome();
     void DrawLogPanel();
     void DrawPopups();
+    void DrawSendPopup();
     void HandleShortcuts();
 
     // ---- パネル（AquaPanels.cpp） ----
@@ -81,6 +89,8 @@ private:
     void DrawCanvas(Document& doc);
     void DrawDetails(Document& doc);
     void DrawSlot(Document& doc, Widget& w);
+    // パーツ（UIUserWidget）の上書き: 中のウィジェットを選んで、置いた先だけ値を変える
+    void DrawPartOverrides(Document& doc, UIUserWidget& uw);
     void DrawWidgetMenu(Document& doc, const WidgetPath& path);
     void HandleDesignerKeys(Document& doc);
     Widget* AddWidget(Document& doc, const std::string& type, Widget* parent, int index = -1, const Vec2* canvasPos = nullptr);
@@ -106,6 +116,9 @@ private:
     bool SaveShader();
     std::string CreateShader(const std::string& name, const std::string& source);
     void ApplyShaderToSelection(const std::string& assetPath);
+
+    // ---- グループ（AquaArrange.cpp）: 階層とは別にウィジェットを名前でまとめる（アニメーション・スクリプト用） ----
+    void DrawGroupsPanel(Document& doc);
 
     // ---- 整列（AquaArrange.cpp）: 選んだウィジェットを揃える・等間隔にする・格子に並べる ----
     void DrawArrangePanel(Document& doc);
@@ -160,6 +173,12 @@ private:
     int m_ShaderJumpLine = -1;                 // エラーの行へカーソルを動かす
     int m_ShaderCursorLine = 1;
 
+    // パーツの上書きで編集している中のウィジェット（名前）
+    std::string m_OverrideTarget;
+    // グループ
+    std::string m_GroupRename;   // 名前を変えているグループ
+    std::string m_GroupRenameBuffer;
+
     // 整列
     int m_ArrangeRelative = 0;         // 0: 選んだものの範囲 / 1: 親 / 2: 最初に選んだもの
     int m_ArrangeColumns = 3;
@@ -174,6 +193,10 @@ private:
     bool m_OpenNewPopup = false;
     std::string m_NewName;
     std::string m_NewFolder;
+    LayoutKind m_NewKind = LayoutKind::Body;
+    bool m_OpenSendPopup = false;
+    std::string m_SendProjectInput; // 送り先のプロジェクト（入力中）
+    std::string m_SendFolderInput;
     bool m_OpenSettingsPopup = false;
     bool m_OpenAboutPopup = false;
     bool m_OpenCloseConfirm = false;

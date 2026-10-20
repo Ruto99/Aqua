@@ -67,10 +67,34 @@ inline constexpr const char* CardStylesContent = "CardStylesContent";
 inline constexpr const char* CardStylesNumber = "CardStylesNumber";
 inline constexpr const char* CardStylesLabel = "CardStylesLabel";
 inline constexpr const char* CardStylesDesc = "CardStylesDesc";
+inline constexpr const char* OpenTransform = "OpenTransform";
+inline constexpr const char* CardTransformSize = "CardTransformSize";
+inline constexpr const char* CardTransformContent = "CardTransformContent";
+inline constexpr const char* CardTransformNumber = "CardTransformNumber";
+inline constexpr const char* CardTransformLabel = "CardTransformLabel";
+inline constexpr const char* CardTransformDesc = "CardTransformDesc";
+inline constexpr const char* OpenOverrides = "OpenOverrides";
+inline constexpr const char* CardOverridesSize = "CardOverridesSize";
+inline constexpr const char* CardOverridesContent = "CardOverridesContent";
+inline constexpr const char* CardOverridesNumber = "CardOverridesNumber";
+inline constexpr const char* CardOverridesLabel = "CardOverridesLabel";
+inline constexpr const char* CardOverridesDesc = "CardOverridesDesc";
+inline constexpr const char* OpenAnimExtras = "OpenAnimExtras";
+inline constexpr const char* CardAnimExtrasSize = "CardAnimExtrasSize";
+inline constexpr const char* CardAnimExtrasContent = "CardAnimExtrasContent";
+inline constexpr const char* CardAnimExtrasNumber = "CardAnimExtrasNumber";
+inline constexpr const char* CardAnimExtrasLabel = "CardAnimExtrasLabel";
+inline constexpr const char* CardAnimExtrasDesc = "CardAnimExtrasDesc";
+inline constexpr const char* OpenTextExtras = "OpenTextExtras";
+inline constexpr const char* CardTextExtrasSize = "CardTextExtrasSize";
+inline constexpr const char* CardTextExtrasContent = "CardTextExtrasContent";
+inline constexpr const char* CardTextExtrasNumber = "CardTextExtrasNumber";
+inline constexpr const char* CardTextExtrasLabel = "CardTextExtrasLabel";
+inline constexpr const char* CardTextExtrasDesc = "CardTextExtrasDesc";
 inline constexpr const char* MenuHint = "MenuHint";
 } // namespace Widgets
 
-// アニメーションの名前（PlayAnimation）
+// アニメーションと区間の名前（PlayAnimation）
 namespace Animations {
 inline constexpr const char* Intro = "Intro";
 } // namespace Animations
@@ -90,6 +114,10 @@ inline constexpr const char* open_UI_Animation_aqua = "open:UI/Animation.aqua";
 inline constexpr const char* open_UI_Layout_aqua = "open:UI/Layout.aqua";
 inline constexpr const char* open_UI_Binding_aqua = "open:UI/Binding.aqua";
 inline constexpr const char* open_UI_Styles_aqua = "open:UI/Styles.aqua";
+inline constexpr const char* open_UI_Transform_aqua = "open:UI/Transform.aqua";
+inline constexpr const char* open_UI_Overrides_aqua = "open:UI/Overrides.aqua";
+inline constexpr const char* open_UI_AnimExtras_aqua = "open:UI/AnimExtras.aqua";
+inline constexpr const char* open_UI_TextExtras_aqua = "open:UI/TextExtras.aqua";
 } // namespace Messages
 
 } // namespace AquaUI::Menu

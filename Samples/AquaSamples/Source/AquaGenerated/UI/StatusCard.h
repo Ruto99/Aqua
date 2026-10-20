@@ -10,8 +10,8 @@ namespace AquaUI::StatusCard {
 
 // UIDocument::asset に入れるパス
 inline constexpr const char* kAsset = "UI/StatusCard.aqua";
-inline constexpr float kReferenceWidth = 1920.0f;
-inline constexpr float kReferenceHeight = 1080.0f;
+inline constexpr float kReferenceWidth = 360.0f;
+inline constexpr float kReferenceHeight = 190.0f;
 
 // ウィジェットの名前（Find・OnClick・SetText・SetVisible）
 namespace Widgets {

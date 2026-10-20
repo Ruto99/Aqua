@@ -17,6 +17,9 @@ using namespace Ruto;
 //     pause / resume    … ポーズ画面（キャプチャーのサンプル）
 //     snapshot          … UICapture「Snapshot」に今の画面を撮る
 //     score-add / score-reset … 変数 score を変える
+//     bounding-hit      … Bounding ペインが押された（変数 hits を増やす）
+//     override-rename / override-reset … パーツの上書きをスクリプトで変える / 消す
+//     group-hide / group-show … グループ Stars を隠す / 出す
 class AquaSampleHub : public Component {
     RUTO_COMPONENT(AquaSampleHub)
 
@@ -55,6 +58,24 @@ class AquaSampleHub : public Component {
         } else if (msg == "score-reset") {
             m_Score = 0;
             UI()->SetVariable("score", 0.0);
+        } else if (msg == "bounding-hit") {
+            UI()->SetVariable("hits", static_cast<double>(++m_Hits));
+        } else if (msg == "override-rename") {
+            // 置いたパーツの中の値を、置き場所ごとに変える
+            static const char* const kNames[] = {"アクア・改", "ルト・改", "コーラル・改"};
+            const char* const members[] = {"MemberAqua", "MemberRuto", "MemberCoral"};
+            for (int i = 0; i < 3; ++i) {
+                if (auto* part = UI()->Find<UIUserWidget>(members[i])) {
+                    part->SetOverride("StatusName", "text", kNames[i]);
+                    part->SetOverride("StatusHp", "percent", 1.0);
+                }
+            }
+        } else if (msg == "group-hide" || msg == "group-show") {
+            UI()->SetGroupVisible("Stars", msg == "group-show");
+        } else if (msg == "override-reset") {
+            for (const char* m : {"MemberAqua", "MemberRuto", "MemberCoral"}) {
+                if (auto* part = UI()->Find<UIUserWidget>(m)) part->ClearOverrides();
+            }
         }
     }
 
@@ -118,6 +139,12 @@ private:
         setDefault("playerName", std::string("Aqua"));
         setDefault("dissolve", 0.0);
         if (m_Current == "UI/Dialog.aqua") ShowLine(0);
+        setDefault("hits", 0.0);
+        // ユーザーデータ: ウィジェットに書いた「キー=値」をスクリプトで読む
+        if (Widget* item = UI()->Find("ShopItem")) {
+            doc.SetVariable("itemName", item->GetUserData("item", "?"));
+            doc.SetVariable("itemPrice", static_cast<double>(item->GetUserDataFloat("price")));
+        }
         if (auto* cap = UI()->Find<UICapture>("Snapshot")) cap->Capture();
     }
 
@@ -157,5 +184,6 @@ private:
     bool m_NeedSetup = false;
     int m_Line = -1;
     int m_Score = 0;
+    int m_Hits = 0;
 };
 RUTO_REGISTER_COMPONENT(AquaSampleHub);

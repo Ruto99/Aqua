@@ -1,0 +1,420 @@
+From 171bbe19c07c9a2579216a3ef000a41fca6c458d Mon Sep 17 00:00:00 2001
+From: Shiruba <koko0909e@gmail.com>
+Date: Wed, 21 Oct 2026 05:09:03 +0900
+Subject: [PATCH] Animation sections, widget groups and texture frames
+
+- WidgetAnimation::sections: named time ranges (with a loop flag) inside
+  an animation. PlayAnimation / EvaluateAnimation accept a section name
+  and play only that range.
+- WidgetAsset::groups: named sets of widgets. A track whose widget is
+  "@Group" animates every member; FindGroup / SetGroupVisible.
+- UIImage frames / frame / framesPerSecond: a flipbook of textures (one
+  path per line) drawn instead of texture, stepped by an animated frame
+  or automatically. Frame textures count as dependencies.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ Modules/Engine/include/Ruto/Engine/Widgets.h |  45 ++++++-
+ Modules/Engine/src/UIDocument.cpp            |  47 ++++++--
+ Modules/Engine/src/WidgetPaint.cpp           |   4 +-
+ Modules/Engine/src/Widgets.cpp               | 120 ++++++++++++++++++-
+ 4 files changed, 200 insertions(+), 16 deletions(-)
+
+diff --git a/Modules/Engine/include/Ruto/Engine/Widgets.h b/Modules/Engine/include/Ruto/Engine/Widgets.h
+index 89461a4..c78a216 100644
+--- a/Modules/Engine/include/Ruto/Engine/Widgets.h
++++ b/Modules/Engine/include/Ruto/Engine/Widgets.h
+@@ -445,10 +445,20 @@ class UIImage : public Widget {
+     bool preserveAspect = false;     // 画像の縦横比を保つ
+     Vec4 sliceBorder{0.0f, 0.0f, 0.0f, 0.0f}; // 9 スライス（画像のピクセル。左・上・右・下）
+     float cornerRadius = 0.0f;       // 色だけのときの角丸
++    // コマ送り（LayoutEditor のテクスチャパターンアニメーション）: frames に画像を 1 行に 1 つ書くと、
++    // texture の代わりに frame 番目を描く。frame にコンスタントのキーを打つとパラパラ漫画になる
++    std::string frames;
++    int frame = 0;
++    float framesPerSecond = 0.0f;    // 0 より大きければ、この速さで自動でコマを送る（繰り返す）
+     bool HasHitArea() const override { return color.w > 0.01f; }
+     void Reflect(PropertyVisitor& v) override;
+     Vec2 ComputeDesiredSize(WidgetContext& ctx, float maxWidth) override;
+     void Paint(WidgetContext& ctx) override;
++    // 今描く画像（コマ送りなら今のコマ）
++    std::string CurrentTexture() const;
++
++private:
++    float m_FrameTime = 0.0f;
+ };
+ 
+ // ゲームの画面を撮って、その場に貼る（ポーズ・メニューの背景など）
+@@ -659,11 +669,29 @@ struct WidgetAnimTrack {
+     TimelineCurve curve;
+ };
+ 
++// アニメーションの区間（LayoutEditor の区間タグ）: 1 本のタイムラインの一部に名前を付け、その名前で再生する
++//   ui->PlayAnimation("In");  // 区間 In だけを再生（区間の loop が入っていれば繰り返す）
++struct WidgetAnimSection {
++    std::string name;
++    float start = 0.0f;
++    float end = 0.0f;
++    bool loop = false;
++};
++
+ struct WidgetAnimation {
+     std::string name;
+-    std::vector<WidgetAnimTrack> tracks;
++    std::vector<WidgetAnimTrack> tracks; // widget が "@名前" ならグループの全員に当てる
++    std::vector<WidgetAnimSection> sections;
+     float GetDuration() const;
+     WidgetAnimTrack* FindTrack(std::string_view widget, std::string_view property);
++    const WidgetAnimSection* FindSection(std::string_view name) const;
++};
++
++// グループ（LayoutEditor のグループ）: 階層とは別に、ウィジェットを名前でまとめる。
++// アニメーションのトラックを "@グループ名" にすると全員が同じように動く。スクリプトからは FindGroup・SetGroupVisible
++struct WidgetGroup {
++    std::string name;
++    std::vector<std::string> members; // ウィジェットの名前
+ };
+ 
+ // 共通の見た目（同じスタイルのウィジェットをまとめて変えられる。Unity の USS クラス / Unreal の Style）
+@@ -683,6 +711,7 @@ public:
+     std::unique_ptr<Widget> root;               // いつも UICanvasPanel
+     std::vector<WidgetAnimation> animations;
+     std::vector<WidgetStyle> styles;
++    std::vector<WidgetGroup> groups;
+     std::string path;                           // Assets からの相対パス
+     uint64_t version = 1;                       // 変わるたびに増える（表示中の UI を作り直す）
+ 
+@@ -696,7 +725,12 @@ public:
+     std::vector<std::string> CollectDependencies() const;
+ 
+     WidgetAnimation* FindAnimation(std::string_view name);
++    const WidgetAnimation* FindAnimation(std::string_view name) const;
+     WidgetStyle* FindStyle(std::string_view name);
++    WidgetGroup* FindGroup(std::string_view name);
++    const WidgetGroup* FindGroup(std::string_view name) const;
++    // アニメーションか区間の名前 → 再生するアニメーションと範囲（区間でなければ全体。loop は区間の設定）
++    bool ResolvePlayable(std::string_view name, const WidgetAnimation*& anim, float& start, float& end, bool& loop) const;
+     // スタイルの値をウィジェットに入れる / ウィジェットの値でスタイルを作り直し、同じスタイルの全ウィジェットに反映する
+     void ApplyStyle(Widget& widget) const;
+     void UpdateStyleFrom(const Widget& widget);
+@@ -828,12 +862,17 @@ public:
+     std::map<std::string, WidgetValue>& GetVariables() { return m_Variables; }
+ 
+     // ---- アニメーション ----
++    // name はアニメーションか区間の名前（区間ならその範囲だけ。区間の loop が入っていれば繰り返す）
+     void PlayAnimation(std::string_view name, bool loop = false, float speed = 1.0f, bool reverse = false);
+     void StopAnimation(std::string_view name);
+     bool IsAnimationPlaying(std::string_view name) const;
+-    // デザイナー用: アニメーションの time の状態にする
++    // デザイナー用: アニメーション（か区間）の time の状態にする（区間なら区間の始まりからの秒）
+     void EvaluateAnimation(std::string_view name, float time);
+ 
++    // ---- グループ ----
++    std::vector<Widget*> FindGroup(std::string_view group) const;
++    void SetGroupVisible(std::string_view group, bool visible);
++
+     // ---- フォーカス ----
+     void SetFocus(Widget* widget);
+     Widget* GetFocus() const { return m_Focus; }
+@@ -908,6 +947,8 @@ class UIDocument : public Component {
+     void SetVariable(const std::string& name, const char* value) { GetDocument().SetVariable(name, std::string(value)); }
+     void PlayAnimation(std::string_view name, bool loop = false) { GetDocument().PlayAnimation(name, loop); }
+     void SetVisible(std::string_view widgetName, bool visible);
++    // グループの全員の表示・非表示
++    void SetGroupVisible(std::string_view group, bool visible) { GetDocument().SetGroupVisible(group, visible); }
+     // テキストアニメーション: 最初から出し直す / すぐ全部出す（会話を送るときなど）/ 出している途中か
+     void RestartText(std::string_view widgetName);
+     void SkipText(std::string_view widgetName);
+diff --git a/Modules/Engine/src/UIDocument.cpp b/Modules/Engine/src/UIDocument.cpp
+index 85e1d29..e7e7003 100644
+--- a/Modules/Engine/src/UIDocument.cpp
++++ b/Modules/Engine/src/UIDocument.cpp
+@@ -159,15 +159,17 @@ void WidgetDocument::Update(const UI::Rect& screen, float deltaTime, float scale
+     m_Ctx.interactive = interactive && !designMode;
+     m_Ctx.designMode = designMode;
+ 
+-    // アニメーション
++    // アニメーション（区間なら区間の範囲だけ。time は範囲の始まりからの秒）
+     for (size_t i = 0; i < m_Playing.size();) {
+         PlayingAnim& p = m_Playing[i];
+-        const WidgetAnimation* anim = m_Asset ? m_Asset->FindAnimation(p.name) : nullptr;
+-        if (!anim) {
++        const WidgetAnimation* anim = nullptr;
++        float start = 0.0f, end = 0.0f;
++        bool sectionLoop = false;
++        if (!m_Asset || !m_Asset->ResolvePlayable(p.name, anim, start, end, sectionLoop)) {
+             m_Playing.erase(m_Playing.begin() + static_cast<std::ptrdiff_t>(i));
+             continue;
+         }
+-        const float duration = anim->GetDuration();
++        const float duration = end - start;
+         p.time += deltaTime * p.speed * (p.reverse ? -1.0f : 1.0f);
+         bool finished = p.reverse ? p.time <= 0.0f : p.time >= duration;
+         if (finished && p.loop && duration > 1e-4f) {
+@@ -561,10 +563,12 @@ std::string WidgetDocument::GetString(const std::string& name) const {
+ }
+ 
+ void WidgetDocument::PlayAnimation(std::string_view name, bool loop, float speed, bool reverse) {
+-    const WidgetAnimation* anim = m_Asset ? m_Asset->FindAnimation(name) : nullptr;
+-    if (!anim) return;
++    const WidgetAnimation* anim = nullptr;
++    float start = 0.0f, end = 0.0f;
++    bool sectionLoop = false;
++    if (!m_Asset || !m_Asset->ResolvePlayable(name, anim, start, end, sectionLoop)) return;
+     StopAnimation(name);
+-    m_Playing.push_back({std::string(name), reverse ? anim->GetDuration() : 0.0f, std::max(speed, 0.0f), loop, reverse});
++    m_Playing.push_back({std::string(name), reverse ? end - start : 0.0f, std::max(speed, 0.0f), loop || sectionLoop, reverse});
+     if (m_Root) EvaluateAnimation(name, m_Playing.back().time);
+ }
+ 
+@@ -578,12 +582,35 @@ bool WidgetDocument::IsAnimationPlaying(std::string_view name) const {
+ 
+ void WidgetDocument::EvaluateAnimation(std::string_view name, float time) {
+     if (!m_Asset || !m_Root) return;
+-    const WidgetAnimation* anim = m_Asset->FindAnimation(name);
+-    if (!anim) return;
++    const WidgetAnimation* anim = nullptr;
++    float start = 0.0f, end = 0.0f;
++    bool sectionLoop = false;
++    if (!m_Asset->ResolvePlayable(name, anim, start, end, sectionLoop)) return;
++    const float t0 = start + time;
+     for (const WidgetAnimTrack& t : anim->tracks) {
+         if (t.curve.keys.empty()) continue;
+-        if (Widget* w = m_Root->Find(t.widget)) WidgetProperties::Set(*w, t.curve.property, t.curve.Evaluate(time));
++        const float v = t.curve.Evaluate(t0);
++        if (!t.widget.empty() && t.widget.front() == '@') {
++            // グループの全員に当てる
++            for (Widget* w : FindGroup(std::string_view(t.widget).substr(1))) WidgetProperties::Set(*w, t.curve.property, v);
++        } else if (Widget* w = m_Root->Find(t.widget)) {
++            WidgetProperties::Set(*w, t.curve.property, v);
++        }
++    }
++}
++
++std::vector<Widget*> WidgetDocument::FindGroup(std::string_view group) const {
++    std::vector<Widget*> out;
++    const WidgetGroup* g = m_Asset ? m_Asset->FindGroup(group) : nullptr;
++    if (!g || !m_Root) return out;
++    for (const std::string& name : g->members) {
++        if (Widget* w = m_Root->Find(name)) out.push_back(w);
+     }
++    return out;
++}
++
++void WidgetDocument::SetGroupVisible(std::string_view group, bool visible) {
++    for (Widget* w : FindGroup(group)) w->visibility = visible ? WidgetVisibility::Visible : WidgetVisibility::Collapsed;
+ }
+ 
+ // ---------------------------------------------------------------------------
+diff --git a/Modules/Engine/src/WidgetPaint.cpp b/Modules/Engine/src/WidgetPaint.cpp
+index 21d0e6d..be780be 100644
+--- a/Modules/Engine/src/WidgetPaint.cpp
++++ b/Modules/Engine/src/WidgetPaint.cpp
+@@ -330,7 +330,9 @@ void UIBorder::Paint(WidgetContext& ctx) {
+ 
+ void UIImage::Paint(WidgetContext& ctx) {
+     UI::Rect R = m_ScreenRect;
+-    auto tex = texture.empty() ? nullptr : Assets::GetTexture(texture);
++    if (framesPerSecond > 0.0f && !frames.empty()) m_FrameTime += ctx.deltaTime; // コマ送り（自動）
++    const std::string path = CurrentTexture();
++    auto tex = path.empty() ? nullptr : Assets::GetTexture(path);
+     if (tex) {
+         if (preserveAspect && tex->GetHeight() > 0) {
+             const float aspect = static_cast<float>(tex->GetWidth()) / static_cast<float>(tex->GetHeight());
+diff --git a/Modules/Engine/src/Widgets.cpp b/Modules/Engine/src/Widgets.cpp
+index 5dbd6d0..358def4 100644
+--- a/Modules/Engine/src/Widgets.cpp
++++ b/Modules/Engine/src/Widgets.cpp
+@@ -646,10 +646,34 @@ void UIImage::Reflect(PropertyVisitor& v) {
+     v.Property("preserveAspect", preserveAspect);
+     v.Property("sliceBorder", sliceBorder);
+     v.Property("cornerRadius", cornerRadius);
++    v.Header("コマ送り");
++    v.Property("frames", frames);
++    v.Property("frame", frame);
++    v.Property("framesPerSecond", framesPerSecond);
+ }
+ 
+ Vec2 UIImage::ComputeDesiredSize(WidgetContext&, float) { return size; }
+ 
++std::string UIImage::CurrentTexture() const {
++    if (frames.empty()) return texture;
++    std::vector<std::string_view> list;
++    std::string_view rest = frames;
++    while (!rest.empty()) {
++        const size_t nl = rest.find('\n');
++        std::string_view line = rest.substr(0, nl);
++        rest = nl == std::string_view::npos ? std::string_view() : rest.substr(nl + 1);
++        while (!line.empty() && (line.front() == ' ' || line.front() == '\t')) line.remove_prefix(1);
++        while (!line.empty() && (line.back() == ' ' || line.back() == '\t' || line.back() == '\r')) line.remove_suffix(1);
++        if (!line.empty()) list.push_back(line);
++    }
++    if (list.empty()) return texture;
++    int index = frame;
++    if (framesPerSecond > 0.0f) index += static_cast<int>(std::floor(m_FrameTime * framesPerSecond));
++    const int n = static_cast<int>(list.size());
++    index = ((index % n) + n) % n;
++    return std::string(list[static_cast<size_t>(index)]);
++}
++
+ void UIButton::Reflect(PropertyVisitor& v) {
+     v.Property("text", text);
+     v.Property("fontSize", fontSize);
+@@ -836,6 +860,13 @@ float WidgetAnimation::GetDuration() const {
+     return end;
+ }
+ 
++const WidgetAnimSection* WidgetAnimation::FindSection(std::string_view section) const {
++    for (const WidgetAnimSection& s : sections) {
++        if (s.name == section) return &s;
++    }
++    return nullptr;
++}
++
+ WidgetAnimTrack* WidgetAnimation::FindTrack(std::string_view widget, std::string_view property) {
+     for (WidgetAnimTrack& t : tracks) {
+         if (t.widget == widget && t.curve.property == property) return &t;
+@@ -1025,6 +1056,18 @@ Json WidgetAsset::ToJson() const {
+             tracks.Push(std::move(tj));
+         }
+         aj["tracks"] = std::move(tracks);
++        if (!a.sections.empty()) {
++            Json sections = Json::MakeArray();
++            for (const WidgetAnimSection& s : a.sections) {
++                Json sj = Json::MakeObject();
++                sj["name"] = s.name;
++                sj["start"] = s.start;
++                sj["end"] = s.end;
++                sj["loop"] = s.loop;
++                sections.Push(std::move(sj));
++            }
++            aj["sections"] = std::move(sections);
++        }
+         anims.Push(std::move(aj));
+     }
+     j["animations"] = std::move(anims);
+@@ -1037,6 +1080,18 @@ Json WidgetAsset::ToJson() const {
+         styleJson.Push(std::move(sj));
+     }
+     j["styles"] = std::move(styleJson);
++    if (!groups.empty()) {
++        Json groupJson = Json::MakeArray();
++        for (const WidgetGroup& g : groups) {
++            Json gj = Json::MakeObject();
++            gj["name"] = g.name;
++            Json members = Json::MakeArray();
++            for (const std::string& m : g.members) members.Push(m);
++            gj["members"] = std::move(members);
++            groupJson.Push(std::move(gj));
++        }
++        j["groups"] = std::move(groupJson);
++    }
+     return j;
+ }
+ 
+@@ -1068,10 +1123,21 @@ void WidgetAsset::FromJson(const Json& j) {
+             t.curve.Sort();
+             a.tracks.push_back(std::move(t));
+         }
++        for (const Json& sj : aj["sections"].Elements()) {
++            a.sections.push_back({sj["name"].AsString(), static_cast<float>(sj["start"].AsNumber()), static_cast<float>(sj["end"].AsNumber()),
++                                  sj["loop"].AsBool(false)});
++        }
+         animations.push_back(std::move(a));
+     }
+     styles.clear();
+     for (const Json& sj : j["styles"].Elements()) styles.push_back({sj["name"].AsString(), sj["type"].AsString(), sj["properties"]});
++    groups.clear();
++    for (const Json& gj : j["groups"].Elements()) {
++        WidgetGroup g;
++        g.name = gj["name"].AsString();
++        for (const Json& m : gj["members"].Elements()) g.members.push_back(m.AsString());
++        groups.push_back(std::move(g));
++    }
+     MarkChanged();
+ }
+ 
+@@ -1082,6 +1148,41 @@ WidgetAnimation* WidgetAsset::FindAnimation(std::string_view name) {
+     return nullptr;
+ }
+ 
++const WidgetAnimation* WidgetAsset::FindAnimation(std::string_view name) const {
++    return const_cast<WidgetAsset*>(this)->FindAnimation(name);
++}
++
++WidgetGroup* WidgetAsset::FindGroup(std::string_view name) {
++    for (WidgetGroup& g : groups) {
++        if (g.name == name) return &g;
++    }
++    return nullptr;
++}
++
++const WidgetGroup* WidgetAsset::FindGroup(std::string_view name) const {
++    return const_cast<WidgetAsset*>(this)->FindGroup(name);
++}
++
++bool WidgetAsset::ResolvePlayable(std::string_view name, const WidgetAnimation*& anim, float& start, float& end, bool& loop) const {
++    if (const WidgetAnimation* a = FindAnimation(name)) {
++        anim = a;
++        start = 0.0f;
++        end = a->GetDuration();
++        loop = false;
++        return true;
++    }
++    for (const WidgetAnimation& a : animations) {
++        if (const WidgetAnimSection* sec = a.FindSection(name)) {
++            anim = &a;
++            start = std::max(sec->start, 0.0f);
++            end = std::max(sec->end, start);
++            loop = sec->loop;
++            return true;
++        }
++    }
++    return false;
++}
++
+ WidgetStyle* WidgetAsset::FindStyle(std::string_view name) {
+     for (WidgetStyle& s : styles) {
+         if (s.name == name) return &s;
+@@ -1092,7 +1193,7 @@ WidgetStyle* WidgetAsset::FindStyle(std::string_view name) {
+ namespace {
+ // スタイルに含めない（中身の）プロパティ
+ bool IsContentProperty(const std::string& key) {
+-    static const char* const kContent[] = {"text", "bind", "placeholder", "value", "isOn", "percent", "asset", "overrides", "userData", "clickMessage",
++    static const char* const kContent[] = {"text", "bind", "placeholder", "value", "isOn", "percent", "asset", "overrides", "userData", "frames", "frame", "clickMessage",
+                                            "minValue", "maxValue", "step"};
+     return std::any_of(std::begin(kContent), std::end(kContent), [&](const char* k) { return key == k; });
+ }
+@@ -1172,14 +1273,27 @@ public:
+     void Property(std::string_view, Vec2&) override {}
+     void Property(std::string_view, Vec3&) override {}
+     void Property(std::string_view, Vec4&) override {}
+-    void Property(std::string_view, std::string&) override {}
++    void Property(std::string_view n, std::string& v) override {
++        if (n != "frames") return;
++        // コマ送りの画像（1 行に 1 つ）
++        size_t start = 0;
++        while (start < v.size()) {
++            size_t end = v.find('\n', start);
++            if (end == std::string::npos) end = v.size();
++            std::string line = v.substr(start, end - start);
++            while (!line.empty() && (line.back() == '\r' || line.back() == ' ')) line.pop_back();
++            while (!line.empty() && line.front() == ' ') line.erase(line.begin());
++            if (!line.empty() && line.front() != '@' && std::find(out->begin(), out->end(), line) == out->end()) out->push_back(line);
++            start = end + 1;
++        }
++    }
+     void Property(std::string_view, EntityRef&) override {}
+     void Range(std::string_view, float&, float, float) override {}
+     void Color(std::string_view, Vec3&) override {}
+     void Color(std::string_view, Vec4&) override {}
+     void Enum(std::string_view, int&, std::span<const char* const>) override {}
+     void Asset(std::string_view, std::string& path, AssetType) override {
+-        if (!path.empty() && std::find(out->begin(), out->end(), path) == out->end()) out->push_back(path);
++        if (!path.empty() && path.front() != '@' && std::find(out->begin(), out->end(), path) == out->end()) out->push_back(path);
+     }
+ };
+ } // namespace
+-- 
+2.53.0.windows.1
+

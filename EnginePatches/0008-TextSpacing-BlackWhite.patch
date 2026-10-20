@@ -1,0 +1,404 @@
+From c5ec0f53bfeea219f5e934dfc192545b373c83a8 Mon Sep 17 00:00:00 2001
+From: Shiruba <koko0909e@gmail.com>
+Date: Wed, 21 Oct 2026 05:16:43 +0900
+Subject: [PATCH] Text spacing, shrink-to-fit and line gradients; black/white
+ colors
+
+- UIText letterSpacing, lineSpacing (measured and drawn, also for text
+  animation), shrinkToFit (scale the font down until the text fits) and
+  a per-line top/bottom gradient.
+- Widget blackWhiteEnabled / blackColor / whiteColor: map a widget's own
+  drawing from black..white to two colors (LayoutEditor's color
+  interpolation) through a built-in UI shader. The shader stack now keeps
+  the parameters per entry.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ Modules/Engine/include/Ruto/Engine/Widgets.h | 28 +++++-
+ Modules/Engine/src/UIDocument.cpp            | 28 +++++-
+ Modules/Engine/src/WidgetPaint.cpp           | 90 ++++++++++++++++----
+ Modules/Engine/src/WidgetText.cpp            | 24 ++++--
+ Modules/Engine/src/Widgets.cpp               | 17 +++-
+ 5 files changed, 155 insertions(+), 32 deletions(-)
+
+diff --git a/Modules/Engine/include/Ruto/Engine/Widgets.h b/Modules/Engine/include/Ruto/Engine/Widgets.h
+index c78a216..397eee9 100644
+--- a/Modules/Engine/include/Ruto/Engine/Widgets.h
++++ b/Modules/Engine/include/Ruto/Engine/Widgets.h
+@@ -180,6 +180,11 @@ public:
+     bool SetShaderParam(std::string_view param, const Vec4& value);
+     bool SetShaderParam(std::string_view param, float value) { return SetShaderParam(param, Vec4{value, 0.0f, 0.0f, 0.0f}); }
+ 
++    // 白黒カラー（LayoutEditor の色の補間）: 画像の黒い所を blackColor、白い所を whiteColor にする（間は混ぜる）。
++    // 自分の描画だけに掛かる。UI のシェーダーを使っているウィジェットでは使えない
++    bool blackWhiteEnabled = false;
++    Vec4 blackColor{0.0f, 0.0f, 0.0f, 0.0f};
++    Vec4 whiteColor{1.0f, 1.0f, 1.0f, 1.0f};
+     // 頂点カラー（四隅の色）。自分の描画（画像・背景・文字など）に掛ける。子には掛からない
+     bool vertexColorsEnabled = false;
+     Vec4 vertexColors[4] = {{1, 1, 1, 1}, {1, 1, 1, 1}, {1, 1, 1, 1}, {1, 1, 1, 1}}; // 左上・右上・左下・右下
+@@ -211,6 +216,7 @@ protected:
+     UI::Rect m_ScreenRect;
+     Vec2 m_Desired{0.0f, 0.0f};
+     Vec2 m_ScreenScale{1.0f, 1.0f}; // 基準解像度の単位 → ピクセル（描画の拡大を含む）
++    Vec4 m_BlackWhiteParams[kShaderParamCount]{}; // 白黒カラーの組み込みのシェーダーに渡す値
+     Mat4 m_Xform;                   // 祖先と自分の回転（描画に掛ける）
+     Mat4 m_InvXform;                // その逆
+     bool m_HasXform = false;
+@@ -396,6 +402,13 @@ class UIText : public Widget {
+     bool shadow = false;
+     Vec4 shadowColor{0.0f, 0.0f, 0.0f, 0.6f};
+     Vec2 shadowOffset{2.0f, 2.0f};
++    // ---- 文字の並び（LayoutEditor のテキストボックス） ----
++    float letterSpacing = 0.0f;    // 文字と文字の間に足す（基準解像度の単位。負なら詰める）
++    float lineSpacing = 0.0f;      // 行と行の間に足す
++    bool shrinkToFit = false;      // 枠に入りきらなければ、入るまで文字を小さくする
++    bool gradient = false;         // 行ごとの上下のグラデーション（文字の色に掛ける）
++    Vec4 gradientTop{1.0f, 1.0f, 1.0f, 1.0f};
++    Vec4 gradientBottom{1.0f, 1.0f, 1.0f, 1.0f};
+     void Reflect(PropertyVisitor& v) override;
+     Vec2 ComputeDesiredSize(WidgetContext& ctx, float maxWidth) override;
+     void Paint(WidgetContext& ctx) override;
+@@ -796,9 +809,13 @@ struct WidgetContext {
+     void DrawImage(const UI::Rect& r, const std::shared_ptr<Texture>& texture, const Vec4& tint, const Vec4& sliceBorder = {}) const;
+     void DrawCircle(const Vec2& center, float radius, const Vec4& color) const;
+     // text をピクセルの矩形に描く
++    //   letterSpacing・lineSpacing はピクセル（文字間・行間に足す）、gradient は行ごとの上下の 2 色（nullptr なら無し）
+     void DrawText(const UI::Rect& r, std::string_view text, const std::string& font, float pixelSize, const Vec4& color,
+-                  TextAlign align, TextVAlign vAlign, bool wrap) const;
+-    Vec2 MeasureText(std::string_view text, const std::string& font, float size, float wrapWidth) const;
++                  TextAlign align, TextVAlign vAlign, bool wrap, float letterSpacing = 0.0f, float lineSpacing = 0.0f,
++                  const Vec4* gradient = nullptr) const;
++    //   letterSpacing・lineSpacing は基準解像度の単位
++    Vec2 MeasureText(std::string_view text, const std::string& font, float size, float wrapWidth, float letterSpacing = 0.0f,
++                     float lineSpacing = 0.0f) const;
+     std::shared_ptr<Font> GetFont(const std::string& font, float pixelSize) const;
+     // 色に今の不透明度を掛ける
+     Vec4 Fade(const Vec4& c) const { return {c.x, c.y, c.z, c.w * opacity}; }
+@@ -892,7 +909,12 @@ private:
+     Vec2 LocalPoint(const Widget& w) const;
+ 
+     // 描いている途中のシェーダー（入れ子にできる。外側に戻るときに掛け直す）
+-    std::vector<std::pair<std::shared_ptr<UIShader>, Widget*>> m_ShaderStack;
++    struct ShaderEntry {
++        std::shared_ptr<UIShader> shader;
++        Widget* widget = nullptr;
++        const Vec4* params = nullptr; // kShaderParamCount 個
++    };
++    std::vector<ShaderEntry> m_ShaderStack;
+ 
+     struct PlayingAnim {
+         std::string name;
+diff --git a/Modules/Engine/src/UIDocument.cpp b/Modules/Engine/src/UIDocument.cpp
+index e7e7003..dbfadbe 100644
+--- a/Modules/Engine/src/UIDocument.cpp
++++ b/Modules/Engine/src/UIDocument.cpp
+@@ -452,9 +452,27 @@ void WidgetDocument::PaintRecursive(Widget& w) {
+     std::shared_ptr<UIShader> shader = w.shader.empty() ? nullptr : UIShader::Get(w.shader);
+     if (shader && !shader->IsValid()) shader.reset();
+     if (shader) {
+-        m_ShaderStack.emplace_back(shader, &w);
++        m_ShaderStack.push_back({shader, &w, w.shaderParams});
+         ApplyShaderStack();
+     }
++    // 白黒カラー（組み込みのシェーダー。自分の描画だけ。ほかのシェーダーを使っていれば使わない）
++    std::shared_ptr<UIShader> blackWhite;
++    if (w.blackWhiteEnabled && !shader) {
++        static std::shared_ptr<UIShader> s_BlackWhite = UIShader::FromSource(
++            "// @param black color 0 0 0 0 黒の色\n"
++            "// @param white color 1 1 1 1 白の色\n"
++            "vec4 effect(vec4 color) {\n"
++            "    return mix(black, white, SampleTexture(vUV)) * vColor;\n"
++            "}\n",
++            "@BlackWhite");
++        if (s_BlackWhite && s_BlackWhite->IsValid()) {
++            blackWhite = s_BlackWhite;
++            w.m_BlackWhiteParams[0] = w.blackColor;
++            w.m_BlackWhiteParams[1] = w.whiteColor;
++            m_ShaderStack.push_back({blackWhite, &w, w.m_BlackWhiteParams});
++            ApplyShaderStack();
++        }
++    }
+     // 回転（祖先の分も含めて、自分と子の描画に掛ける）
+     if (w.m_HasXform) Renderer2D::SetTransform(w.m_Xform);
+     else Renderer2D::ResetTransform();
+@@ -465,6 +483,10 @@ void WidgetDocument::PaintRecursive(Widget& w) {
+     }
+     w.Paint(m_Ctx);
+     if (w.vertexColorsEnabled) Renderer2D::ClearCornerColors();
++    if (blackWhite) {
++        m_ShaderStack.pop_back();
++        ApplyShaderStack();
++    }
+     if (shader && !w.shaderChildren) {
+         m_ShaderStack.pop_back();
+         ApplyShaderStack();
+@@ -506,8 +528,8 @@ void WidgetDocument::ApplyShaderStack() {
+         Renderer2D::SetShader(nullptr);
+         return;
+     }
+-    auto& [shader, widget] = m_ShaderStack.back();
+-    shader->Apply(widget->m_ScreenRect, std::span<const Vec4>(widget->shaderParams, Widget::kShaderParamCount), static_cast<float>(Platform::GetTime()));
++    const ShaderEntry& e = m_ShaderStack.back();
++    e.shader->Apply(e.widget->m_ScreenRect, std::span<const Vec4>(e.params, Widget::kShaderParamCount), static_cast<float>(Platform::GetTime()));
+ }
+ 
+ void WidgetDocument::PaintTooltip() {
+diff --git a/Modules/Engine/src/WidgetPaint.cpp b/Modules/Engine/src/WidgetPaint.cpp
+index be780be..43c89fb 100644
+--- a/Modules/Engine/src/WidgetPaint.cpp
++++ b/Modules/Engine/src/WidgetPaint.cpp
+@@ -106,7 +106,36 @@ void Corners(const UI::Rect& r, float rad, const Vec4& color, const std::shared_
+     Quad(r.Right() - rad, r.Bottom() - rad, rad, rad, color, tex, {0.5f, 0.0f}, {1.0f, 0.5f});
+ }
+ 
+-std::vector<std::string> WrapLines(Font& font, std::string_view text, float maxWidth) {
++// 1 行の幅（文字間を足したもの）
++float LineWidth(Font& font, std::string_view line, float letterSpacing) {
++    float w = font.MeasureText(line).x;
++    if (letterSpacing != 0.0f) {
++        int count = 0;
++        size_t i = 0;
++        while (i < line.size()) {
++            Utf8::Next(line, i);
++            ++count;
++        }
++        if (count > 1) w += letterSpacing * static_cast<float>(count - 1);
++    }
++    return w;
++}
++
++// 文字間を空けて 1 行を描く（空けなければ Renderer2D::DrawText と同じ）
++void DrawLine(Font& font, std::string_view line, Vec2 pos, const Vec4& color, float letterSpacing) {
++    if (letterSpacing == 0.0f) {
++        Renderer2D::DrawText(font, line, pos, color);
++        return;
++    }
++    size_t i = 0;
++    while (i < line.size()) {
++        const size_t from = i;
++        Utf8::Next(line, i);
++        pos.x += Renderer2D::DrawText(font, line.substr(from, i - from), {std::round(pos.x), pos.y}, color) + letterSpacing;
++    }
++}
++
++std::vector<std::string> WrapLines(Font& font, std::string_view text, float maxWidth, float letterSpacing = 0.0f) {
+     std::vector<std::string> lines;
+     size_t start = 0;
+     while (start <= text.size()) {
+@@ -124,7 +153,7 @@ std::vector<std::string> WrapLines(Font& font, std::string_view text, float maxW
+                 const uint32_t cp = Utf8::Next(para, i);
+                 const std::string ch(para.substr(from, i - from));
+                 std::string candidate = line + ch;
+-                if (!line.empty() && font.MeasureText(candidate).x > maxWidth) {
++                if (!line.empty() && LineWidth(font, candidate, letterSpacing) > maxWidth) {
+                     if (cp != ' ' && lastSpace != std::string::npos && lastSpace > 0) {
+                         // 英語は単語の区切りで折り返す
+                         lines.push_back(line.substr(0, lastSpace));
+@@ -266,27 +295,30 @@ std::shared_ptr<Font> WidgetContext::GetFont(const std::string& font, float pixe
+     return f;
+ }
+ 
+-Vec2 WidgetContext::MeasureText(std::string_view text, const std::string& font, float size, float wrapWidth) const {
++Vec2 WidgetContext::MeasureText(std::string_view text, const std::string& font, float size, float wrapWidth, float letterSpacing,
++                                float lineSpacing) const {
+     // 実際に描く大きさのフォントで測って、基準解像度の単位に戻す（描画と同じ結果になる）
+     const float k = std::max(scale, 0.01f);
+     auto f = GetFont(font, size * k);
+     if (!f) return {text.size() * size * 0.5f, size};
+     if (text.empty()) return {0.0f, f->GetLineHeight() / k};
+-    const auto lines = WrapLines(*f, text, wrapWidth > 0.0f ? wrapWidth * k : -1.0f);
++    const float ls = letterSpacing * k;
++    const auto lines = WrapLines(*f, text, wrapWidth > 0.0f ? wrapWidth * k : -1.0f, ls);
+     float w = 0.0f;
+-    for (const std::string& line : lines) w = std::max(w, f->MeasureText(line).x);
+-    return {w / k, f->GetLineHeight() * static_cast<float>(lines.size()) / k};
++    for (const std::string& line : lines) w = std::max(w, LineWidth(*f, line, ls));
++    const float n = static_cast<float>(lines.size());
++    return {w / k, (f->GetLineHeight() * n + lineSpacing * k * std::max(n - 1.0f, 0.0f)) / k};
+ }
+ 
+ void WidgetContext::DrawText(const UI::Rect& r, std::string_view text, const std::string& font, float pixelSize, const Vec4& color,
+-                             TextAlign align, TextVAlign vAlign, bool wrap) const {
++                             TextAlign align, TextVAlign vAlign, bool wrap, float letterSpacing, float lineSpacing, const Vec4* gradient) const {
+     if (text.empty() || color.w <= 0.0f || pixelSize < 1.0f) return;
+     auto f = GetFont(font, pixelSize);
+     if (!f) return;
+     // フォントは整数の大きさなので、少しの差は位置で合わせる
+-    const auto lines = WrapLines(*f, text, wrap ? r.w + 1.0f : -1.0f);
+-    const float lh = f->GetLineHeight();
+-    const float total = lh * static_cast<float>(lines.size());
++    const auto lines = WrapLines(*f, text, wrap ? r.w + 1.0f : -1.0f, letterSpacing);
++    const float lh = f->GetLineHeight() + lineSpacing;
++    const float total = lh * static_cast<float>(lines.size()) - lineSpacing;
+     float y = r.y;
+     if (lines.size() == 1 && vAlign == TextVAlign::Center) {
+         y = std::round(r.y + r.h * 0.5f + f->GetVisualCenter() - f->GetAscent());
+@@ -296,13 +328,19 @@ void WidgetContext::DrawText(const UI::Rect& r, std::string_view text, const std
+         y = r.Bottom() - total;
+     }
+     for (const std::string& line : lines) {
+-        const float w = f->MeasureText(line).x;
++        const float w = LineWidth(*f, line, letterSpacing);
+         float x = r.x;
+         if (align == TextAlign::Center) x = r.x + (r.w - w) * 0.5f;
+         else if (align == TextAlign::Right) x = r.Right() - w;
+-        Renderer2D::DrawText(*f, line, {std::round(x), std::round(y)}, color);
++        if (gradient) {
++            // 行の上から下へ 2 色を混ぜる（四隅の色の仕組みで、この行だけに掛ける）
++            const Vec4 colors[4] = {gradient[0], gradient[0], gradient[1], gradient[1]};
++            Renderer2D::SetCornerColors({x, y, std::max(w, 1.0f), f->GetLineHeight()}, colors);
++        }
++        DrawLine(*f, line, {std::round(x), std::round(y)}, color, letterSpacing);
+         y += lh;
+     }
++    if (gradient) Renderer2D::ClearCornerColors();
+ }
+ 
+ // ---------------------------------------------------------------------------
+@@ -357,16 +395,32 @@ void UIImage::Paint(WidgetContext& ctx) {
+ 
+ void UIText::Paint(WidgetContext& ctx) {
+     const std::string resolved = ctx.ResolveText(text);
+-    const float px = fontSize * m_ScreenScale.y;
++    float px = fontSize * m_ScreenScale.y;
++    if (shrinkToFit && fontSize > 0.0f) {
++        // 枠に入りきらなければ小さくする（基準解像度の単位で測る）
++        const Vec2 m = ctx.MeasureText(richText ? StripTags(resolved) : resolved, font, fontSize, wrap ? m_Rect.w : -1.0f, letterSpacing, lineSpacing);
++        float k = 1.0f;
++        if (!wrap && m.x > m_Rect.w && m.x > 0.0f) k = std::min(k, m_Rect.w / m.x);
++        if (m.y > m_Rect.h && m.y > 0.0f) k = std::min(k, m_Rect.h / m.y);
++        px *= std::max(k, 0.2f);
++    }
+     if (UsesAnimation()) {
+         PaintAnimated(ctx, resolved, px); // テキストアニメーション（WidgetText.cpp）
+-        return;
++    } else {
++        const float k = fontSize > 0.0f ? px / fontSize : 1.0f;
++        const float ls = letterSpacing * k, lsp = lineSpacing * k;
++        if (shadow) {
++            const UI::Rect sr{m_ScreenRect.x + shadowOffset.x * m_ScreenScale.x, m_ScreenRect.y + shadowOffset.y * m_ScreenScale.y, m_ScreenRect.w, m_ScreenRect.h};
++            ctx.DrawText(sr, resolved, font, px, ctx.Fade(shadowColor), align, verticalAlign, wrap, ls, lsp);
++        }
++        const Vec4 grad[2] = {gradientTop, gradientBottom};
++        ctx.DrawText(m_ScreenRect, resolved, font, px, ctx.Fade(color), align, verticalAlign, wrap, ls, lsp, gradient ? grad : nullptr);
+     }
+-    if (shadow) {
+-        const UI::Rect sr{m_ScreenRect.x + shadowOffset.x * m_ScreenScale.x, m_ScreenRect.y + shadowOffset.y * m_ScreenScale.y, m_ScreenRect.w, m_ScreenRect.h};
+-        ctx.DrawText(sr, resolved, font, px, ctx.Fade(shadowColor), align, verticalAlign, wrap);
++    // 行のグラデーションで外した頂点カラーを戻す
++    if (gradient && vertexColorsEnabled) {
++        const UI::Rect& sr = m_ScreenRect;
++        Renderer2D::SetCornerColors({sr.x, sr.y, sr.w, sr.h}, vertexColors);
+     }
+-    ctx.DrawText(m_ScreenRect, resolved, font, px, ctx.Fade(color), align, verticalAlign, wrap);
+ }
+ 
+ void UIButton::Paint(WidgetContext& ctx) {
+diff --git a/Modules/Engine/src/WidgetText.cpp b/Modules/Engine/src/WidgetText.cpp
+index 8116943..fd34d74 100644
+--- a/Modules/Engine/src/WidgetText.cpp
++++ b/Modules/Engine/src/WidgetText.cpp
+@@ -174,12 +174,12 @@ std::vector<Char> Parse(std::string_view text, bool rich) {
+ }
+ 
+ // 行に分ける（WrapLines と同じ決まり: 英語は単語の区切り、日本語はどこでも）。行 = 文字の番号の並び
+-std::vector<std::vector<int>> Wrap(Font& font, const std::vector<Char>& chars, float maxWidth) {
++std::vector<std::vector<int>> Wrap(Font& font, const std::vector<Char>& chars, float maxWidth, float letterSpacing) {
+     std::vector<std::vector<int>> lines;
+     std::vector<int> line;
+     float width = 0.0f;
+     int lastSpace = -1; // line の中の位置
+-    auto advance = [&](int idx) { return font.GetGlyph(chars[static_cast<size_t>(idx)].cp).advance; };
++    auto advance = [&](int idx) { return font.GetGlyph(chars[static_cast<size_t>(idx)].cp).advance + letterSpacing; };
+     for (int i = 0; i < static_cast<int>(chars.size()); ++i) {
+         const uint32_t cp = chars[static_cast<size_t>(i)].cp;
+         if (cp == '\n') {
+@@ -352,9 +352,12 @@ void UIText::PaintAnimated(WidgetContext& ctx, const std::string& resolved, floa
+ 
+     // ---- 並べる ----
+     const UI::Rect& R = m_ScreenRect;
+-    const auto lines = Wrap(*f, chars, wrap ? R.w + 1.0f : -1.0f);
+-    const float lh = f->GetLineHeight();
+-    const float total = lh * static_cast<float>(lines.size());
++    // 文字間・行間（ピクセル）
++    const float spacingScale = fontSize > 0.0f ? px / fontSize : 1.0f;
++    const float ls = letterSpacing * spacingScale, lsp = lineSpacing * spacingScale;
++    const auto lines = Wrap(*f, chars, wrap ? R.w + 1.0f + ls : -1.0f, ls);
++    const float lh = f->GetLineHeight() + lsp;
++    const float total = lh * static_cast<float>(lines.size()) - lsp;
+     float y = R.y;
+     if (lines.size() == 1 && verticalAlign == TextVAlign::Center) y = std::round(R.y + R.h * 0.5f + f->GetVisualCenter() - f->GetAscent());
+     else if (verticalAlign == TextVAlign::Center) y = R.y + (R.h - total) * 0.5f;
+@@ -378,7 +381,8 @@ void UIText::PaintAnimated(WidgetContext& ctx, const std::string& resolved, floa
+     placed.reserve(chars.size());
+     for (const auto& line : lines) {
+         float w = 0.0f;
+-        for (int i : line) w += f->GetGlyph(chars[static_cast<size_t>(i)].cp).advance;
++        for (int i : line) w += f->GetGlyph(chars[static_cast<size_t>(i)].cp).advance + ls;
++        if (!line.empty()) w -= ls;
+         float x = R.x;
+         if (align == TextAlign::Center) x = R.x + (R.w - w) * 0.5f;
+         else if (align == TextAlign::Right) x = R.Right() - w;
+@@ -436,9 +440,15 @@ void UIText::PaintAnimated(WidgetContext& ctx, const std::string& resolved, floa
+                         pl.color = {pl.color.x * 0.4f + rgb.x * 0.6f, pl.color.y * 0.4f + rgb.y * 0.6f, pl.color.z * 0.4f + rgb.z * 0.6f, pl.color.w};
+                     }
+                 }
++                // 行ごとの上下のグラデーション（文字の中心の高さで混ぜる）
++                if (gradient) {
++                    const float t = std::clamp((pl.center.y - y) / std::max(f->GetLineHeight(), 1.0f), 0.0f, 1.0f);
++                    const Vec4 g2 = gradientTop + (gradientBottom - gradientTop) * t;
++                    pl.color = {pl.color.x * g2.x, pl.color.y * g2.y, pl.color.z * g2.z, pl.color.w * g2.w};
++                }
+                 placed.push_back(pl);
+             }
+-            x += g.advance;
++            x += g.advance + ls;
+         }
+         y += lh;
+     }
+diff --git a/Modules/Engine/src/Widgets.cpp b/Modules/Engine/src/Widgets.cpp
+index 358def4..c9c89c7 100644
+--- a/Modules/Engine/src/Widgets.cpp
++++ b/Modules/Engine/src/Widgets.cpp
+@@ -158,6 +158,12 @@ void Widget::ReflectCommon(PropertyVisitor& v) {
+         static const char* const kParamNames[kShaderParamCount] = {"shaderParam0", "shaderParam1", "shaderParam2", "shaderParam3", "shaderParam4", "shaderParam5"};
+         for (int i = 0; i < kShaderParamCount; ++i) v.Property(kParamNames[i], shaderParams[i]);
+     }
++    v.Header("白黒カラー");
++    v.Property("blackWhiteEnabled", blackWhiteEnabled);
++    if (blackWhiteEnabled) {
++        v.Color("blackColor", blackColor);
++        v.Color("whiteColor", whiteColor);
++    }
+     v.Header("頂点カラー");
+     v.Property("vertexColorsEnabled", vertexColorsEnabled);
+     if (vertexColorsEnabled) {
+@@ -612,6 +618,15 @@ void UIText::Reflect(PropertyVisitor& v) {
+     v.EnumField("align", align, kTextAlign);
+     v.EnumField("verticalAlign", verticalAlign, kTextVAlign);
+     v.Property("wrap", wrap);
++    v.Header("文字の並び");
++    v.Property("letterSpacing", letterSpacing);
++    v.Property("lineSpacing", lineSpacing);
++    v.Property("shrinkToFit", shrinkToFit);
++    v.Property("gradient", gradient);
++    if (gradient) {
++        v.Color("gradientTop", gradientTop);
++        v.Color("gradientBottom", gradientBottom);
++    }
+     v.Header("アニメーション");
+     v.EnumField("effect", effect, kTextEffect);
+     v.Property("effectStrength", effectStrength);
+@@ -635,7 +650,7 @@ void UIText::Reflect(PropertyVisitor& v) {
+ Vec2 UIText::ComputeDesiredSize(WidgetContext& ctx, float maxWidth) {
+     std::string resolved = ctx.ResolveText(text);
+     if (richText) resolved = StripTags(resolved); // タグは文字の大きさに入れない
+-    const Vec2 m = ctx.MeasureText(resolved, font, fontSize, wrap && maxWidth > 0.0f ? maxWidth : -1.0f);
++    const Vec2 m = ctx.MeasureText(resolved, font, fontSize, wrap && maxWidth > 0.0f ? maxWidth : -1.0f, letterSpacing, lineSpacing);
+     return {std::ceil(m.x), std::ceil(m.y)};
+ }
+ 
+-- 
+2.53.0.windows.1
+

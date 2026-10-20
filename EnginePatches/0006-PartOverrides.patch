@@ -1,0 +1,147 @@
+From 248c1a841f78815780e876ef47ee28757b6c333e Mon Sep 17 00:00:00 2001
+From: Shiruba <koko0909e@gmail.com>
+Date: Wed, 21 Oct 2026 05:02:03 +0900
+Subject: [PATCH] Part overrides: change values inside each placed user widget
+
+UIUserWidget::overrides is a JSON string mapping widget names inside the
+part to property values (the same shape as common/properties in a
+layout). They are applied after the part is instantiated, and a change
+re-instantiates it. Scripts can call SetOverride / ClearOverrides.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ Modules/Engine/include/Ruto/Engine/Widgets.h | 11 ++++
+ Modules/Engine/src/Widgets.cpp               | 62 +++++++++++++++++++-
+ 2 files changed, 70 insertions(+), 3 deletions(-)
+
+diff --git a/Modules/Engine/include/Ruto/Engine/Widgets.h b/Modules/Engine/include/Ruto/Engine/Widgets.h
+index 9ce283a..89461a4 100644
+--- a/Modules/Engine/include/Ruto/Engine/Widgets.h
++++ b/Modules/Engine/include/Ruto/Engine/Widgets.h
+@@ -625,6 +625,15 @@ class UISpacer : public Widget {
+ class UIUserWidget : public Widget {
+     RUTO_WIDGET(UIUserWidget)
+     std::string asset;
++    // パーツの上書き: 置いた先ごとに、中のウィジェットの値を変える（LayoutEditor の部品の上書き）。
++    //   JSON の文字列 {"中のウィジェットの名前": {"text": "…", "color": [1, 0, 0, 1], ...}, ...}
++    //   値の形は .aqua / .rui の common・properties と同じ。書いていないものはパーツのまま
++    std::string overrides;
++    // スクリプトから: 中のウィジェットのプロパティを上書きする（すぐ反映。value は JSON の値）
++    //   ui->Find<UIUserWidget>("Member1")->SetOverride("StatusName", "text", "ルト");
++    void SetOverride(std::string_view widget, std::string_view property, const Json& value);
++    // 上書きを消す（widget が空ならすべて）。パーツの値に戻すため作り直す
++    void ClearOverrides(std::string_view widget = {});
+     int GetMaxChildren() const override { return 0; }
+     void Reflect(PropertyVisitor& v) override;
+     // asset から子を作る（読み込み済みで、中の UI も変わっていなければ何もしない）
+@@ -633,8 +642,10 @@ class UIUserWidget : public Widget {
+     bool IsStale() const;
+ 
+ private:
++    void ApplyOverrides();
+     std::string m_Loaded;
+     uint64_t m_LoadedVersion = 0;
++    std::string m_AppliedOverrides; // 今の子に当てた上書き（変わったら作り直す）
+ };
+ 
+ // ---------------------------------------------------------------------------
+diff --git a/Modules/Engine/src/Widgets.cpp b/Modules/Engine/src/Widgets.cpp
+index d9fd50a..5dbd6d0 100644
+--- a/Modules/Engine/src/Widgets.cpp
++++ b/Modules/Engine/src/Widgets.cpp
+@@ -738,11 +738,14 @@ Vec2 UITextInput::ComputeDesiredSize(WidgetContext&, float) { return size; }
+ void UISpacer::Reflect(PropertyVisitor& v) { v.Property("size", size); }
+ Vec2 UISpacer::ComputeDesiredSize(WidgetContext&, float) { return size; }
+ 
+-void UIUserWidget::Reflect(PropertyVisitor& v) { v.Asset("asset", asset, AssetType::Widget); }
++void UIUserWidget::Reflect(PropertyVisitor& v) {
++    v.Asset("asset", asset, AssetType::Widget);
++    v.Property("overrides", overrides);
++}
+ 
+ bool UIUserWidget::IsStale() const {
+     auto loaded = asset.empty() ? nullptr : WidgetAsset::Load(asset);
+-    if (asset != m_Loaded || (loaded ? loaded->version : 0) != m_LoadedVersion) return true;
++    if (asset != m_Loaded || (loaded ? loaded->version : 0) != m_LoadedVersion || overrides != m_AppliedOverrides) return true;
+     // 中に入れた部品の UI が変わったときも作り直す
+     bool stale = false;
+     for (const auto& c : children) {
+@@ -759,6 +762,7 @@ void UIUserWidget::Instantiate(int depth) {
+     if (!IsStale() && (!children.empty() || !loaded)) return;
+     m_Loaded = asset;
+     m_LoadedVersion = version;
++    m_AppliedOverrides = overrides;
+     children.clear();
+     if (!loaded || !loaded->root || depth > 8) return;
+     auto inst = loaded->root->Clone();
+@@ -768,6 +772,58 @@ void UIUserWidget::Instantiate(int depth) {
+         if (auto* uw = dynamic_cast<UIUserWidget*>(&w); uw && uw != this) uw->Instantiate(depth + 1);
+     });
+     AddChild(std::move(inst));
++    ApplyOverrides();
++}
++
++void UIUserWidget::ApplyOverrides() {
++    if (overrides.empty() || children.empty()) return;
++    std::string error;
++    const auto json = Json::Parse(overrides, &error);
++    if (!json || !json->IsObject()) {
++        Log::Warn("UI: パーツの上書きを読めません（{}）: {}", name, error);
++        return;
++    }
++    for (const auto& [target, props] : json->Items()) {
++        Widget* w = children.front()->Find(target);
++        if (!w || !props.IsObject()) continue;
++        SceneSerializer::DeserializeProperties(props, [&](PropertyVisitor& v) { w->ReflectCommon(v); });
++        SceneSerializer::DeserializeProperties(props, [&](PropertyVisitor& v) { w->Reflect(v); });
++        // 上書きした値が内側の部品のなら、その部品も作り直す
++        if (auto* inner = dynamic_cast<UIUserWidget*>(w); inner && inner->IsStale()) inner->Instantiate(1);
++    }
++}
++
++void UIUserWidget::SetOverride(std::string_view widget, std::string_view property, const Json& value) {
++    Json j = Json::MakeObject();
++    if (!overrides.empty()) {
++        if (auto parsed = Json::Parse(overrides); parsed && parsed->IsObject()) j = std::move(*parsed);
++    }
++    if (!j[widget].IsObject()) j[widget] = Json::MakeObject();
++    j[widget][property] = value;
++    overrides = j.Dump(0);
++    // 作り直さずに、その値だけ当てる
++    if (!children.empty()) {
++        if (Widget* w = children.front()->Find(widget)) {
++            Json one = Json::MakeObject();
++            one[property] = value;
++            SceneSerializer::DeserializeProperties(one, [&](PropertyVisitor& v) { w->ReflectCommon(v); });
++            SceneSerializer::DeserializeProperties(one, [&](PropertyVisitor& v) { w->Reflect(v); });
++        }
++    }
++    m_AppliedOverrides = overrides;
++}
++
++void UIUserWidget::ClearOverrides(std::string_view widget) {
++    if (widget.empty()) {
++        overrides.clear();
++    } else if (auto parsed = Json::Parse(overrides); parsed && parsed->IsObject()) {
++        Json rest = Json::MakeObject();
++        for (const auto& [k, v] : parsed->Items()) {
++            if (k != widget) rest[k] = v;
++        }
++        overrides = rest.Size() == 0 ? std::string() : rest.Dump(0);
++    }
++    // 次に描くとき（IsStale）に作り直してパーツの値に戻る
+ }
+ 
+ // ---------------------------------------------------------------------------
+@@ -1036,7 +1092,7 @@ WidgetStyle* WidgetAsset::FindStyle(std::string_view name) {
+ namespace {
+ // スタイルに含めない（中身の）プロパティ
+ bool IsContentProperty(const std::string& key) {
+-    static const char* const kContent[] = {"text", "bind", "placeholder", "value", "isOn", "percent", "asset", "clickMessage",
++    static const char* const kContent[] = {"text", "bind", "placeholder", "value", "isOn", "percent", "asset", "overrides", "userData", "clickMessage",
+                                            "minValue", "maxValue", "step"};
+     return std::any_of(std::begin(kContent), std::end(kContent), [&](const char* k) { return key == k; });
+ }
+-- 
+2.53.0.windows.1
+

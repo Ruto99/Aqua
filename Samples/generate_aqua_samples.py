@@ -334,8 +334,11 @@ def track(widget_name, prop, keys):
     return {"widget": widget_name, "property": prop, "keys": keys}
 
 
-def anim(name, tracks):
-    return {"name": name, "tracks": tracks}
+def anim(name, tracks, sections=None):
+    a = {"name": name, "tracks": tracks}
+    if sections:
+        a["sections"] = [{"name": n, "start": st, "end": en, "loop": lp} for n, st, en, lp in sections]
+    return a
 
 
 def apply_styles(w, styles):
@@ -349,16 +352,19 @@ def apply_styles(w, styles):
         apply_styles(c, styles)
 
 
-def document(root_children, animations=None, styles=None):
+def document(root_children, animations=None, styles=None, kind="body", resolution=(1920, 1080), groups=None):
+    """kind: "body"（画面のいちばん親）か "part"（部品として入れるパーツ）。"""
     root = widget("UICanvasPanel", "Root", children=root_children)
     apply_styles(root, styles or [])
     return {
         "format": "RutoUI",
         "version": 1,
-        "referenceResolution": [1920, 1080],
+        "kind": kind,
+        "referenceResolution": list(resolution),
         "root": root,
         "animations": animations or [],
         "styles": styles or [],
+        "groups": [{"name": n, "members": m} for n, m in (groups or [])],
     }
 
 
@@ -418,6 +424,10 @@ SAMPLES = [
     ("Layout", "レイアウト", "横・縦・グリッド・折り返し・スクロール"),
     ("Binding", "変数と入力", "スライダー・トグル・入力欄と {変数} の連動"),
     ("Styles", "スタイルと部品", "共通の見た目と、UI を部品として使い回す"),
+    ("Transform", "変形と頂点カラー", "回転・四隅の色・Bounding ペイン・ユーザーデータ"),
+    ("Overrides", "パーツの上書き", "同じパーツを置いた先ごとに、名前・ゲージ・色を変える"),
+    ("AnimExtras", "区間・グループ・コマ送り", "In / Idle / Out の区間、まとめて動かすグループ、パラパラ漫画"),
+    ("TextExtras", "文字の並びと白黒カラー", "文字間・行間・枠に合わせて縮小・行ごとのグラデーション・色の補間"),
 ]
 
 
@@ -454,8 +464,8 @@ def make_menu():
     grid = widget(
         "UIGridPanel",
         "SampleGrid",
-        {"columns": 4, "spacing": [24, 24], "cellHeight": 200, "padding": [0, 0, 0, 0]},
-        at(0, 80, 1600, 424, anchor=(0.5, 0.5), pivot=(0.5, 0.5)),
+        {"columns": 4, "spacing": [20, 18], "cellHeight": 182, "padding": [0, 0, 0, 0]},
+        at(0, 120, 1600, 582, anchor=(0.5, 0.5), pivot=(0.5, 0.5)),
         children=cards,
     )
     title = text(
@@ -464,7 +474,7 @@ def make_menu():
         110,
         TEXT,
         align="Center",
-        slot=at(0, 150, 1400, 150, anchor=(0.5, 0), pivot=(0.5, 0)),
+        slot=at(0, 70, 1400, 150, anchor=(0.5, 0), pivot=(0.5, 0)),
         common=shader_common("Shine", shine=[0.75, 1, 0.98, 0.9], interval=2.0),
         effect="None",
     )
@@ -474,7 +484,7 @@ def make_menu():
         28,
         DIM,
         align="Center",
-        slot=at(0, 300, 1600, 50, anchor=(0.5, 0), pivot=(0.5, 0)),
+        slot=at(0, 218, 1600, 50, anchor=(0.5, 0), pivot=(0.5, 0)),
         reveal="Fade",
         revealSpeed=60,
         effectStrength=4,
@@ -498,7 +508,7 @@ def make_menu():
                 "cornerRadius": 18,
                 "borderColor": rgba(AQUA, 0.35),
                 "borderThickness": 1.5,
-                "contentPadding": [28, 22, 28, 22],
+                "contentPadding": [26, 16, 26, 16],
                 "hoverScale": 1.04,
             },
         }
@@ -1063,7 +1073,7 @@ def make_binding():
 
 
 def make_status_card():
-    """部品（ユーザーウィジェット）として使う小さな UI。"""
+    """パーツ（ほかのレイアウトに部品として入れる小さなレイアウト）。"""
     body = vbox(
         "StatusBody",
         [
@@ -1081,7 +1091,7 @@ def make_status_card():
         spacing=12,
     )
     card_ = border("StatusCard", body, PANEL, 18, (22, 18, 22, 20), slot=at(0, 0, 360, 190))
-    return document([card_])
+    return document([card_], kind="part", resolution=(360, 190))
 
 
 def make_styles():
@@ -1144,6 +1154,285 @@ def make_styles():
     return document(page("スタイルと部品", "見た目をスタイルにまとめる・UI を部品として入れる", [style_card, part_card]), styles=styles)
 
 
+# ---------------------------------------------------------------------------
+# 変形と頂点カラー（回転・四隅の色・Bounding ペイン・ユーザーデータ）
+# ---------------------------------------------------------------------------
+
+
+def corners(tl, tr, bl, br):
+    """頂点カラー（四隅の色）の common。"""
+    return {"vertexColorsEnabled": True, "vertexColorTopLeft": list(tl), "vertexColorTopRight": list(tr),
+            "vertexColorBottomLeft": list(bl), "vertexColorBottomRight": list(br)}
+
+
+def make_transform():
+    # 回転: Null ペインを回すと、子がまとめて回る
+    dots = []
+    for i, (x, y, c) in enumerate([(0, 0, AQUA), (110, 0, CORAL), (0, 110, GOLD), (110, 110, [0.6, 0.75, 1, 1])]):
+        dots.append(image(f"Dot{i}", c, (70, 70), radius=14, slot=at(x, y, 70, 70)))
+    spinner = widget("UINullPane", "Spinner", slot=at(0, 0, 180, 180, anchor=(0.5, 0.5), pivot=(0.5, 0.5)), children=dots)
+    spin_area = widget("UISizeBox", "SpinArea", {"widthOverride": 300, "heightOverride": 260}, children=[widget("UICanvasPanel", "SpinCanvas", children=[spinner])])
+    # 時計の針: transformOrigin を根元（下の真ん中）にして回す
+    dial = image("Dial", [0.08, 0.16, 0.2, 1], (200, 200), "@Circle", slot=at(0, 0, 200, 200, anchor=(0.5, 0.5), pivot=(0.5, 0.5)))
+    hand = image("Hand", CORAL, (10, 90), radius=5, slot=at(0, -45, 10, 90, anchor=(0.5, 0.5), pivot=(0.5, 0.5)),
+                 common={"transformOrigin": [0.5, 1.0]})
+    clock = widget("UISizeBox", "ClockArea", {"widthOverride": 260, "heightOverride": 260}, children=[widget("UICanvasPanel", "ClockCanvas", children=[dial, hand])])
+    rotate_card = card(
+        "RotateCard",
+        "回転（rotation・transformOrigin）",
+        [
+            hbox("RotateRow", [spin_area, clock], spacing=20),
+            button("TiltedButton", "回したボタン（押すと当たりが増える）", "bounding-hit", size=22, contentPadding=[20, 10, 20, 10],
+                   slot=box(h="Center", pad=(0, 10, 0, 10)), common={"rotation": -8}),
+            note("RotateNote", "左: Null ペインの rotation を回すと子がまとめて回る。右: 針の transformOrigin を根元（0.5, 1）にして回す。回したボタンもそのまま押せる"),
+        ],
+        slot=at(60, 190, 0, 0, auto=True),
+        width=560,
+    )
+
+    # 頂点カラー: 四隅の色を混ぜる（画像・背景・文字）
+    grad_box = image("GradBox", [1, 1, 1, 1], (240, 140), radius=18, common=corners(AQUA, [0.6, 0.75, 1, 1], CORAL, GOLD))
+    grad_text = text("GradText", "四隅の色", 64, [1, 1, 1, 1], common=corners([1, 0.95, 0.6, 1], [1, 0.95, 0.6, 1], CORAL, CORAL))
+    grad_panel = border("GradPanel", text("GradPanelText", "パネルにも", 30, INK, align="Center"), [1, 1, 1, 1], 16, (24, 18, 24, 18),
+                        shadow=False, common=corners(AQUA, AQUA, [0.1, 0.4, 0.5, 1], [0.1, 0.4, 0.5, 1]))
+    color_card = card(
+        "ColorCard",
+        "頂点カラー（四隅の色）",
+        [grad_box, grad_text, grad_panel,
+         note("ColorNote", "詳細の「頂点カラー」で左上・右上・左下・右下の色を決めると、自分の描画（画像・背景・文字）に混ぜて掛かる。色はアニメーションもできる")],
+        slot=at(0, 190, 0, 0, anchor=(0.5, 0), pivot=(0.5, 0), auto=True),
+        width=440,
+    )
+
+    # Bounding ペイン: 絵の一部だけを当たりにする
+    target = widget("UICanvasPanel", "TreasureCanvas", children=[
+        image("Treasure", [0.35, 0.22, 0.12, 1], (280, 180), radius=20, slot=at(0, 0, 280, 180)),
+        image("Lock", GOLD, (60, 60), "@Circle", slot=at(110, 60, 60, 60)),
+        text("TreasureLabel", "鍵だけが当たり", 22, TEXT, align="Center", slot=at(0, 190, 280, 30)),
+        widget("UIBoundingPane", "LockHit", {"clickMessage": "bounding-hit"}, at(100, 50, 80, 80)),
+    ])
+    treasure = widget("UISizeBox", "TreasureArea", {"widthOverride": 280, "heightOverride": 230}, children=[target])
+    shop = border(
+        "ShopItem",
+        vbox("ShopItemBody", [text("ShopItemName", "{itemName}", 30, TEXT), text("ShopItemPrice", "{itemPrice} G", 26, GOLD)], spacing=4),
+        PANEL_LIGHT, 14, (20, 14, 20, 14), shadow=False,
+        common={"userData": "item=ポーション\nprice=120\nrarity=common"},
+    )
+    hit_card = card(
+        "HitCard",
+        "Bounding ペイン・ユーザーデータ",
+        [
+            treasure,
+            text("HitCount", "当たった回数: {hits}", 28, CORAL),
+            shop,
+            note("HitNote", "鍵の上に何も描かない Bounding ペインを置き、押すと Click（bounding-hit）が届く。下の札は userData（item=… / price=…）をスクリプトが GetUserData で読んで表示している"),
+        ],
+        slot=at(-60, 190, 0, 0, anchor=(1, 0), pivot=(1, 0), auto=True),
+        width=520,
+    )
+    loop = anim("Loop", [
+        track("Spinner", "rotation", [key(0, 0, 1), key(4, 360, 1)]),
+        track("Hand", "rotation", [key(0, 0, 1), key(6, 360, 1)]),
+        track("GradBox", "vertexColorTopLeft.x", [key(0, 0.2), key(1.5, 1.0), key(3, 0.2)]),
+    ])
+    return document(page("変形と頂点カラー", "LayoutEditor 風の機能 その 1", [rotate_card, color_card, hit_card]), [loop])
+
+
+# ---------------------------------------------------------------------------
+# パーツの上書き
+# ---------------------------------------------------------------------------
+
+
+def make_overrides():
+    import json as _json
+
+    members = [
+        ("Aqua", {"StatusName": {"text": "アクア"}, "StatusClass": {"text": "Lv.12 まほうつかい"}, "StatusHp": {"percent": 0.72}, "StatusMp": {"percent": 0.45}}),
+        ("Ruto", {"StatusName": {"text": "ルト"}, "StatusClass": {"text": "Lv.15 けんし"}, "StatusHp": {"percent": 0.95}, "StatusMp": {"percent": 0.1},
+                  "StatusIcon": {"shaderParam0": list(CORAL)}}),
+        ("Coral", {"StatusName": {"text": "コーラル"}, "StatusClass": {"text": "Lv.9 そうりょ"}, "StatusHp": {"percent": 0.3}, "StatusMp": {"percent": 0.9},
+                   "StatusIcon": {"shaderParam0": list(GOLD)}}),
+    ]
+    cards = [
+        widget("UIUserWidget", f"Member{n}", {"asset": "UI/StatusCard.aqua", "overrides": _json.dumps(ov, ensure_ascii=False)},
+               slot=box(v="Top"))
+        for n, ov in members
+    ]
+    party = widget("UISizeBox", "PartySize", {"widthOverride": 1140, "heightOverride": 200},
+                   children=[hbox("Party", cards, spacing=30)])
+    party_card = card(
+        "PartyCard",
+        "同じパーツ（StatusCard）を 3 つ置いて、それぞれ上書き",
+        [
+            party,
+            note("PartyNote", "置いたパーツを選ぶと、詳細の下の「パーツの上書き」で中のウィジェット（StatusName・StatusHp・StatusIcon など）を選んで値を変えられる。"
+                 "パーツの元の値と違うものだけが保存され、パーツ（StatusCard）を直すと上書きしていない所はすべての置き場所に反映される"),
+            hbox("OverrideButtons", [
+                button("RenameButton", "スクリプトで名前を変える（SetOverride）", "override-rename", size=24, contentPadding=[20, 10, 20, 10]),
+                button("ResetButton", "上書きを消す（ClearOverrides）", "override-reset", size=24, color=PANEL_LIGHT, contentPadding=[20, 10, 20, 10]),
+            ], spacing=16),
+        ],
+        slot=at(0, 200, 0, 0, anchor=(0.5, 0), pivot=(0.5, 0), auto=True),
+        width=1180,
+    )
+    return document(page("パーツの上書き", "LayoutEditor 風の機能 その 2", [party_card]))
+
+
+# ---------------------------------------------------------------------------
+# 区間・グループ・コマ送り
+# ---------------------------------------------------------------------------
+
+
+def make_anim_extras():
+    # 区間: 1 本のアニメーション Show を In / Idle / Out に分けて、名前で再生する
+    banner = border("Banner", text("BannerText", "セール中！", 48, INK, align="Center"), GOLD, 22, (40, 20, 40, 20), shadow=True,
+                    slot=box("Center"), common={"opacity": 0})
+    banner_area = widget("UISizeBox", "BannerArea", {"widthOverride": 480, "heightOverride": 150}, children=[
+        widget("UIOverlay", "BannerHolder", children=[banner])])
+    section_card = card(
+        "SectionCard",
+        "区間（1 本のタイムラインを名前で分けて再生）",
+        [
+            banner_area,
+            hbox("SectionButtons", [
+                button("PlayIn", "In", "anim:In", size=24, contentPadding=[26, 10, 26, 10]),
+                button("PlayIdle", "Idle（繰り返し）", "anim:Idle", size=24, contentPadding=[26, 10, 26, 10]),
+                button("PlayOut", "Out", "anim:Out", size=24, color=CORAL, text_color=INK, contentPadding=[26, 10, 26, 10]),
+            ], spacing=14),
+            note("SectionNote", "アニメーション Show（3 秒）に区間 In（0〜0.6 秒）・Idle（0.6〜2.2 秒・繰り返し）・Out（2.2〜2.8 秒）を付け、PlayAnimation(\"In\") のように区間の名前で再生している"),
+        ],
+        slot=at(60, 190, 0, 0, auto=True),
+        width=520,
+    )
+
+    # グループ: 階層はばらばらでも、グループ Stars のトラックで全員が同じように動く
+    stars = [text(f"Star{i}", "★", 56, [GOLD, AQUA, CORAL][i % 3], align="Center", slot=at(40 + i * 72, 40 + (i % 2) * 50, 64, 64)) for i in range(6)]
+    star_area = widget("UISizeBox", "StarArea", {"widthOverride": 520, "heightOverride": 170}, children=[widget("UICanvasPanel", "StarCanvas", children=stars)])
+    group_card = card(
+        "GroupCard",
+        "グループ（まとめて動かす・隠す）",
+        [
+            star_area,
+            hbox("GroupButtons", [
+                button("HideStars", "グループを隠す", "group-hide", size=24, color=PANEL_LIGHT, contentPadding=[22, 10, 22, 10]),
+                button("ShowStars", "グループを出す", "group-show", size=24, contentPadding=[22, 10, 22, 10]),
+            ], spacing=14),
+            note("GroupNote", "6 つの星をグループ Stars にまとめ、トラック @Stars（拡大）1 本で全員を瞬かせている。ボタンはスクリプトの SetGroupVisible(\"Stars\", …)"),
+        ],
+        slot=at(0, 190, 0, 0, anchor=(0.5, 0), pivot=(0.5, 0), auto=True),
+        width=520,
+    )
+
+    # コマ送り: 画像を 1 行に 1 つ並べ、自動で送る / 今のコマにキーを打つ
+    frames = "@Circle\n@SoftCircle\n@White\n@Checker"
+    flip_auto = widget("UIImage", "FlipAuto", {"color": list(AQUA), "size": [140, 140], "frames": frames, "framesPerSecond": 3}, slot=box(v="Center"))
+    flip_keys = widget("UIImage", "FlipKeys", {"color": list(CORAL), "size": [140, 140], "frames": frames, "frame": 0}, slot=box(v="Center"))
+    flip_card = card(
+        "FlipCard",
+        "コマ送り（パラパラ漫画）",
+        [
+            hbox("FlipRow", [
+                vbox("FlipAutoCol", [flip_auto, text("FlipAutoLabel", "自動（3 コマ/秒）", 22, DIM)], spacing=8),
+                vbox("FlipKeysCol", [flip_keys, text("FlipKeysLabel", "キーで送る", 22, DIM)], spacing=8),
+            ], spacing=40),
+            note("FlipNote", "画像の「コマの画像」に 1 行に 1 つ画像を書くと、そのコマを描く。左は「自動で送る速さ」、右は Loop のアニメーションで「今のコマ」にコンスタントのキーを打っている"),
+        ],
+        slot=at(-60, 190, 0, 0, anchor=(1, 0), pivot=(1, 0), auto=True),
+        width=440,
+    )
+
+    show = anim(
+        "Show",
+        [
+            track("Banner", "opacity", [key(0, 0), key(0.6, 1), key(2.2, 1), key(2.8, 0)]),
+            track("Banner", "translation.y", [key(0, 60), key(0.6, 0), key(2.2, 0), key(2.8, -40)]),
+            track("Banner", "renderScale.x", [key(0.6, 1), key(1.0, 1.08), key(1.4, 1), key(1.8, 1.08), key(2.2, 1)]),
+            track("Banner", "renderScale.y", [key(0.6, 1), key(1.0, 1.08), key(1.4, 1), key(1.8, 1.08), key(2.2, 1)]),
+        ],
+        sections=[("In", 0.0, 0.6, False), ("Idle", 0.6, 2.2, True), ("Out", 2.2, 2.8, False)],
+    )
+    loop = anim("Loop", [
+        track("@Stars", "renderScale.x", [key(0, 1), key(0.4, 1.35), key(0.8, 1), key(1.6, 1)]),
+        track("@Stars", "renderScale.y", [key(0, 1), key(0.4, 1.35), key(0.8, 1), key(1.6, 1)]),
+        track("FlipKeys", "frame", [key(0, 0, 2), key(0.25, 1, 2), key(0.5, 2, 2), key(0.75, 3, 2), key(1.0, 0, 2), key(1.6, 0, 2)]),
+    ])
+    return document(
+        page("区間・グループ・コマ送り", "LayoutEditor 風の機能 その 3", [section_card, group_card, flip_card]),
+        [show, loop],
+        groups=[("Stars", [f"Star{i}" for i in range(6)])],
+    )
+
+
+# ---------------------------------------------------------------------------
+# 文字の並びと白黒カラー
+# ---------------------------------------------------------------------------
+
+
+def make_text_extras():
+    spacing_card = card(
+        "SpacingCard",
+        "文字間・行間",
+        [
+            text("Tight", "AQUA 詰める（-6）", 40, TEXT, letterSpacing=-6),
+            text("Normal", "AQUA ふつう（0）", 40, TEXT),
+            text("Wide", "AQUA 広げる（14）", 40, TEXT, letterSpacing=14),
+            hbox("LineRow", [
+                border("Line0Box", text("Line0", "行間 0\n二行目\n三行目", 26, TEXT), PANEL_LIGHT, 12, (16, 10, 16, 10), shadow=False),
+                border("Line1Box", text("Line1", "行間 18\n二行目\n三行目", 26, TEXT, lineSpacing=18), PANEL_LIGHT, 12, (16, 10, 16, 10), shadow=False),
+            ], spacing=16),
+        ],
+        slot=at(60, 190, 0, 0, auto=True),
+        width=520,
+    )
+
+    long_text = "とても長い名前のアイテム・エクスカリバー改"
+
+    def fit_box(name, label, shrink):
+        return vbox(name + "Col", [
+            border(name, text(name + "Text", long_text, 34, TEXT, shrinkToFit=shrink), PANEL_LIGHT, 12, (12, 8, 12, 8), shadow=False,
+                   slot=box(), common={"clipChildren": True}),
+            text(name + "Label", label, 20, DIM),
+        ], spacing=6)
+
+    fit_card = card(
+        "FitCard",
+        "縮小・行ごとのグラデーション",
+        [
+            widget("UISizeBox", "FitOffSize", {"widthOverride": 420, "heightOverride": 90}, children=[fit_box("FitOff", "縮小なし（はみ出して切れる）", False)]),
+            widget("UISizeBox", "FitOnSize", {"widthOverride": 420, "heightOverride": 90}, children=[fit_box("FitOn", "枠に合わせて縮小（shrinkToFit）", True)]),
+            text("GradText", "グラデーションの\n見出し", 52, [1, 1, 1, 1], gradient=True, gradientTop=list(GOLD), gradientBottom=list(CORAL)),
+            note("FitNote", "グラデーションは行ごとに上から下へ混ぜる（頂点カラーは文字全体の四隅）"),
+        ],
+        slot=at(0, 190, 0, 0, anchor=(0.5, 0), pivot=(0.5, 0), auto=True),
+        width=440,
+    )
+
+    def bw(name, tex, black, white):
+        return widget("UIImage", name, {"texture": tex, "color": [1, 1, 1, 1], "size": [110, 110]}, slot=box(v="Center"),
+                      common={"blackWhiteEnabled": True, "blackColor": list(black), "whiteColor": list(white)})
+
+    bw_card = card(
+        "BlackWhiteCard",
+        "白黒カラー（色の補間）",
+        [
+            hbox("BwRow1", [
+                widget("UIImage", "BwOriginal", {"texture": "@Checker", "color": [1, 1, 1, 1], "size": [110, 110]}, slot=box(v="Center")),
+                bw("BwNavyAqua", "@Checker", [0.05, 0.12, 0.2, 1], AQUA),
+                bw("BwCoralGold", "@Checker", CORAL, GOLD),
+            ], spacing=16),
+            hbox("BwRow2", [
+                widget("UIImage", "BwSoft", {"texture": "@SoftCircle", "color": [1, 1, 1, 1], "size": [110, 110]}, slot=box(v="Center")),
+                bw("BwSoftAqua", "@SoftCircle", [0, 0, 0, 0], AQUA),
+                bw("BwSoftGlow", "@SoftCircle", [0.6, 0.1, 0.4, 0], GOLD),
+            ], spacing=16),
+            note("BwNote", "左が元の画像。黒い所を「黒の色」、白い所を「白の色」にして間を混ぜる。同じ画像から色違いを作れる"),
+        ],
+        slot=at(-60, 190, 0, 0, anchor=(1, 0), pivot=(1, 0), auto=True),
+        width=420,
+    )
+    return document(page("文字の並びと白黒カラー", "LayoutEditor 風の機能 その 4", [spacing_card, fit_card, bw_card]))
+
+
 UIS = {
     "Menu": make_menu,
     "TextAnimation": make_text_animation,
@@ -1155,6 +1444,10 @@ UIS = {
     "Binding": make_binding,
     "StatusCard": make_status_card,
     "Styles": make_styles,
+    "Transform": make_transform,
+    "Overrides": make_overrides,
+    "AnimExtras": make_anim_extras,
+    "TextExtras": make_text_extras,
 }
 
 
